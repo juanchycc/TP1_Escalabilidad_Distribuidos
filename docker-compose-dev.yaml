@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+    ports:
+      - 15672:15672
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:15672"]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+  filter_fields_2:
+    container_name: filter_fields_2
+    build:
+      context: ./filter_fields_2  
+      dockerfile: Dockerfile  
+    image: filter_fields_2:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links: 
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOGGING_LEVEL=DEBUG
+
