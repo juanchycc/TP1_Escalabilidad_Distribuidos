@@ -28,16 +28,18 @@ class Middleware:
             bytes = []
             size_of_packet = 1024 # TODO: Tamaño maximo, debe ser configurable
             size_read = False
-            while bytes_read < size_of_packet:
-                bytes += list(client_socket.recv(size_of_packet - bytes_read)) 
+            while bytes_read < 1024:
+                bytes += list(client_socket.recv(1024 - bytes_read)) 
+                logging.info(f'bytes: {bytes}')
                 bytes_read = len(bytes)
+                logging.info(f'bytes len: {bytes_read}')
                 if not size_read:
                     if bytes_read == 0:
                         return 
                     size_of_packet = (bytes[1] << 8) | bytes[2]
                     size_read = True                
             
-            callback(bytes_read)
+            callback(bytes[:size_of_packet])
         
     def send(self,bytes,routing_key):
         self._out_channel.basic_publish(exchange=self._exchange,routing_key=routing_key,body=bytes)

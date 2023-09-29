@@ -6,25 +6,26 @@ services:
     ports:
       - 15672:15672
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:15672"]
-        interval: 10s
-        timeout: 5s
-        retries: 10
+      test: [ "CMD", "curl", "-f", "http://localhost:15672" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   post_handler:
     container_name: post_handler
     build:
-      context: ./post_handler  
-      dockerfile: Dockerfile  
+      context: ./post_handler
+      dockerfile: Dockerfile
     image: post_handler:latest
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
       - rabbitmq
-    links: 
+    links:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./post_handler/config.ini:/config.ini
-
+    ports:
+      - 12345:12345

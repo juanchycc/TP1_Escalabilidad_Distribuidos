@@ -1,3 +1,5 @@
+import logging
+
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
  
@@ -15,11 +17,10 @@ class Serializer:
         
     def bytes_to_pkt(self,bytes):
         pkt_type = bytes[0]
-        payload = str(bytes[3:])
+        payload = bytearray(bytes[3:]).decode('utf-8')
         if pkt_type == HEADERS_FLIGHTS_PKT:
             self._flight_fields = payload.split(',')
         if pkt_type == FLIGHTS_PKT:
-            payload = str(bytes[3:])
             flights = payload.split('\n')
             flight_list = []
             for flight in flights:
@@ -27,6 +28,7 @@ class Serializer:
                 flight_to_process = {}
                 for i in range(len(data)):
                     flight_to_process[self._flight_fields[i]] = data[i]
+                logging.info(f"flight_to_process: {flight_to_process}")
                 flight_list.append(flight_to_process)
             
             self._fligth_callback(flight_list)
@@ -36,10 +38,15 @@ class Serializer:
     def send_pkt(self,pkt,key):
         payload = ""
         for flight in pkt:
-            for field in flight:
-                payload += field + ','
+            last_field = len(flight) - 1
+            for i, field in enumerate(flight):
+                payload += field
+                if i != last_field:
+                    payload += ','
             payload += '\n'
-        
+
+        logging.info(f"Payload: {payload}")
+
         pkt_size = 3 + len(payload)
         pkt_header = bytearray([FLIGHTS_PKT,(pkt_size >> 8) & 0xFF,pkt_size & 0xFF]) 
         pkt = pkt_header + payload.encode('utf-8')

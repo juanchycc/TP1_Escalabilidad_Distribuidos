@@ -1,5 +1,6 @@
-from client_socket import Socket
+from client_socket import Client_Socket
 from reader import Reader
+from client_protocol import Client_Protocol
 
 from configparser import ConfigParser
 import os
@@ -36,13 +37,14 @@ def main():
     config_params = initialize_config()
     port = config_params["port"]
     ip = config_params["ip"]
-    batch_size = config_params['BATCH']['SIZE']
-    filename = config_params['FILENAME']
+    batch_size = config_params['batch_size']
+    filename = config_params['filename']
 
-    socket = Socket(ip, port)
+    socket = Client_Socket(ip, port)
 
     if socket.connect():
-        reader = Reader(socket, filename, batch_size)
+        protocol = Client_Protocol(socket, batch_size)
+        reader = Reader(protocol, filename, batch_size)
         reader.read_flights()
     else:
         print("No se pudo establecer la conexión con el servidor")
