@@ -34,6 +34,15 @@ class Serializer:
     
     
     def send_pkt(self,pkt,key):
-        # Serializar
-        # Llamar self.middleware.send con la key
-        pass
+        payload = ""
+        for flight in pkt:
+            for field in flight:
+                payload += field + ','
+            payload += '\n'
+        
+        pkt_size = 3 + len(payload)
+        pkt_header = bytearray([FLIGHTS_PKT,(pkt_size >> 8) & 0xFF,pkt_size & 0xFF]) 
+        pkt = pkt_header + payload.encode('utf-8')
+        self._middleware.send(pkt,key)
+        
+        
