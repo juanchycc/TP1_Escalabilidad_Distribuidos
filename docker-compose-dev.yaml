@@ -11,12 +11,12 @@ services:
         timeout: 5s
         retries: 10
 
-  filter_fields_2:
-    container_name: filter_fields_2
+  post_handler:
+    container_name: post_handler
     build:
-      context: ./filter_fields_2  
+      context: ./post_handler  
       dockerfile: Dockerfile  
-    image: filter_fields_2:latest
+    image: post_handler:latest
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
@@ -25,5 +25,6 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=DEBUG
+    volumes:
+      - ./post_handler/config.ini:/config.ini
 
