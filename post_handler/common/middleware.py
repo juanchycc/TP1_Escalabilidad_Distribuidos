@@ -26,11 +26,10 @@ class Middleware:
         while not self._finished:
             bytes_read = 0
             bytes = []
-            size_of_packet = 1
+            size_of_packet = 1024 # TODO: Tamaño maximo, debe ser configurable
             size_read = False
             while bytes_read < size_of_packet:
-                # TODO: Eliminar este hardcodeo
-                bytes += list(client_socket.recv(1024 - bytes_read)) 
+                bytes += list(client_socket.recv(size_of_packet - bytes_read)) 
                 bytes_read = len(bytes)
                 if not size_read:
                     if bytes_read == 0:
