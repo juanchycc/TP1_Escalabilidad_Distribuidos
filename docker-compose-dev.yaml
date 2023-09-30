@@ -63,3 +63,21 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./flights_max/config.ini:/config.ini
+
+  file_writer:
+    container_name: file_writer
+    build:
+      context: ./file_writer
+      dockerfile: Dockerfile
+    image: file_writer:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./file_writer/config.ini:/config.ini
+      - ./file_writer/out_file_q1.csv:/out_file_q1.csv
