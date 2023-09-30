@@ -29,3 +29,21 @@ services:
       - ./post_handler/config.ini:/config.ini
     ports:
       - 12345:12345
+
+  flights_filter_plus_3:
+    container_name: flights_filter
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+

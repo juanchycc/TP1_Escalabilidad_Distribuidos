@@ -30,9 +30,9 @@ class Middleware:
             size_read = False
             while bytes_read < 1024:
                 bytes += list(client_socket.recv(1024 - bytes_read)) 
-                logging.info(f'bytes: {bytes}')
+                #logging.info(f'bytes: {bytes}')
                 bytes_read = len(bytes)
-                logging.info(f'bytes len: {bytes_read}')
+                #logging.info(f'bytes len: {bytes_read}')
                 if not size_read:
                     if bytes_read == 0:
                         return 
