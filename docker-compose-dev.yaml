@@ -30,8 +30,8 @@ services:
     ports:
       - 12345:12345
 
-  flights_filter_plus_3:
-    container_name: flights_filter
+  flights_filter_plus_3_1:
+    container_name: flights_filter_1
     build:
       context: ./flights_filter
       dockerfile: Dockerfile
@@ -44,6 +44,25 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_AMOUNT=2
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+
+  flights_filter_plus_3_2:
+    container_name: flights_filter_2
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_AMOUNT=2
     volumes:
       - ./flights_filter/config.ini:/config.ini
 
@@ -81,3 +100,4 @@ services:
     volumes:
       - ./file_writer/config.ini:/config.ini
       - ./file_writer/out_file_q1.csv:/out_file_q1.csv
+
