@@ -1,7 +1,7 @@
 import os
 import logging
 from configparser import ConfigParser
-from common.filter import FilterFlightsPlusThree
+from common.filter import FilterFlightsMax
 from common.middleware import Middleware
 from common.protocol import Serializer
 
@@ -32,6 +32,8 @@ def initialize_config():
         config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
+        config_params["filter_fields"] = os.getenv(
+            'FILTER_FIELDS', config["DEFAULT"]["FILTER_FIELDS"])
         config_params["queue_name"] = os.getenv(
             'QUEUE_NAME', config["DEFAULT"]["QUEUE_NAME"])
     except KeyError as e:
@@ -65,7 +67,8 @@ def main():
     middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
                             config_params["out_exchange"], config_params["queue_name"])
     serializer = Serializer(middleware, fields)
-    filter = FilterFlightsPlusThree(serializer, fields)
+    filter = FilterFlightsMax(
+        serializer, config_params["filter_fields"].split(','))
     filter.run()
 
 

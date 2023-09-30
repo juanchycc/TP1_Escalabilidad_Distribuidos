@@ -1,4 +1,5 @@
 import os
+import logging
 
 
 class Reader:
@@ -10,7 +11,8 @@ class Reader:
     def read_flights(self):
 
         if not os.path.isfile(self.filename):
-            print(f"Error: el archivo {self.filename} no existe")
+            logging.info(
+                f'action: read_flights | result: File not found {self.filename}')
             return
 
         envio_header = False
@@ -30,8 +32,10 @@ class Reader:
                     batch = []
                     continue
 
-                if total_read + len(new_line) > self.batch_size - 3: # 3 = header size
-                    print(f"batch: {batch}")
+                if total_read + len(new_line) > self.batch_size - 3:  # 3 = header size
+                    logging.debug(
+                        f'action: read_flights | result: batch: {batch}')
+
                     self.protocol.send_fligths_packet(batch)
                     total_read = 0
                     batch = []
@@ -41,3 +45,4 @@ class Reader:
 
             if batch:
                 self.protocol.send_fligths_packet(batch)
+        logging.info(f'action: read_flights | result: done')

@@ -47,3 +47,19 @@ services:
     volumes:
       - ./flights_filter/config.ini:/config.ini
 
+  flights_filter_max:
+    container_name: flights_max
+    build:
+      context: ./flights_max
+      dockerfile: Dockerfile
+    image: flights_max:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./flights_max/config.ini:/config.ini
