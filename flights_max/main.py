@@ -66,7 +66,11 @@ def main():
     fields = config_params["fields"].split(',')
     middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
                             config_params["out_exchange"], config_params["queue_name"])
+
     serializer = Serializer(middleware, fields)
+
+    id = int(os.environ.get('FLIGHTS_MAX_ID', 1))
+
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))
     filter.run()
