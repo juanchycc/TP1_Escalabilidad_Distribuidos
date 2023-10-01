@@ -6,3 +6,6 @@ bin/
 
 # CSV files
 ./client/flights.csv
+
+#Outputs
+./file_writer/out_file_q1.csv

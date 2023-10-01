@@ -16,7 +16,7 @@ class Middleware:
             queue='', durable=True)
         self._in_queue_name = result.method.queue
         self._in_channel.queue_bind(
-            exchange=in_exchange_q1, queue=self._in_queue_name, routing_key='writer')
+            exchange=in_exchange_q1, queue=self._in_queue_name, routing_key="")
 
     def start_recv(self, callback):
         self._in_channel.basic_consume(

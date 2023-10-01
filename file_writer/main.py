@@ -58,7 +58,8 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    middleware = Middleware(config_params["in_exchange_q1"])
+    middleware = Middleware(
+        config_params["in_exchange_q1"])
     serializer = Serializer(middleware)
     writer = Writer(serializer, config_params["out_file_q1"])
     writer.run()
