@@ -31,6 +31,6 @@ class Middleware:
             queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
         self._in_channel.start_consuming()
 
-    def send(self, bytes):
+    def send(self, bytes, key):
         self._out_channel.basic_publish(
-            exchange=self._out_exchange, routing_key='', body=bytes)
+            exchange=self._out_exchange, routing_key=key, body=bytes)

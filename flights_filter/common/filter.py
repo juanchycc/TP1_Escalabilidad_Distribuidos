@@ -11,26 +11,35 @@ class FilterFlightsPlusThree:
         self._serializer.run(self.filter_fligths)
 
     def filter_fligths(self, flights):
-        output = []
+        writer_output = []
+        output = {i: [] for i in range(1, self._num_groups + 1)}
 
-        logging.info(f"Flights {flights} ")
+        logging.debug(f"Flights {flights} ")
 
         for flight in flights:
             stopovers = flight["segmentsArrivalAirportCode"].split('||')[:-1]
             if len(stopovers) >= 3:
                 # Agrego las escalas al final (Kaggle) lo pide el output
-                self._get_group(flight)
+                group = self._get_group(flight)
+                logging.info(f"Group {group} ")
                 filtered_flight = [flight[field]
                                    for field in self._filtered_fields]
                 filtered_flight.append("||".join(stopovers))
-                output.append(filtered_flight)
-
-        self._serializer.send_pkt(output)
+                output[group].append(filtered_flight)
+                writer_output.append(filtered_flight)
+        logging.info(f"Output {output} ")
+        # Escribe todo al writer
+        self._serializer.send_pkt(writer_output, "writer")
+        for i in range(1, self._num_groups + 1):  # Envia a cada nodo del filter max
+            if len(output[i]) > 0:
+                self._serializer.send_pkt(output[i], str(i))
 
     def _get_group(self, flight):
         first_char = flight["startingAirport"][0].lower()
         if 'a' <= first_char <= 'z':
             # Calcula el grupo utilizando la posición relativa de la letra en el alfabeto
             posicion_letra = ord(first_char) - ord('a')
-            grupo = posicion_letra % self._num_groups
-            logging.info(f"GRUPO: {grupo}")
+            group = posicion_letra % self._num_groups
+        else:  # default group
+            group = "$"
+        return group + 1

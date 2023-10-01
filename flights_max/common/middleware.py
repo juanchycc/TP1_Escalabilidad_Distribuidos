@@ -3,7 +3,7 @@ import pika
 
 class Middleware:
 
-    def __init__(self, in_exchange, key, out_exchange, queue_name):
+    def __init__(self, in_exchange, key, out_exchange, queue_name, in_key):
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
@@ -16,7 +16,7 @@ class Middleware:
             queue=queue_name, durable=True)
         self._in_queue_name = result.method.queue
         self._in_channel.queue_bind(
-            exchange=in_exchange, queue=self._in_queue_name, routing_key='')
+            exchange=in_exchange, queue=self._in_queue_name, routing_key=in_key)
 
         # Configure exit queue
         self._connection = pika.BlockingConnection(

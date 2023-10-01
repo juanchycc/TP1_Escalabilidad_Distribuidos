@@ -18,6 +18,7 @@ for o in output_files:
     if os.path.exists(file_path):
         os.remove(file_path)
     file = open(file_path, "w")
+    file.close()
 
 initial_text = """version: '3.9'
 services:

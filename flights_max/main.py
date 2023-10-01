@@ -64,12 +64,12 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
     fields = config_params["fields"].split(',')
+
+    id = os.environ.get('FLIGHTS_MAX_ID', 1)
     middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
-                            config_params["out_exchange"], config_params["queue_name"])
+                            config_params["out_exchange"], config_params["queue_name"], id)
 
     serializer = Serializer(middleware, fields)
-
-    id = int(os.environ.get('FLIGHTS_MAX_ID', 1))
 
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))
