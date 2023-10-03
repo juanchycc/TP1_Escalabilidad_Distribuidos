@@ -8,7 +8,7 @@ class Middleware:
     def __init__(self, port, exchange):
         # Configure socket to listen to client
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.bind(('', port))
+        self._socket.bind(("", port))
         self._socket.listen()
         self._finished = False
 
@@ -32,9 +32,9 @@ class Middleware:
             size_read = False
             while bytes_read < 8192:
                 bytes += list(client_socket.recv(8192 - bytes_read))
-                logging.info(f'bytes: {bytes}')
+                logging.debug(f'bytes: {bytes}')
                 bytes_read = len(bytes)
-                logging.info(f'bytes len: {bytes_read}')
+                logging.debug(f'bytes len: {bytes_read}')
                 if not size_read:
                     if bytes_read == 0:
                         return

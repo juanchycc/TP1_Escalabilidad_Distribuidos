@@ -33,11 +33,11 @@ class Reader:
                     continue
 
                 size = len(new_line.encode('utf-8'))
-                logging.info(
+                logging.debug(
                     f'total_read: {total_read}, new_line: {size}')
                 # 3 = header size
                 if total_read + len(new_line.encode('utf-8')) >= self.batch_size - 3:
-                    logging.info(
+                    logging.debug(
                         f'action: read_flights | result: batch: {batch}')
                     self.protocol.send_fligths_packet(batch)
                     total_read = 0

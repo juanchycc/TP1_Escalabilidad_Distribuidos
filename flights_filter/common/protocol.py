@@ -43,7 +43,7 @@ class Serializer:
                     payload += ','
             payload += '\n'
         # El -1 remueve el ultimo caracter
-        logging.info(f"Payload: {payload[:-1]}")
+        logging.debug(f"Payload: {payload[:-1]}")
 
         pkt_size = 3 + len(payload[:-1])
         pkt_header = bytearray(

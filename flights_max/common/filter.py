@@ -14,7 +14,7 @@ class FilterFlightsMax:
 
     def filter_fligths(self, flights):
 
-        logging.info(f"Flights {flights} ")
+        logging.debug(f"Flights {flights} ")
 
         for flight in flights:
 

@@ -1,7 +1,7 @@
 import os
 import logging
 from configparser import ConfigParser
-from common.filter import FilterFields
+from common.filter import FilterAvg
 from common.middleware import Middleware
 from common.protocol import Serializer
 
@@ -23,16 +23,15 @@ def initialize_config():
 
     config_params = {}
     try:
-        config_params["port"] = int(
-            os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
-        config_params["exchange"] = os.getenv(
-            'EXCHANGE', config["DEFAULT"]["EXCHANGE"])
-        config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])
-        config_params["key_avg"] = os.getenv(
-            'KEY_AVG', config["DEFAULT"]["KEY_AVG"])
-        config_params["key_4"] = os.getenv('KEY_4', config["DEFAULT"]["KEY_4"])
+        config_params["in_exchange"] = os.getenv(
+            'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
+        config_params["out_exchange"] = os.getenv(
+            'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
+        config_params["key"] = os.getenv('KEY', config["DEFAULT"]["KEY"])
+        config_params["fields"] = os.getenv(
+            'FIELDS', config["DEFAULT"]["FIELDS"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -61,11 +60,12 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    middleware = Middleware(config_params["port"], config_params["exchange"])
-    serializer = Serializer(middleware)
-    keys = [config_params["key_1"], "",
-            config_params["key_avg"], config_params["key_4"]]
-    filter = FilterFields(serializer, keys)
+    fields = config_params["fields"].split(',')
+    middleware = Middleware(config_params["in_exchange"], config_params["key"],
+                            config_params["out_exchange"])
+    serializer = Serializer(middleware, fields)
+
+    filter = FilterAvg(serializer, fields)
     filter.run()
 
 

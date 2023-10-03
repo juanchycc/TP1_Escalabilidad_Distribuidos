@@ -118,6 +118,25 @@ file_writer_text = """  file_writer:
 
 """
 
+flights_filter_avg = """  flights_filter_avg:
+    container_name: flights_avg
+    build:
+      context: ./flights_avg
+      dockerfile: Dockerfile
+    image: flights_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./flights_avg/config.ini:/config.ini
+
+"""
+
 flights_filter_plus_3_text = flights_filter_plus_3_text.replace(
     '$', str(args.q3))
 final_text_plus_3 = ""
@@ -132,4 +151,4 @@ for i in range(1, args.q3 + 1):
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text)
+            final_text_plus_3 + final_text_max + file_writer_text + flights_filter_avg)

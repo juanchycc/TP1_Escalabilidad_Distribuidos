@@ -21,13 +21,13 @@ class FilterFlightsPlusThree:
             if len(stopovers) >= 3:
                 # Agrego las escalas al final (Kaggle) lo pide el output
                 group = self._get_group(flight)
-                logging.info(f"Group {group} ")
+                logging.debug(f"Group {group} ")
                 filtered_flight = [flight[field]
                                    for field in self._filtered_fields]
                 filtered_flight.append("||".join(stopovers))
                 output[group].append(filtered_flight)
                 writer_output.append(filtered_flight)
-        logging.info(f"Output {output} ")
+        logging.debug(f"Output {output} ")
         # Escribe todo al writer
         if len(writer_output) > 0:
             self._serializer.send_pkt(writer_output, "")
