@@ -32,16 +32,19 @@ class Reader:
                     batch = []
                     continue
 
-                if total_read + len(new_line) > self.batch_size - 3:  # 3 = header size
-                    logging.debug(
+                size = len(new_line.encode('utf-8'))
+                logging.info(
+                    f'total_read: {total_read}, new_line: {size}')
+                # 3 = header size
+                if total_read + len(new_line.encode('utf-8')) >= self.batch_size - 3:
+                    logging.info(
                         f'action: read_flights | result: batch: {batch}')
-
                     self.protocol.send_fligths_packet(batch)
                     total_read = 0
                     batch = []
 
                 batch.append(new_line)
-                total_read += len(new_line)
+                total_read += len(new_line.encode('utf-8')) + 1  # por el \n
 
             if batch:
                 self.protocol.send_fligths_packet(batch)

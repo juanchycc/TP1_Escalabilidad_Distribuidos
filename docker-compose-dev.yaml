@@ -44,7 +44,7 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_MAX_AMOUNT=2
+      - FLIGHTS_MAX_AMOUNT=4
     volumes:
       - ./flights_filter/config.ini:/config.ini
 
@@ -62,7 +62,43 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_MAX_AMOUNT=2
+      - FLIGHTS_MAX_AMOUNT=4
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+
+  flights_filter_plus_3_3:
+    container_name: flights_filter_3
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_AMOUNT=4
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+
+  flights_filter_plus_3_4:
+    container_name: flights_filter_4
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_AMOUNT=4
     volumes:
       - ./flights_filter/config.ini:/config.ini
 
@@ -99,6 +135,42 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_MAX_ID=2
+    volumes:
+      - ./flights_max/config.ini:/config.ini
+
+  flights_filter_max_3:
+    container_name: flights_max_3
+    build:
+      context: ./flights_max
+      dockerfile: Dockerfile
+    image: flights_max:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_ID=3
+    volumes:
+      - ./flights_max/config.ini:/config.ini
+
+  flights_filter_max_4:
+    container_name: flights_max_4
+    build:
+      context: ./flights_max
+      dockerfile: Dockerfile
+    image: flights_max:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_ID=4
     volumes:
       - ./flights_max/config.ini:/config.ini
 

@@ -29,7 +29,8 @@ class FilterFlightsPlusThree:
                 writer_output.append(filtered_flight)
         logging.info(f"Output {output} ")
         # Escribe todo al writer
-        self._serializer.send_pkt(writer_output, "")
+        if len(writer_output) > 0:
+            self._serializer.send_pkt(writer_output, "")
         for i in range(1, self._num_groups + 1):  # Envia a cada nodo del filter max
             if len(output[i]) > 0:
                 self._serializer.send_pkt(output[i], str(i))

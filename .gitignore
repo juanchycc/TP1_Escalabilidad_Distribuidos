@@ -5,7 +5,7 @@
 bin/
 
 # CSV files
-./client/flights.csv
+./client/*.csv
 
 #Outputs
-./file_writer/out_file_q1.csv
+./file_writer/*.csv
