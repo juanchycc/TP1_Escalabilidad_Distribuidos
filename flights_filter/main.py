@@ -65,12 +65,13 @@ def main():
     fields = config_params["fields"].split(',')
     middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
                             config_params["out_exchange"], config_params["queue_name"])
-    serializer = Serializer(middleware, fields)
-
+    
     # read from docker env, default 1
     num_groups = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
+    serializer = Serializer(middleware, fields,num_groups)
 
-    filter = FilterFlightsPlusThree(serializer, fields, num_groups)
+    
+    filter = FilterFlightsPlusThree(serializer, fields)
     filter.run()
 
 

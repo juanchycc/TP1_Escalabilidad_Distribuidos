@@ -5,10 +5,11 @@ HEADERS_FLIGHTS_PKT = 1
 
 
 class Serializer:
-    def __init__(self, middleware, fields):
+    def __init__(self, middleware, fields,num_groups):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
+        self._num_groups = num_groups
 
     def run(self, callback):
         self._callback = callback
@@ -31,8 +32,22 @@ class Serializer:
 
             self._callback(flight_list)
 
+    
+    def send_pkt(self,pkt):
+        if len(pkt) > 0:
+            self._send_pkt(pkt, "")
+        
+        output = {i: [] for i in range(1, self._num_groups + 1)}
+        for flight in pkt:
+            group = self._get_group(flight)
+            output[group].append(flight)
+        
+        for i in range(1, self._num_groups + 1):  # Envia a cada nodo del filter max
+            if len(output[i]) > 0:
+                self._send_pkt(output[i], str(i))
+    
     # TODO: De nuevo casi todo repetido
-    def send_pkt(self, pkt, key):
+    def _send_pkt(self, pkt, key):
         # logging.info(f"output: {pkt}")
         payload = ""
         for flight in pkt:
@@ -50,3 +65,13 @@ class Serializer:
             [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
         pkt = pkt_header + payload[:-1].encode('utf-8')
         self._middleware.send(pkt, key)
+        
+    def _get_group(self, flight):
+        first_char = flight["startingAirport"][0].lower()
+        if 'a' <= first_char <= 'z':
+            # Calcula el grupo utilizando la posición relativa de la letra en el alfabeto
+            posicion_letra = ord(first_char) - ord('a')
+            group = posicion_letra % self._num_groups
+        else:  # default group
+            group = "$"
+        return group + 1
