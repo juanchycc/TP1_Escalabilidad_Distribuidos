@@ -9,3 +9,6 @@ bin/
 
 #Outputs
 ./file_writer/*.csv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/

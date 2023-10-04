@@ -62,10 +62,10 @@ def main():
     initialize_log(config_params["logging_level"])
 
     middleware = Middleware(config_params["port"], config_params["exchange"])
-    serializer = Serializer(middleware)
     keys = [config_params["key_1"], "",
             config_params["key_avg"], config_params["key_4"]]
-    filter = FilterFields(serializer, keys)
+    serializer = Serializer(middleware,keys)    
+    filter = FilterFields(serializer)
     filter.run()
 
 

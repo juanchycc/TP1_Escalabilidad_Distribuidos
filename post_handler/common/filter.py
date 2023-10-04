@@ -2,9 +2,8 @@ import logging
 
 
 class FilterFields:
-    def __init__(self, serializer, keys):
+    def __init__(self, serializer):
         self._serializer = serializer
-        self._keys = keys
         self._fields_for_query1 = ["legId", "totalFare", "startingAirport",
                                    "destinationAirport", "segmentsArrivalAirportCode", "travelDuration"]
         self._fields_for_avg = ["totalFare"]
@@ -29,6 +28,6 @@ class FilterFields:
                                     for field in self._fields_for_avg])
             query4_output.append([fligth[field]
                                  for field in self._fields_for_query4])
-        self._serializer.send_pkt(query1_output, self._keys[0])
-        self._serializer.send_pkt(query_avg_output, self._keys[2])
-        self._serializer.send_pkt(query4_output, self._keys[3])
+        self._serializer.send_pkt_query1(query1_output)
+        self._serializer.send_pkt_query_avg(query_avg_output)
+        self._serializer.send_pkt_query4(query4_output)

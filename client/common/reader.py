@@ -27,7 +27,7 @@ class Reader:
 
                 if not envio_header:
                     batch.append(new_line)
-                    self.protocol.send_header_fligths_packet(batch)
+                    self.protocol.send_header_flights_packet(batch)
                     envio_header = True
                     batch = []
                     continue
@@ -39,7 +39,7 @@ class Reader:
                 if total_read + len(new_line.encode('utf-8')) >= self.batch_size - 3:
                     logging.debug(
                         f'action: read_flights | result: batch: {batch}')
-                    self.protocol.send_fligths_packet(batch)
+                    self.protocol.send_flights_packet(batch)
                     total_read = 0
                     batch = []
 
@@ -47,5 +47,6 @@ class Reader:
                 total_read += len(new_line.encode('utf-8')) + 1  # por el \n
 
             if batch:
-                self.protocol.send_fligths_packet(batch)
+                self.protocol.send_flights_packet(batch)
+        self.protocol.send_finished_flights_pkt()
         logging.info(f'action: read_flights | result: done')

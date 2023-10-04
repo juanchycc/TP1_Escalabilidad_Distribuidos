@@ -2,6 +2,9 @@ import logging
 
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
+AIRPORT_PKT = 2
+FLIGHTS_FINISHED_PKT = 3
+AIRPORT_FINISHED_PKT = 4
 
 
 class Client_Protocol:
@@ -22,12 +25,17 @@ class Client_Protocol:
             f'Batch Protocol: {packet_type, (packet_len >> 8) & 0xFF, packet_len & 0xFF}')
         packet_bytes = bytearray(
             [packet_type, (packet_len >> 8) & 0xFF, packet_len & 0xFF]) + batch_str.encode('utf-8')
-        padding_len = self.batch_size - packet_len
+        padding_length = self.batch_size - packet_len
 
-        self.socket.send_packet(packet_bytes + (b'\x00'*padding_len))
+        self.socket.send_packet(packet_bytes + (b'\x00'*padding_length))
 
-    def send_header_fligths_packet(self, batch):
+    def send_header_flights_packet(self, batch):
         self._send_packet(batch, HEADERS_FLIGHTS_PKT)
 
-    def send_fligths_packet(self, batch):
+    def send_flights_packet(self, batch):
         self._send_packet(batch, FLIGHTS_PKT)
+        
+    def send_finished_flights_pkt(self):
+        logging.info("Sending finished flights pkt")
+        padding_length = self.batch_size - 3
+        self.socket.send_packet(bytearray([FLIGHTS_FINISHED_PKT,0,3]) + (b'\x00'*padding_length) )
