@@ -2,14 +2,18 @@ import logging
 
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
+AIRPORT_PKT = 2
+FLIGHTS_FINISHED_PKT = 3
+AIRPORT_FINISHED_PKT = 4
 
 
 class Serializer:
-    def __init__(self, middleware, fields,num_groups):
+    def __init__(self, middleware, fields,num_groups,num_filters):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
         self._num_groups = num_groups
+        self._num_filters = num_filters
 
     def run(self, callback):
         self._callback = callback
@@ -31,6 +35,25 @@ class Serializer:
                 flight_list.append(flight_to_process)
 
             self._callback(flight_list)
+            
+        if pkt_type == FLIGHTS_FINISHED_PKT:
+            # Mando uno por cada key
+            logging.info(f"Llego finished pkt: {bytes}")
+            pkt = bytearray(bytes[:4])
+            amount_finished = pkt[3]
+            logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
+            if amount_finished + 1 == self._num_filters:
+                pkt = bytearray([FLIGHTS_FINISHED_PKT,0,4,0])
+                self._middleware.send(pkt,str(1))
+                self._middleware.send(pkt,"") # To file writer
+                
+            else:
+                pkt = bytearray([FLIGHTS_FINISHED_PKT,0,4,amount_finished + 1])
+                logging.info(f"Resending finished packet | amount finished : {amount_finished +1}")
+                self._middleware.resend(pkt)
+                
+            self._middleware.shutdown()
+                
 
     
     def send_pkt(self,pkt):
@@ -67,7 +90,7 @@ class Serializer:
         self._middleware.send(pkt, key)
         
     def _get_group(self, flight):
-        first_char = flight["startingAirport"][0].lower()
+        first_char = flight[2][0].lower()
         if 'a' <= first_char <= 'z':
             # Calcula el grupo utilizando la posición relativa de la letra en el alfabeto
             posicion_letra = ord(first_char) - ord('a')

@@ -41,7 +41,7 @@ class Serializer:
         if pkt_type == FLIGHTS_FINISHED_PKT:
             # Mando uno por cada key
             logging.info(f"Llego finished pkt")
-            pkt = bytearray(bytes[:2])
+            pkt = bytearray([FLIGHTS_FINISHED_PKT,0,4,0])           
             for key in self._keys:
                 logging.info(f"Sending finished pkt | key: {key}")
                 self._middleware.send(pkt,key)

@@ -68,7 +68,8 @@ def main():
     
     # read from docker env, default 1
     num_groups = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
-    serializer = Serializer(middleware, fields,num_groups)
+    num_filters = int(os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT', 1))
+    serializer = Serializer(middleware, fields,num_groups,num_filters)
 
     
     filter = FilterFlightsPlusThree(serializer, fields)

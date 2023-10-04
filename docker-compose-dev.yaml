@@ -44,6 +44,7 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=4 
       - FLIGHTS_MAX_AMOUNT=2
     volumes:
       - ./flights_filter/config.ini:/config.ini
@@ -62,6 +63,45 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=4 
+      - FLIGHTS_MAX_AMOUNT=2
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+
+  flights_filter_plus_3_3:
+    container_name: flights_filter_3
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=4 
+      - FLIGHTS_MAX_AMOUNT=2
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+
+  flights_filter_plus_3_4:
+    container_name: flights_filter_4
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=4 
       - FLIGHTS_MAX_AMOUNT=2
     volumes:
       - ./flights_filter/config.ini:/config.ini

@@ -72,6 +72,7 @@ flights_filter_plus_3_text = """  flights_filter_plus_3_#:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=& 
       - FLIGHTS_MAX_AMOUNT=$
     volumes:
       - ./flights_filter/config.ini:/config.ini
@@ -143,6 +144,8 @@ final_text_plus_3 = ""
 for i in range(1, args.q1 + 1):
     final_text_plus_3 = final_text_plus_3 + \
         flights_filter_plus_3_text.replace('#', str(i))
+        
+final_text_plus_3 = final_text_plus_3.replace('&',str(args.q1))
 
 final_text_max = ""
 for i in range(1, args.q3 + 1):
