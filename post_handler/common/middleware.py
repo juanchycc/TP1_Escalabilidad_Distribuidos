@@ -5,7 +5,7 @@ import logging
 
 class Middleware:
 
-    def __init__(self, port, exchange):
+    def __init__(self, port, exchange, batch_size):
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -20,6 +20,8 @@ class Middleware:
         self._socket.listen()
         self._finished = False
 
+        self._batch_size = batch_size
+
     def start_recv(self, callback):
         logging.info('action: waiting_client_connection | result: in_progress')
         client_socket, addr = self._socket.accept()
@@ -28,10 +30,10 @@ class Middleware:
         while not self._finished:
             bytes_read = 0
             bytes = []
-            size_of_packet = 8192  # TODO: Tamaño maximo, debe ser configurable
+            size_of_packet = self._batch_size
             size_read = False
-            while bytes_read < 8192:
-                bytes += list(client_socket.recv(8192 - bytes_read))
+            while bytes_read < self._batch_size:
+                bytes += list(client_socket.recv(self._batch_size - bytes_read))
                 logging.debug(f'bytes: {bytes}')
                 bytes_read = len(bytes)
                 logging.debug(f'bytes len: {bytes_read}')

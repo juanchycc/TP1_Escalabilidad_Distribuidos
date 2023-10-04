@@ -68,6 +68,8 @@ def main():
     id = os.environ.get('FLIGHTS_MAX_ID', 1)
     middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
                             config_params["out_exchange"], config_params["queue_name"], id)
+    # read from docker env, default 1
+    nodes_amount = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
 
     serializer = Serializer(middleware, fields)
 

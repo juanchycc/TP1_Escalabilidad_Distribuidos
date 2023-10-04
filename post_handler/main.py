@@ -33,6 +33,8 @@ def initialize_config():
         config_params["key_avg"] = os.getenv(
             'KEY_AVG', config["DEFAULT"]["KEY_AVG"])
         config_params["key_4"] = os.getenv('KEY_4', config["DEFAULT"]["KEY_4"])
+        config_params["batch_size"] = int(os.getenv(
+            'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -60,7 +62,8 @@ def initialize_log(logging_level):
 def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
-    middleware = Middleware(config_params["port"], config_params["exchange"])
+    middleware = Middleware(
+        config_params["port"], config_params["exchange"], config_params["batch_size"])
     keys = [config_params["key_1"], "",
             config_params["key_avg"], config_params["key_4"]]
     serializer = Serializer(middleware, keys)

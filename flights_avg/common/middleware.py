@@ -13,7 +13,7 @@ class Middleware:
         self._in_channel.exchange_declare(
             exchange=in_exchange, exchange_type='direct')
         result = self._in_channel.queue_declare(
-            queue="test", durable=True)
+            queue=key, durable=True)
         self._in_queue_name = result.method.queue
         self._in_channel.queue_bind(
             exchange=in_exchange, queue=self._in_queue_name, routing_key=key)

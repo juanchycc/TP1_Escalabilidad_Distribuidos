@@ -6,6 +6,7 @@ FILENAME = "docker-compose-dev.yaml"
 parser = argparse.ArgumentParser()
 parser.add_argument("-q1", type=int, help="amount of nodes in the first query")
 parser.add_argument("-q3", type=int, help="amount of nodes in the third query")
+parser.add_argument("-avg", type=int, help="amount of nodes in the avg query")
 args = parser.parse_args()
 
 
@@ -97,6 +98,7 @@ flights_filter_max_text = """  flights_filter_max_#:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_MAX_ID=#
+      - FLIGHTS_MAX_AMOUNT=$
     volumes:
       - ./flights_max/config.ini:/config.ini
 
@@ -123,8 +125,8 @@ file_writer_text = """  file_writer:
 
 """
 
-flights_filter_avg = """  flights_filter_avg:
-    container_name: flights_avg
+flights_filter_avg = """  flights_filter_avg_#:
+    container_name: flights_avg_#
     build:
       context: ./flights_avg
       dockerfile: Dockerfile
@@ -151,12 +153,21 @@ for i in range(1, args.q1 + 1):
         flights_filter_plus_3_text.replace('#', str(i))
 
 final_text_plus_3 = final_text_plus_3.replace('&', str(args.q1))
+final_text_plus_3 = final_text_plus_3.replace(
+    '$', str(args.q3))
 
 final_text_max = ""
 for i in range(1, args.q3 + 1):
     final_text_max = final_text_max + \
         flights_filter_max_text.replace('#', str(i))
 
+final_text_max = final_text_max.replace('$', str(args.q3))
+
+final_text_avg = ""
+for i in range(1, args.avg + 1):
+    final_text_avg = final_text_avg + \
+        flights_filter_avg.replace('#', str(i))
+
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + flights_filter_avg)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg)

@@ -29,6 +29,6 @@ class FilterFields:
             query4_output.append([fligth[field]
                                  for field in self._fields_for_query4])
         self._serializer.send_pkt_query1(query1_output)
-        logging.info(f"Mando {query_avg_output} ")
+
         self._serializer.send_pkt_query_avg(query_avg_output)
         self._serializer.send_pkt_query4(query4_output)
