@@ -10,18 +10,15 @@ class FilterAvg:
         self._serializer.run(self.filter_fligths)
 
     def filter_fligths(self, flights):
-        output = []
-
+        total = 0
+        cantidad = 0
         logging.debug(f"Flights {flights} ")
 
         for flight in flights:
-            stopovers = flight["segmentsArrivalAirportCode"].split('||')[:-1]
-            if len(stopovers) >= 3:
-                filtered_flight = [flight[field]
-                                   for field in self._filtered_fields]
-                filtered_flight.append("||".join(stopovers))
-                output.append(filtered_flight)
-        logging.debug(f"Output {output} ")
-        # Escribe todo al writer
-        if len(output) > 0:
-            self._serializer.send_pkt(output, "")
+            try:
+                total += float(flight)
+                cantidad += 1
+            except ValueError:
+                logging.warning(f"Invalid flight value: {flight}")
+
+        logging.info(f"Total {total, cantidad} ")

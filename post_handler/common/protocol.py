@@ -8,7 +8,7 @@ AIRPORT_FINISHED_PKT = 4
 
 
 class Serializer:
-    def __init__(self, middleware,keys):
+    def __init__(self, middleware, keys):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -20,7 +20,7 @@ class Serializer:
         self._middleware.start_recv(self.bytes_to_pkt)
 
     def bytes_to_pkt(self, bytes):
-        logging.info(f"LLegan bytes: {bytes}")
+        logging.debug(f"LLegan bytes: {bytes}")
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
         if pkt_type == HEADERS_FLIGHTS_PKT:
@@ -37,24 +37,24 @@ class Serializer:
                 flight_list.append(flight_to_process)
 
             self._fligth_callback(flight_list)
-            
+
         if pkt_type == FLIGHTS_FINISHED_PKT:
             # Mando uno por cada key
             logging.info(f"Llego finished pkt")
-            pkt = bytearray([FLIGHTS_FINISHED_PKT,0,4,0])           
+            pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
             for key in self._keys:
                 logging.info(f"Sending finished pkt | key: {key}")
-                self._middleware.send(pkt,key)
+                self._middleware.send(pkt, key)
 
-    def send_pkt_query1(self,pkt):
-        self._send_pkt(pkt,self._keys[0])
-    
-    def send_pkt_query_avg(self,pkt):
-        self._send_pkt(pkt,self._keys[1])
-    
-    def send_pkt_query4(self,pkt):
-        self._send_pkt(pkt,self._keys[2])
-    
+    def send_pkt_query1(self, pkt):
+        self._send_pkt(pkt, self._keys[0])
+
+    def send_pkt_query_avg(self, pkt):
+        self._send_pkt(pkt, self._keys[2])
+
+    def send_pkt_query4(self, pkt):
+        self._send_pkt(pkt, self._keys[3])
+
     def _send_pkt(self, pkt, key):
         payload = ""
         for flight in pkt:

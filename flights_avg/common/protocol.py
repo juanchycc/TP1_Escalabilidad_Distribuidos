@@ -22,15 +22,8 @@ class Serializer:
         logging.info(f"payload: {payload}")
         if pkt_type == FLIGHTS_PKT:
             flights = payload.split('\n')
-            flight_list = []
-            for flight in flights:
-                data = flight.split(',')
-                flight_to_process = {}
-                for i in range(len(data)):
-                    flight_to_process[self._filtered_fields[i]] = data[i]
-                flight_list.append(flight_to_process)
-            return
-            self._callback(flight_list)
+
+            self._callback(flights)
 
     # TODO: De nuevo casi todo repetido
     def send_pkt(self, pkt, key):

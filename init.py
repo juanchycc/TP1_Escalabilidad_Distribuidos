@@ -46,7 +46,8 @@ post_handler_text = """  post_handler:
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     links:
       - rabbitmq
     environment:
@@ -67,7 +68,8 @@ flights_filter_plus_3_text = """  flights_filter_plus_3_#:
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     links:
       - rabbitmq
     environment:
@@ -88,7 +90,8 @@ flights_filter_max_text = """  flights_filter_max_#:
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     links:
       - rabbitmq
     environment:
@@ -108,7 +111,8 @@ file_writer_text = """  file_writer:
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     links:
       - rabbitmq
     environment:
@@ -128,7 +132,8 @@ flights_filter_avg = """  flights_filter_avg:
     entrypoint: python3 ./main.py
     restart: on-failure
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     links:
       - rabbitmq
     environment:
@@ -144,8 +149,8 @@ final_text_plus_3 = ""
 for i in range(1, args.q1 + 1):
     final_text_plus_3 = final_text_plus_3 + \
         flights_filter_plus_3_text.replace('#', str(i))
-        
-final_text_plus_3 = final_text_plus_3.replace('&',str(args.q1))
+
+final_text_plus_3 = final_text_plus_3.replace('&', str(args.q1))
 
 final_text_max = ""
 for i in range(1, args.q3 + 1):

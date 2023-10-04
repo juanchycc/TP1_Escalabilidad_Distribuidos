@@ -6,12 +6,6 @@ import logging
 class Middleware:
 
     def __init__(self, port, exchange):
-        # Configure socket to listen to client
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.bind(("", port))
-        self._socket.listen()
-        self._finished = False
-
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -19,6 +13,12 @@ class Middleware:
         self._exchange = exchange
         self._out_channel.exchange_declare(
             exchange=exchange, exchange_type='direct')
+
+        # Configure socket to listen to client
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.bind(("", port))
+        self._socket.listen()
+        self._finished = False
 
     def start_recv(self, callback):
         logging.info('action: waiting_client_connection | result: in_progress')
