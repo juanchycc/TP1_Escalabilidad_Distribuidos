@@ -2,12 +2,16 @@ import logging
 
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
+FLIGHTS_FINISHED_PKT = 3
+
+QUERY_AMOUNT = 4
 
 
 class Serializer:
     def __init__(self, middleware):
         self._middleware = middleware
         self._callback = None
+        self._finished_amount = 0
 
     def run(self, callback):
         self._callback = callback
@@ -16,9 +20,16 @@ class Serializer:
     # TODO: Casi del todo repetido...
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
+        pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
-
-        self._callback(payload.split('\n'))
+        if pkt_type == FLIGHTS_FINISHED_PKT:
+            logging.info(f"Recibo finished pkt")
+            self._finished_amount += 1
+            if self._finished_amount == QUERY_AMOUNT:
+                logging.info(f"Todas las querys terminaron, puedo finalizar")
+                self._middleware.shutdown()
+        else:
+            self._callback(payload.split('\n'))
 
     # TODO: De nuevo casi todo repetido
     def send_pkt(self, pkt):

@@ -8,7 +8,7 @@ AIRPORT_FINISHED_PKT = 4
 
 
 class Serializer:
-    def __init__(self, middleware, fields,num_groups,num_filters):
+    def __init__(self, middleware, fields, num_groups, num_filters):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
@@ -35,7 +35,7 @@ class Serializer:
                 flight_list.append(flight_to_process)
 
             self._callback(flight_list)
-            
+
         if pkt_type == FLIGHTS_FINISHED_PKT:
             # Mando uno por cada key
             logging.info(f"Llego finished pkt: {bytes}")
@@ -43,32 +43,33 @@ class Serializer:
             amount_finished = pkt[3]
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
-                pkt = bytearray([FLIGHTS_FINISHED_PKT,0,4,0])
-                self._middleware.send(pkt,str(1))
-                self._middleware.send(pkt,"") # To file writer
-                
-            else:
-                pkt = bytearray([FLIGHTS_FINISHED_PKT,0,4,amount_finished + 1])
-                logging.info(f"Resending finished packet | amount finished : {amount_finished +1}")
-                self._middleware.resend(pkt)
-                
-            self._middleware.shutdown()
-                
+                pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
+                self._middleware.send(pkt, str(1))
+                self._middleware.send(pkt, "")  # To file writer
 
-    
-    def send_pkt(self,pkt):
+            else:
+                pkt = bytearray(
+                    [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
+                logging.info(
+                    f"Resending finished packet | amount finished : {amount_finished +1}")
+                self._middleware.resend(pkt)
+
+            self._middleware.shutdown()
+
+    def send_pkt(self, pkt):
         if len(pkt) > 0:
             self._send_pkt(pkt, "")
-        
+
         output = {i: [] for i in range(1, self._num_groups + 1)}
         for flight in pkt:
             group = self._get_group(flight)
+            logging.info(f"Flight: {flight}, grupo:{group}")
             output[group].append(flight)
-        
+
         for i in range(1, self._num_groups + 1):  # Envia a cada nodo del filter max
             if len(output[i]) > 0:
                 self._send_pkt(output[i], str(i))
-    
+
     # TODO: De nuevo casi todo repetido
     def _send_pkt(self, pkt, key):
         # logging.info(f"output: {pkt}")
@@ -88,7 +89,7 @@ class Serializer:
             [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
         pkt = pkt_header + payload[:-1].encode('utf-8')
         self._middleware.send(pkt, key)
-        
+
     def _get_group(self, flight):
         first_char = flight[2][0].lower()
         if 'a' <= first_char <= 'z':

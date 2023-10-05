@@ -22,3 +22,7 @@ class Middleware:
         self._in_channel.basic_consume(
             queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
         self._in_channel.start_consuming()
+
+    def shutdown(self):
+        self._in_channel.close()
+        self._connection.close()

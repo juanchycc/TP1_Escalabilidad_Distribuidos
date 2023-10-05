@@ -2,13 +2,15 @@ import logging
 
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
+FLIGHTS_FINISHED_PKT = 3
 
 
 class Serializer:
-    def __init__(self, middleware, fields):
+    def __init__(self, middleware, fields, num_filters):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
+        self._num_filters = num_filters
 
     def run(self, callback):
         self._callback = callback
@@ -32,7 +34,25 @@ class Serializer:
 
             self._callback(flight_list)
 
+        if pkt_type == FLIGHTS_FINISHED_PKT:
+            logging.info(f"Llego finished pkt: {bytes}")
+            pkt = bytearray(bytes[:4])
+            amount_finished = pkt[3]
+            logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
+            if amount_finished + 1 == self._num_filters:
+                pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
+                # Enviar los maxs al file writer
+
+            else:
+                pkt = bytearray(
+                    [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
+                logging.info(
+                    f"Resending finished packet | amount finished : {amount_finished +1}")
+                self._middleware.resend(pkt)
+
+            self._middleware.shutdown()
     # TODO: De nuevo casi todo repetido
+
     def send_pkt(self, pkt):
         # logging.info(f"output: {pkt}")
         payload = ""

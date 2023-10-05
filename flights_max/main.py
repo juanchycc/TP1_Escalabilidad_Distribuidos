@@ -65,13 +65,14 @@ def main():
     initialize_log(config_params["logging_level"])
     fields = config_params["fields"].split(',')
 
-    id = os.environ.get('FLIGHTS_MAX_ID', 1)
+    # read from docker env, default 1
+    num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
+    id = int(os.environ.get('FLIGHTS_MAX_ID', "1"))
+
     middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
                             config_params["out_exchange"], config_params["queue_name"], id)
-    # read from docker env, default 1
-    nodes_amount = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
 
-    serializer = Serializer(middleware, fields)
+    serializer = Serializer(middleware, fields, num_filters)
 
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))
