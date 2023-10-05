@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 
 # list of names of output files
-output_files = ["out_file_q1.csv"]
+output_files = ["out_file_q1.csv", "out_file_q3.csv"]
 
 # create output files
 for o in output_files:

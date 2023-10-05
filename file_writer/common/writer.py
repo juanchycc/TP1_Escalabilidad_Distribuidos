@@ -14,7 +14,6 @@ class Writer:
 
         path = flights[0]
         flights.pop(0)
-
         self._write_fligths(flights, path)
         logging.info(f'action: write | result: finished')
 

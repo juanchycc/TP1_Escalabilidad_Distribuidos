@@ -11,6 +11,7 @@ class Serializer:
         self._callback = None
         self._filtered_fields = fields
         self._num_filters = num_filters
+        self._max = None
 
     def run(self, callback):
         self._callback = callback
@@ -32,7 +33,7 @@ class Serializer:
                     flight_to_process[self._filtered_fields[i]] = data[i]
                 flight_list.append(flight_to_process)
 
-            self._callback(flight_list)
+            self._max = self._callback(flight_list)
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
             logging.info(f"Llego finished pkt: {bytes}")
@@ -41,7 +42,6 @@ class Serializer:
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                # Enviar los maxs al file writer
 
             else:
                 pkt = bytearray(
@@ -50,21 +50,26 @@ class Serializer:
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
 
+            # Enviar los maxs al file writer
+            if not self._max is None:
+                self.send_pkt(self._max)
+
             self._middleware.shutdown()
     # TODO: De nuevo casi todo repetido
 
     def send_pkt(self, pkt):
-        # logging.info(f"output: {pkt}")
-        payload = ""
-        for flight in pkt:
-            last_field = len(flight) - 1
-            for i, field in enumerate(flight):
-                payload += field
-                if i != last_field:
-                    payload += ','
-            payload += '\n'
+
+        payload = "out_file_q3.csv\n"  # TODO: no hardcodear
+        for value in pkt.values():
+            for flight in value:
+                last_field = len(flight) - 1
+                for i, field in enumerate(flight):
+                    payload += flight[field]
+                    if i != last_field:
+                        payload += ','
+                payload += '\n'
         # El -1 remueve el ultimo caracter
-        logging.debug(f"Payload: {payload[:-1]}")
+        logging.info(f"Payload: {payload}")
 
         pkt_size = 3 + len(payload[:-1])
         pkt_header = bytearray(

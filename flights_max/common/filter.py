@@ -45,7 +45,7 @@ class FilterFlightsMax:
                     self._calculated_max[journey].append(
                         self._create_new_max(flight, journey))
 
-        logging.info(f"Max: {self._calculated_max} ")
+        return self._calculated_max
 
     def _create_new_max(self, flight, journey):
         new_max = {field: flight[field] for field in self._filtered_fields}
