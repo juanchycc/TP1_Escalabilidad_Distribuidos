@@ -29,13 +29,10 @@ def initialize_config():
             'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
         config_params["out_exchange"] = os.getenv(
             'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
-        config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
         config_params["filter_fields"] = os.getenv(
             'FILTER_FIELDS', config["DEFAULT"]["FILTER_FIELDS"])
-        config_params["queue_name"] = os.getenv(
-            'QUEUE_NAME', config["DEFAULT"]["QUEUE_NAME"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -67,10 +64,10 @@ def main():
 
     # read from docker env, default 1
     num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
-    id = int(os.environ.get('FLIGHTS_MAX_ID', "1"))
+    id = os.environ.get('FLIGHTS_MAX_ID', "1")
 
-    middleware = Middleware(config_params["in_exchange"], config_params["key_1"],
-                            config_params["out_exchange"], config_params["queue_name"], id)
+    middleware = Middleware(config_params["in_exchange"],
+                            config_params["out_exchange"], id)
 
     serializer = Serializer(middleware, fields, num_filters)
 

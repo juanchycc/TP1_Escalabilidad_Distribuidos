@@ -26,10 +26,8 @@ def initialize_config():
     try:
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
-        config_params["in_exchange_q1"] = os.getenv(
-            'IN_EXCHANGE_Q1', config["DEFAULT"]["IN_EXCHANGE_Q1"])
-        config_params["out_file_q1"] = os.getenv(
-            'OUT_FILE_Q1', config["DEFAULT"]["OUT_FILE_Q1"])
+        config_params["in_exchange"] = os.getenv(
+            'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -59,9 +57,9 @@ def main():
     initialize_log(config_params["logging_level"])
 
     middleware = Middleware(
-        config_params["in_exchange_q1"])
+        config_params["in_exchange"])
     serializer = Serializer(middleware)
-    writer = Writer(serializer, config_params["out_file_q1"])
+    writer = Writer(serializer)
     writer.run()
 
 

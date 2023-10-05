@@ -11,7 +11,7 @@ class FilterFlightsPlusThree:
 
     def filter_fligths(self, flights):
         output = []
-        
+
         logging.debug(f"Flights {flights} ")
 
         for flight in flights:
@@ -23,8 +23,5 @@ class FilterFlightsPlusThree:
                 filtered_flight.append("||".join(stopovers))
                 output.append(filtered_flight)
         logging.debug(f"Output {output} ")
-        # Escribe todo al writer
-        self._serializer.send_pkt(output)
-        
 
-    
+        self._serializer.send_pkt(output)
