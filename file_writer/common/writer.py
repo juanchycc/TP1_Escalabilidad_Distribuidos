@@ -18,6 +18,6 @@ class Writer:
         logging.info(f'action: write | result: finished')
 
     def _write_fligths(self, flights, path):
-        with open(path, 'a') as file:
+        with open("./out_files/" + path, 'a') as file:
             for f in flights:
                 file.write(f + '\n')

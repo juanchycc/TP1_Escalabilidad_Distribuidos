@@ -121,7 +121,7 @@ file_writer_text = """  file_writer:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./file_writer/config.ini:/config.ini
-      - ./file_writer/out_file_q1.csv:/out_file_q1.csv
+      - ./file_writer/:/out_files/
 
 """
 
