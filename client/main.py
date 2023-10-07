@@ -22,8 +22,10 @@ def initialize_config():
             os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["batch_size"] = int(os.getenv(
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
-        config_params["filename"] = os.getenv(
-            'FILENAME', config["DEFAULT"]["FILENAME"])
+        config_params["flights_filename"] = os.getenv(
+            'flights_filename', config["DEFAULT"]["FLIGHTS_FILENAME"])
+        config_params["airports_filename"] = os.getenv(
+            'airports_filename', config["DEFAULT"]["AIRPORTS_FILENAME"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting client".format(e))
@@ -55,14 +57,16 @@ def main():
     port = config_params["port"]
     ip = config_params["ip"]
     batch_size = config_params['batch_size']
-    filename = config_params['filename']
+    flights_filename = config_params['flights_filename']
+    airports_filename = config_params['airports_filename']
 
     socket = Client_Socket(ip, port)
 
     if socket.connect():
         protocol = Client_Protocol(socket, batch_size)
-        reader = Reader(protocol, filename, batch_size)
-        reader.read_flights()
+        reader = Reader(protocol, batch_size)
+        reader.read("read_airports",airports_filename)
+        reader.read("read_flights",flights_filename)
     else:
         print("No se pudo establecer la conexión con el servidor")
 

@@ -30,6 +30,7 @@ def initialize_config():
         config_params["exchange"] = os.getenv(
             'EXCHANGE', config["DEFAULT"]["EXCHANGE"])
         config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])
+        config_params["key_2"] = os.getenv('KEY_2', config["DEFAULT"]["KEY_2"])
         config_params["key_avg"] = os.getenv(
             'KEY_AVG', config["DEFAULT"]["KEY_AVG"])
         config_params["key_4"] = os.getenv('KEY_4', config["DEFAULT"]["KEY_4"])
@@ -64,7 +65,7 @@ def main():
     initialize_log(config_params["logging_level"])
     middleware = Middleware(
         config_params["port"], config_params["exchange"], config_params["batch_size"])
-    keys = [config_params["key_1"], "",
+    keys = [config_params["key_1"], config_params["key_2"],
             config_params["key_avg"], config_params["key_4"]]
     serializer = Serializer(middleware, keys)
     filter = FilterFields(serializer)

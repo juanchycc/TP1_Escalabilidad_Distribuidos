@@ -5,6 +5,7 @@ HEADERS_FLIGHTS_PKT = 1
 AIRPORT_PKT = 2
 FLIGHTS_FINISHED_PKT = 3
 AIRPORT_FINISHED_PKT = 4
+HEADERS_AIRPORT_PKT = 5
 
 
 class Client_Protocol:
@@ -35,7 +36,19 @@ class Client_Protocol:
     def send_flights_packet(self, batch):
         self._send_packet(batch, FLIGHTS_PKT)
         
+    def send_airports_packet(self,batch):
+        self._send_packet(batch, AIRPORT_PKT)
+        
+    def send_header_airports_packet(self, batch):
+        self._send_packet(batch, HEADERS_AIRPORT_PKT)
+
+        
     def send_finished_flights_pkt(self):
         logging.info("Sending finished flights pkt")
         padding_length = self.batch_size - 3
         self.socket.send_packet(bytearray([FLIGHTS_FINISHED_PKT,0,3]) + (b'\x00'*padding_length) )
+        
+    def send_finished_airports_pkt(self):
+        logging.info("Sending airports flights pkt")
+        padding_length = self.batch_size - 3
+        self.socket.send_packet(bytearray([AIRPORT_FINISHED_PKT,0,3]) + (b'\x00'*padding_length) )

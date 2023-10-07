@@ -9,9 +9,11 @@ class FilterFields:
         self._fields_for_avg = ["totalFare"]
         self._fields_for_query4 = [
             "legId", "totalFare", "startingAirport", "destinationAirport"]
-
+        self._fields_for_airports = ["Airport Code","Latitude","Longitude"]
+        
+        
     def run(self):
-        self._serializer.run(self.filter_fligths)
+        self._serializer.run(self.filter_fligths,self.filter_airports)
 
     def filter_fligths(self, flights):
         # TODO: Faltan los de la query 2
@@ -32,3 +34,12 @@ class FilterFields:
 
         self._serializer.send_pkt_query_avg(query_avg_output)
         self._serializer.send_pkt_query4(query4_output)
+        
+    def filter_airports(self,airports):
+        output = []
+        logging.info(f"Airports {airports}")
+        
+        for airport in airports:
+            output.append([airport[field] for field in self._fields_for_airports])
+            
+        
