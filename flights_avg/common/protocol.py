@@ -19,7 +19,7 @@ class Serializer:
         bytes = body
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
-        logging.info(f"payload: {payload}")
+        logging.debug(f"payload: {payload}")
         if pkt_type == FLIGHTS_PKT:
             flights = payload.split('\n')
 

@@ -62,8 +62,8 @@ class Serializer:
             pkt.insert(0, ["out_file_q1.csv"])  # TODO: no hardcodear path
 
             self._send_pkt(pkt, "")
+            pkt.pop(0)
 
-        pkt.pop(0)
         output = {i: [] for i in range(1, self._num_groups + 1)}
         for flight in pkt:
             group = self._get_group(flight)

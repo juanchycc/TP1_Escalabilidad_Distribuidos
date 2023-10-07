@@ -21,4 +21,4 @@ class FilterAvg:
             except ValueError:
                 logging.warning(f"Invalid flight value: {flight}")
 
-        logging.info(f"Total {total, cantidad} ")
+        logging.debug(f"Total {total, cantidad} ")

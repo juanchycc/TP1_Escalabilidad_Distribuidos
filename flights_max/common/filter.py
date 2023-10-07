@@ -1,6 +1,6 @@
 import logging
+import isodate
 from datetime import timedelta
-import re
 
 
 class FilterFlightsMax:
@@ -54,9 +54,7 @@ class FilterFlightsMax:
 
     def _compare_duration(self, flight, journey, index):
         duration1 = flight["travelDuration"]
-        hours, minutes = re.findall(r'PT(\d+)H(\d+)M', duration1)[0]
-        time1 = timedelta(hours=int(hours), minutes=int(minutes))
+        time1 = isodate.parse_duration(duration1)
         duration2 = self._calculated_max[journey][index]["travelDuration"]
-        hours, minutes = re.findall(r'PT(\d+)H(\d+)M', duration2)[0]
-        time2 = timedelta(hours=int(hours), minutes=int(minutes))
+        time2 = isodate.parse_duration(duration2)
         return time1 > time2
