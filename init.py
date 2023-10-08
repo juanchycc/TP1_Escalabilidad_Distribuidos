@@ -7,6 +7,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-q1", type=int, help="amount of nodes in the first query")
 parser.add_argument("-q3", type=int, help="amount of nodes in the third query")
 parser.add_argument("-avg", type=int, help="amount of nodes in the avg query")
+# cantidad de nodos en mayor avg filter
+parser.add_argument("-Mavg", type=int, help="amount of nodes in the avg query")
 args = parser.parse_args()
 
 
@@ -210,6 +212,34 @@ flights_join_avg = """  flights_join_avg:
 
 """
 
+flights_mayor_avg = """  flights_mayor_avg_#:
+    container_name: flights_mayor_avg_#
+    build:
+      context: ./flights_mayor_avg
+      dockerfile: Dockerfile
+    image: flights_mayor_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAYOR_AVG_AMOUNT=$
+    volumes:
+      - ./flights_mayor_avg/config.ini:/config.ini
+
+"""
+
+final_text_mayor_avg = ""
+for i in range(1, args.Mavg + 1):
+    final_text_mayor_avg = final_text_mayor_avg + \
+        flights_mayor_avg.replace('#', str(i))
+
+final_text_mayor_avg = final_text_mayor_avg.replace('$', str(args.Mavg))
+
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + airport_fligths_handler_text)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text)
