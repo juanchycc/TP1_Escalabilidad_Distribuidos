@@ -6,29 +6,29 @@ AIRPORT_PKT = 2
 FLIGHTS_FINISHED_PKT = 3
 AIRPORT_FINISHED_PKT = 4
 HEADERS_AIRPORT_PKT = 5
+MAX_PACKET_SIZE = 8000
 
 
 class Serializer:
-    def __init__(self, middleware, keys):
+    def __init__(self, middleware,fligth_fields,airport_fields):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
-        self._flight_fields = None
+        self._flight_fields = fligth_fields
         self._airport_callback = None
-        self._airport_fields = None
-        self._keys = keys
+        self._airport_fields = airport_fields
 
-    def run(self, fligth_callback,airport_callback):
+    def run(self, fligth_callback,airport_callback,airport_finished_callback):
         self._fligth_callback = fligth_callback
         self._airport_callback = airport_callback
+        self._airport_finished_callback = airport_finished_callback
         self._middleware.start_recv(self.bytes_to_pkt)
 
-    def bytes_to_pkt(self, bytes):
+    def bytes_to_pkt(self, ch, method, properties, body):
+        bytes = body
         logging.debug(f"LLegan bytes: {bytes}")
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
-        if pkt_type == HEADERS_FLIGHTS_PKT:
-            self._flight_fields = payload.split(',')
         if pkt_type == FLIGHTS_PKT:
             flights = payload.split('\n')
             flight_list = []
@@ -43,21 +43,16 @@ class Serializer:
             self._fligth_callback(flight_list)
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
-            # Mando uno por cada key
             logging.info(f"Llego finished flights pkt")
             pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-            for key in self._keys:
-                logging.info(f"Sending finished pkt | key: {key}")
-                self._middleware.send(pkt, key)
+            self._middleware.send(pkt)
                 
-        if pkt_type == HEADERS_AIRPORT_PKT:
-            self._airport_fields = payload.split(';')
             
         if pkt_type == AIRPORT_PKT:
             airports = payload.split('\n')
             airports_list = []
             for airport in airports:
-                data = airport.split(';')
+                data = airport.split(',')
                 airport_to_process = {}
                 for i in range(len(data)):
                     airport_to_process[self._airport_fields[i]] = data[i]
@@ -68,23 +63,14 @@ class Serializer:
             
         if pkt_type == AIRPORT_FINISHED_PKT:
             logging.info(f"Llego finished airports pkt")
-            pkt = bytearray([AIRPORT_FINISHED_PKT, 0, 4, 0])
-            self._middleware.send(pkt, self._keys[1])
+            self._airport_finished_callback()
+            
             
 
-    def send_pkt_query1(self, pkt):
-        self._send_pkt(pkt, self._keys[0],FLIGHTS_PKT)
+    def send_pkt(self,pkt):
+        self._send_pkt(pkt,FLIGHTS_PKT)
 
-    def send_pkt_query_avg(self, pkt):
-        self._send_pkt(pkt, self._keys[2],FLIGHTS_PKT)
-
-    def send_pkt_query4(self, pkt):
-        self._send_pkt(pkt, self._keys[3],FLIGHTS_PKT)
-        
-    def send_pkt_query2(self,pkt):
-        self._send_pkt(pkt,self._keys[1],AIRPORT_PKT)
-
-    def _send_pkt(self, pkt, key,header):
+    def _send_pkt(self, pkt, header):
         payload = ""
         for flight in pkt:
             last_field = len(flight) - 1
@@ -93,11 +79,12 @@ class Serializer:
                 if i != last_field:
                     payload += ','
             payload += '\n'
-    
-        logging.debug(f"Payload: {payload[:-1]}")
+            if len(payload) > MAX_PACKET_SIZE:               
 
-        pkt_size = 3 + len(payload[:-1])
-        pkt_header = bytearray(
-            [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
-        pkt = pkt_header + payload[:-1].encode('utf-8')
-        self._middleware.send(pkt, key)
+                logging.info(f"Payload: {payload[:-1]}")
+                # Chequear len de paquete > 0
+                pkt_size = 3 + len(payload[:-1])
+                pkt_header = bytearray(
+                    [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
+                pkt = pkt_header + payload[:-1].encode('utf-8')
+                self._middleware.send(pkt)

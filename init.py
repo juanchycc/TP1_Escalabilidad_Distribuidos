@@ -125,6 +125,25 @@ file_writer_text = """  file_writer:
 
 """
 
+airport_fligths_handler_text = """  airport_fligths_handler:
+    container_name: airport_fligths_handler
+    build:
+      context: ./airport_fligths_handler
+      dockerfile: Dockerfile
+    image: airport_fligths_handler:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    
+
+"""
+
 flights_filter_avg = """  flights_filter_avg_#:
     container_name: flights_avg_#
     build:
@@ -170,4 +189,4 @@ for i in range(1, args.avg + 1):
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + airport_fligths_handler_text)
