@@ -17,6 +17,7 @@ class Middleware:
         self._in_queue_name = result.method.queue
         self._in_channel.queue_bind(
             exchange=in_exchange, queue=self._in_queue_name, routing_key=key)
+        self._key = key
 
         # Configure exit queue
         self._connection = pika.BlockingConnection(
@@ -34,3 +35,12 @@ class Middleware:
     def send(self, bytes, key):
         self._out_channel.basic_publish(
             exchange=self._out_exchange, routing_key=key, body=bytes)
+
+    def resend(self, bytes):
+        self._in_channel.basic_publish(
+            exchange=self._in_exchange, routing_key=self._key, body=bytes)
+
+    def shutdown(self):
+        self._in_channel.close()
+        self._out_channel.close()
+        self._connection.close()

@@ -159,10 +159,13 @@ flights_filter_avg = """  flights_filter_avg_#:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_AVG_AMOUNT=$
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
 """
+
+flights_filter_avg = flights_filter_avg.replace('$', str(args.avg))
 
 flights_filter_plus_3_text = flights_filter_plus_3_text.replace(
     '$', str(args.q3))
