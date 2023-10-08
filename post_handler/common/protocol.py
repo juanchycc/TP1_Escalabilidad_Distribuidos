@@ -26,7 +26,7 @@ class Serializer:
     def bytes_to_pkt(self, bytes):
         logging.debug(f"LLegan bytes: {bytes}")
         pkt_type = bytes[0]
-        payload = bytearray(bytes[3:]).decode('utf-8')
+        payload = bytearray(bytes[3:]).decode('utf-8-sig')
         if pkt_type == HEADERS_FLIGHTS_PKT:
             self._flight_fields = payload.split(',')
         if pkt_type == FLIGHTS_PKT:
