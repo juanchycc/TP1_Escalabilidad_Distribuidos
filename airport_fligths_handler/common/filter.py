@@ -15,14 +15,14 @@ class AirportHandler:
     def recv_fligths(self, flights):
                 
 
-        logging.info(f"Flights {flights} ")
+        logging.debug(f"Flights {flights} ")
         output = []
         for fligth in flights:
             if fligth["startingAirport"] in self._airports and fligth["destinationAirport"] in self._airports:
                 output.append(self._append_coordinates(fligth))
             else:
                 self._fligths.append(fligth)
-                
+
         self._serializer.send_pkt(output)
 
         
@@ -36,7 +36,8 @@ class AirportHandler:
         output = []
         for fligth in self._fligths:
             output.append(self._append_coordinates(fligth))
-        self._serializer.send_pkt(output)        
+        if len(output) != 0:
+            self._serializer.send_pkt(output)        
                 
     
     def _append_coordinates(self,fligth):

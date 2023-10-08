@@ -9,11 +9,12 @@ parser.add_argument("-q3", type=int, help="amount of nodes in the third query")
 parser.add_argument("-avg", type=int, help="amount of nodes in the avg query")
 # cantidad de nodos en mayor avg filter
 parser.add_argument("-Mavg", type=int, help="amount of nodes in the avg query")
+parser.add_argument("-q2", type=int, help="amount of nodes in the second query")
 args = parser.parse_args()
 
 
 # list of names of output files
-output_files = ["out_file_q1.csv", "out_file_q3.csv"]
+output_files = ["out_file_q1.csv","out_file_q2.csv","out_file_q3.csv"]
 
 # create output files
 for o in output_files:
@@ -167,6 +168,33 @@ flights_filter_avg = """  flights_filter_avg_#:
 
 """
 
+flights_filter_distance_text = """  flights_filter_distance_#:
+    container_name: flights_filter_distance_#
+    build:
+      context: ./flights_filter_distance
+      dockerfile: Dockerfile
+    image: flights_filter_distance:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=$ 
+    volumes:
+      - ./flights_filter_distance/config.ini:/config.ini
+
+"""
+
+flights_filter_distance_text = flights_filter_distance_text.replace('$', str(args.q2))
+final_text_distance = ""
+for i in range(1, args.q2 + 1):
+    final_text_distance = final_text_distance + \
+        flights_filter_distance_text.replace('#', str(i))
+
 flights_filter_avg = flights_filter_avg.replace('$', str(args.avg))
 
 flights_filter_plus_3_text = flights_filter_plus_3_text.replace(
@@ -242,4 +270,4 @@ final_text_mayor_avg = final_text_mayor_avg.replace('$', str(args.Mavg))
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text + final_text_distance)

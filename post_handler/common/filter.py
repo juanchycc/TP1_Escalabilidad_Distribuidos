@@ -47,6 +47,6 @@ class FilterFields:
         for airport in airports:
             output.append([airport[field] for field in self._fields_for_airports])
             
-        self._serializer.send_pkt_query2(output)
+        self._serializer.send_pkt_airport(output)
             
         
