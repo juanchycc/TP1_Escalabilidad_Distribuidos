@@ -82,6 +82,9 @@ class Serializer:
         self._send_pkt(pkt, self._keys[3],FLIGHTS_PKT)
         
     def send_pkt_query2(self,pkt):
+        self._send_pkt(pkt,self._keys[1],FLIGHTS_PKT)
+        
+    def send_pkt_airport(self,pkt):
         self._send_pkt(pkt,self._keys[1],AIRPORT_PKT)
 
     def _send_pkt(self, pkt, key,header):
