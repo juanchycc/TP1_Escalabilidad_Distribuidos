@@ -30,26 +30,12 @@ class Serializer:
             logging.info(f"Llego finished pkt: {bytes}")
             avg = self._callback(0, 0, True)
             logging.info(f"Avg Calculado: {avg}")
+            self.send_pkt(str(avg))
             self._middleware.shutdown()
 
     # TODO: De nuevo casi todo repetido
 
     def send_pkt(self, pkt):
 
-        payload = "out_file_q3.csv\n"  # TODO: no hardcodear
-        for value in pkt.values():
-            for flight in value:
-                last_field = len(flight) - 1
-                for i, field in enumerate(flight):
-                    payload += flight[field]
-                    if i != last_field:
-                        payload += ','
-                payload += '\n'
-        # El -1 remueve el ultimo caracter
-        logging.info(f"Payload: {payload}")
-
-        pkt_size = 3 + len(payload[:-1])
-        pkt_header = bytearray(
-            [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
-        pkt = pkt_header + payload[:-1].encode('utf-8')
+        pkt = pkt.encode('utf-8')
         self._middleware.send(pkt)
