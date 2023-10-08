@@ -51,18 +51,11 @@ class Serializer:
     # TODO: De nuevo casi todo repetido
     def send_pkt(self, pkt, key):
         # logging.info(f"output: {pkt}")
-        payload = ""
-        for flight in pkt:
-            last_field = len(flight) - 1
-            for i, field in enumerate(flight):
-                payload += field
-                if i != last_field:
-                    payload += ','
-            payload += '\n'
-        # El -1 remueve el ultimo caracter
-        logging.debug(f"Payload: {payload[:-1]}")
+        payload = str(pkt[0]) + ',' + str(pkt[1]) + '\n'
 
-        pkt_size = 3 + len(payload[:-1])
+        logging.info(f"Payload: {payload}")
+
+        pkt_size = 3 + len(payload)
         pkt_header = bytearray(
             [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
         pkt = pkt_header + payload[:-1].encode('utf-8')

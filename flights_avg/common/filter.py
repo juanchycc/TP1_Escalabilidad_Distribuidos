@@ -22,3 +22,5 @@ class FilterAvg:
                 logging.warning(f"Invalid flight value: {flight}")
 
         logging.debug(f"Total {total, cantidad} ")
+
+        self._serializer.send_pkt((total, cantidad), "")

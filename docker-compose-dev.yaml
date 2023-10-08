@@ -248,6 +248,24 @@ services:
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
+  flights_join_avg:
+    container_name: flights_join_avg
+    build:
+      context: ./join_avg
+      dockerfile: Dockerfile
+    image: join_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./join_avg/config.ini:/config.ini
+
   airport_fligths_handler:
     container_name: airport_fligths_handler
     build:

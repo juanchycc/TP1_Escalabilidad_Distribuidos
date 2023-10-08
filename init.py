@@ -190,6 +190,26 @@ for i in range(1, args.avg + 1):
     final_text_avg = final_text_avg + \
         flights_filter_avg.replace('#', str(i))
 
+flights_join_avg = """  flights_join_avg:
+    container_name: flights_join_avg
+    build:
+      context: ./join_avg
+      dockerfile: Dockerfile
+    image: join_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./join_avg/config.ini:/config.ini
+
+"""
+
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + airport_fligths_handler_text)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + airport_fligths_handler_text)
