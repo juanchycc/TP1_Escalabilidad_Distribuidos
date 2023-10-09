@@ -14,12 +14,13 @@ class Serializer:
 
     def run(self, callback):
         self._callback = callback
-        self._middleware.wait_avg(self.start_protocol)
+        self._middleware.wait_avg(self.start_protocol, self.bytes_to_pkt)
 
     def start_protocol(self, ch, method, properties, body):
         bytes = body
         logging.info(f"Recibo AVG: {bytearray(bytes).decode('utf-8')}")
-        self._middleware.start_recv(self.bytes_to_pkt)
+        # self._middleware.start_recv(self.bytes_to_pkt)
+        self._middleware.close_avg()
 
     # TODO: Casi del todo repetido...
     def bytes_to_pkt(self, ch, method, properties, body):

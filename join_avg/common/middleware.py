@@ -33,7 +33,7 @@ class Middleware:
 
     def send(self, bytes):
         self._out_channel.basic_publish(
-            exchange=self._out_exchange, routing_key='avg', body=bytes)
+            exchange=self._out_exchange, routing_key='', body=bytes)
 
     def shutdown(self):
         self._in_channel.close()
