@@ -75,4 +75,4 @@ class Serializer:
         pkt_header = bytearray(
             [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
         pkt = pkt_header + payload[:-1].encode('utf-8')
-        self._middleware.send(pkt)
+        self._middleware.send(pkt,'')

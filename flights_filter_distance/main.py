@@ -2,7 +2,7 @@ import os
 import logging
 from configparser import ConfigParser
 from common.filter import FilterFlightsDistance
-from common.middleware import Middleware
+from utils.base_middleware import BaseMiddleware
 from common.protocol import Serializer
 
 
@@ -62,7 +62,7 @@ def main():
     initialize_log(config_params["logging_level"])
 
     fields = config_params["fields"].split(',')
-    middleware = Middleware(config_params["in_exchange"], '',
+    middleware = BaseMiddleware(config_params["in_exchange"], '',
                             config_params["out_exchange"], config_params["queue_name"])
     
     

@@ -50,7 +50,7 @@ class Serializer:
             if self._airports_ended:
                 logging.info("Sending finisehd pkt 1")
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                self._middleware.send(pkt)
+                self._middleware.send(pkt,'')
                 self._middleware.shutdown()
                 
             
@@ -74,7 +74,7 @@ class Serializer:
             if self._flight_ended:
                 logging.info("Sending finisehd pkt 2")
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                self._middleware.send(pkt)
+                self._middleware.send(pkt,'')
                 self._middleware.shutdown()    
             
             
@@ -103,5 +103,5 @@ class Serializer:
                 pkt_header = bytearray(
                     [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
                 pkt = pkt_header + payload[:-1].encode('utf-8')
-                self._middleware.send(pkt)
+                self._middleware.send(pkt,'')
                 payload = ""

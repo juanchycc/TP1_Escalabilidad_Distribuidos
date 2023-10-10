@@ -58,6 +58,7 @@ post_handler_text = """  post_handler:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./post_handler/config.ini:/config.ini
+      - ./utils:/utils
     ports:
       - 12345:12345
 
@@ -82,6 +83,7 @@ flights_filter_plus_3_text = """  flights_filter_plus_3_#:
       - FLIGHTS_MAX_AMOUNT=$
     volumes:
       - ./flights_filter/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
@@ -104,6 +106,7 @@ flights_filter_max_text = """  flights_filter_max_#:
       - FLIGHTS_MAX_AMOUNT=$
     volumes:
       - ./flights_max/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
@@ -143,6 +146,8 @@ airport_fligths_handler_text = """  airport_fligths_handler:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+    volumes:
+      - ./utils:/utils
     
 
 """
@@ -165,6 +170,7 @@ flights_filter_avg = """  flights_filter_avg_#:
       - FLIGHTS_FILTER_AVG_AMOUNT=$
     volumes:
       - ./flights_avg/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
@@ -186,6 +192,7 @@ flights_filter_distance_text = """  flights_filter_distance_#:
       - FLIGHTS_FILTER_DISTANCE_AMOUNT=$ 
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
@@ -237,6 +244,7 @@ flights_join_avg = """  flights_join_avg:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./join_avg/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
@@ -258,6 +266,7 @@ flights_mayor_avg = """  flights_mayor_avg_#:
       - FLIGHTS_MAYOR_AVG_AMOUNT=$
     volumes:
       - ./flights_mayor_avg/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
