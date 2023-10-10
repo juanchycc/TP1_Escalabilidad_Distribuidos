@@ -9,12 +9,14 @@ parser.add_argument("-q3", type=int, help="amount of nodes in the third query")
 parser.add_argument("-avg", type=int, help="amount of nodes in the avg query")
 # cantidad de nodos en mayor avg filter
 parser.add_argument("-Mavg", type=int, help="amount of nodes in the avg query")
-parser.add_argument("-q2", type=int, help="amount of nodes in the second query")
+parser.add_argument("-q4", type=int, help="amount of nodes in the avg query")
+parser.add_argument(
+    "-q2", type=int, help="amount of nodes in the second query")
 args = parser.parse_args()
 
 
 # list of names of output files
-output_files = ["out_file_q1.csv","out_file_q2.csv","out_file_q3.csv"]
+output_files = ["out_file_q1.csv", "out_file_q2.csv", "out_file_q3.csv"]
 
 # create output files
 for o in output_files:
@@ -189,7 +191,8 @@ flights_filter_distance_text = """  flights_filter_distance_#:
 
 """
 
-flights_filter_distance_text = flights_filter_distance_text.replace('$', str(args.q2))
+flights_filter_distance_text = flights_filter_distance_text.replace(
+    '$', str(args.q2))
 final_text_distance = ""
 for i in range(1, args.q2 + 1):
     final_text_distance = final_text_distance + \
@@ -256,6 +259,7 @@ flights_mayor_avg = """  flights_mayor_avg_#:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_MAYOR_AVG_AMOUNT=$
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=&
     volumes:
       - ./flights_mayor_avg/config.ini:/config.ini
 
@@ -267,7 +271,34 @@ for i in range(1, args.Mavg + 1):
         flights_mayor_avg.replace('#', str(i))
 
 final_text_mayor_avg = final_text_mayor_avg.replace('$', str(args.Mavg))
+final_text_mayor_avg = final_text_mayor_avg.replace('&', str(args.q4))
+
+flights_avg_by_journey = """  flights_avg_by_journey_#:
+    container_name: flights_avg_by_journey_#
+    build:
+      context: ./flights_avg_by_journey
+      dockerfile: Dockerfile
+    image: flights_avg_by_journey:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_AVG_JOURNEY_ID=#
+    volumes:
+      - ./flights_avg_by_journey/config.ini:/config.ini
+
+"""
+
+final_text_flights_avg_by_journey = ""
+for i in range(1, args.q4 + 1):
+    final_text_flights_avg_by_journey = final_text_flights_avg_by_journey + \
+        flights_avg_by_journey.replace('#', str(i))
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text + final_text_distance)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text + final_text_distance + final_text_flights_avg_by_journey)

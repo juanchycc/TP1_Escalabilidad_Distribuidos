@@ -66,7 +66,8 @@ def main():
 
     fields = config_params["fields"].split(',')
     num_filters = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
-    serializer = Serializer(middleware, fields, num_filters)
+    num_groups = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
+    serializer = Serializer(middleware, fields, num_filters, num_groups)
 
     filter = FilterMayorAvg(
         serializer)

@@ -16,7 +16,7 @@ class Middleware:
         self._channel_avg, self._queue_avg = connect_exchange(self._connection, in_avg_exchange,
                                                               '', '')
         self._channel_flight, self._queue_flight = connect_exchange(self._connection, in_flights_exchange,
-                                                                    '', '')
+                                                                    in_flights_exchange, '')
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -40,9 +40,9 @@ class Middleware:
             queue=self._queue_flight, on_message_callback=callback, auto_ack=True)
         self._channel_flight.start_consuming()
 
-    def send(self, bytes):
+    def send(self, bytes, key):
         self._out_channel.basic_publish(
-            exchange=self._out_exchange, routing_key='', body=bytes)
+            exchange=self._out_exchange, routing_key=key, body=bytes)
 
     def shutdown(self):
         self._channel_flight.close()

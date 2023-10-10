@@ -7,12 +7,10 @@ MAX_PACKET_SIZE = 8000
 
 
 class Serializer:
-    def __init__(self, middleware, fields, num_filters):
+    def __init__(self, middleware, fields):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
-        self._flights_received = []
-        self._num_filters = num_filters
 
     def run(self, callback):
         self._callback = callback
@@ -23,15 +21,15 @@ class Serializer:
         bytes = body
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
-        logging.debug(f"payload: {payload}")
+        logging.info(f"payload: {payload}")
+
         if pkt_type == FLIGHTS_PKT:
+
             flights = payload.split('\n')
-            # guarda los vuelos recibidos
-            self._flights_received.extend(flights)
             flight_list = []
             for flight in flights:
                 data = flight.split(',')
-                flight_list.append(data[0])
+                flight_list.append(data)
 
             self._callback(flight_list)
 
@@ -64,7 +62,6 @@ class Serializer:
         pkt_header = bytearray(
             [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
         pkt = pkt_header + payload[:-1].encode('utf-8')
-        self._send_finished_pkt()
         self._middleware.send(pkt, key)
 
     def _send_flights(self):
@@ -82,7 +79,3 @@ class Serializer:
                 [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
             pkt = pkt_header + payload.encode('utf-8')
             self._middleware.send_flights(pkt, "")
-
-    def _send_finished_pkt(self):
-        pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-        self._middleware.send_flights(pkt, "")

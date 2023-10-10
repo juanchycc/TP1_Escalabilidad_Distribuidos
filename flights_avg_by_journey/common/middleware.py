@@ -3,7 +3,7 @@ import pika
 
 class Middleware:
 
-    def __init__(self, in_exchange, key, out_exchange, out_filter_exchange):
+    def __init__(self, in_exchange, out_exchange, in_key):
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
@@ -13,19 +13,19 @@ class Middleware:
         self._in_channel.exchange_declare(
             exchange=in_exchange, exchange_type='direct')
         result = self._in_channel.queue_declare(
-            queue=key, durable=True)
+            queue="", durable=True)
         self._in_queue_name = result.method.queue
         self._in_channel.queue_bind(
-            exchange=in_exchange, queue=self._in_queue_name, routing_key=key)
-        self._key = key
+            exchange=in_exchange, queue=self._in_queue_name, routing_key=in_key
+        )
+
+        self._key = in_key
 
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
         self._out_channel, self._out_exchange = create_out_exchange(
             self._connection, out_exchange)
-        self._out_channel_flights, self._out_exchange_flights = create_out_exchange(
-            self._connection, out_filter_exchange)
 
     def start_recv(self, callback):
         self._in_channel.basic_consume(
@@ -35,10 +35,6 @@ class Middleware:
     def send(self, bytes, key):
         self._out_channel.basic_publish(
             exchange=self._out_exchange, routing_key=key, body=bytes)
-
-    def send_flights(self, bytes, key):
-        self._out_channel_flights.basic_publish(
-            exchange=self._out_exchange_flights, routing_key=key, body=bytes)
 
     def resend(self, bytes):
         self._in_channel.basic_publish(
