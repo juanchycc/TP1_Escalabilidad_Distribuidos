@@ -4,7 +4,7 @@ import logging
 
 class Middleware:
 
-    def __init__(self, in_avg_exchange, in_flights_exchange, out_exchange):
+    def __init__(self, in_avg_exchange, in_flights_exchange, out_exchange, id):
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
@@ -16,7 +16,8 @@ class Middleware:
         self._channel_avg, self._queue_avg = connect_exchange(self._connection, in_avg_exchange,
                                                               '', '')
         self._channel_flight, self._queue_flight = connect_exchange(self._connection, in_flights_exchange,
-                                                                    '', '')
+                                                                    '', str(id))
+        self._id = id
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -40,9 +41,13 @@ class Middleware:
             queue=self._queue_flight, on_message_callback=callback, auto_ack=True)
         self._channel_flight.start_consuming()
 
-    def send(self, bytes):
+    def send(self, bytes, key):
         self._out_channel.basic_publish(
-            exchange=self._out_exchange, routing_key='', body=bytes)
+            exchange=self._out_exchange, routing_key=key, body=bytes)
+
+    def resend(self, bytes):
+        self._channel_flight.basic_publish(
+            exchange=self._in_flights_exchange, routing_key=str(self._id + 1), body=bytes)
 
     def shutdown(self):
         self._channel_flight.close()

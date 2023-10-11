@@ -18,7 +18,7 @@ class Serializer:
         bytes = body
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
-        logging.debug(f"payload: {payload}")
+        logging.info(f"payload: {payload}")
         if pkt_type == FLIGHTS_PKT:
             avg_pkt = payload.strip().split(',')
             total = float(avg_pkt[0])

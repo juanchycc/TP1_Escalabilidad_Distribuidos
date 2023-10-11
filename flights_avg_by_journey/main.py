@@ -1,7 +1,7 @@
 import os
 import logging
 from configparser import ConfigParser
-from common.filter import FilterMayorAvg
+from common.filter import FilterAvg
 from common.middleware import Middleware
 from common.protocol import Serializer
 
@@ -25,12 +25,11 @@ def initialize_config():
     try:
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
-        config_params["in_avg_exchange"] = os.getenv(
-            'IN_AVG_EXCHANGE', config["DEFAULT"]["IN_AVG_EXCHANGE"])
-        config_params["in_flights_exchange"] = os.getenv(
-            'IN_FLIGHTS_EXCHANGE', config["DEFAULT"]["IN_FLIGHTS_EXCHANGE"])
+        config_params["in_exchange"] = os.getenv(
+            'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
         config_params["out_exchange"] = os.getenv(
             'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
+        config_params["key"] = os.getenv('KEY', config["DEFAULT"]["KEY"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
     except KeyError as e:
@@ -61,18 +60,17 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    id = int(os.environ.get('FLIGHTS_MAYOR_AVG_ID', 1))
-    middleware = Middleware(config_params["in_avg_exchange"], config_params["in_flights_exchange"],
+    fields = config_params["fields"].split(',')
+
+    id = int(os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1"))
+
+    middleware = Middleware(config_params["in_exchange"],
                             config_params["out_exchange"], id)
 
-    fields = config_params["fields"].split(',')
-    num_filters = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
-    num_groups = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
+    num_filters = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
+    serializer = Serializer(middleware, fields, num_filters)
 
-    serializer = Serializer(middleware, fields, num_filters, num_groups, id)
-
-    filter = FilterMayorAvg(
-        serializer)
+    filter = FilterAvg(serializer, fields)
     filter.run()
 
 
