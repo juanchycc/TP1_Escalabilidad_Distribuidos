@@ -9,7 +9,8 @@ class Middleware(BaseMiddleware):
         # Configure in queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
-        self._in_channel,self._in_queue_name = self._connect_in_exchange(in_exchange,'',key)       
+        self._in_channel,self._in_queue_name = self._connect_in_exchange(in_exchange,'',key)
+        self._in_exchange = in_exchange       
         self._in_key = key
 
         # Configure exit queues
