@@ -1,14 +1,9 @@
 import logging
-
-FLIGHTS_PKT = 0
-HEADERS_FLIGHTS_PKT = 1
-AIRPORT_PKT = 2
-FLIGHTS_FINISHED_PKT = 3
-AIRPORT_FINISHED_PKT = 4
-HEADERS_AIRPORT_PKT = 5
+from utils.constants import *
+from utils.base_protocol import BaseSerializer
 
 
-class Serializer:
+class Serializer(BaseSerializer):
     def __init__(self, middleware, keys):
         self._middleware = middleware
         self._callback = None
@@ -30,22 +25,12 @@ class Serializer:
         if pkt_type == HEADERS_FLIGHTS_PKT:
             self._flight_fields = payload.split(',')
         if pkt_type == FLIGHTS_PKT:
-            flights = payload.split('\n')
-            flight_list = []
-            for flight in flights:
-                data = flight.split(',')
-                flight_to_process = {}
-                for i in range(len(data)):
-                    flight_to_process[self._flight_fields[i]] = data[i]
-                # logging.info(f"flight_to_process: {flight_to_process}")
-                flight_list.append(flight_to_process)
-
-            self._fligth_callback(flight_list)
+            self._fligth_callback(self._build_flights_or_airports(payload,self._flight_fields,','))
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
             # Mando uno por cada key
             logging.info(f"Llego finished flights pkt")
-            pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
+            pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
             for key in self._keys:
                 logging.info(f"Sending finished pkt | key: {key}")
                 self._middleware.send(pkt, key)
@@ -54,21 +39,11 @@ class Serializer:
             self._airport_fields = payload.split(';')
             
         if pkt_type == AIRPORT_PKT:
-            airports = payload.split('\n')
-            airports_list = []
-            for airport in airports:
-                data = airport.split(';')
-                airport_to_process = {}
-                for i in range(len(data)):
-                    airport_to_process[self._airport_fields[i]] = data[i]
-                # logging.info(f"flight_to_process: {flight_to_process}")
-                airports_list.append(airport_to_process)
-
-            self._airport_callback(airports_list)
+            self._airport_callback(self._build_flights_or_airports(payload,self._airport_fields,';'))
             
         if pkt_type == AIRPORT_FINISHED_PKT:
             logging.info(f"Llego finished airports pkt")
-            pkt = bytearray([AIRPORT_FINISHED_PKT, 0, 4, 0])
+            pkt = self._build_finish_pkt(AIRPORT_FINISHED_PKT)
             self._middleware.send(pkt, self._keys[1])
             
 
@@ -87,20 +62,4 @@ class Serializer:
     def send_pkt_airport(self,pkt):
         self._send_pkt(pkt,self._keys[1],AIRPORT_PKT)
 
-    def _send_pkt(self, pkt, key,header):
-        payload = ""
-        for flight in pkt:
-            last_field = len(flight) - 1
-            for i, field in enumerate(flight):
-                payload += field
-                if i != last_field:
-                    payload += ','
-            payload += '\n'
     
-        logging.debug(f"Payload: {payload[:-1]}")
-
-        pkt_size = 3 + len(payload[:-1])
-        pkt_header = bytearray(
-            [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
-        pkt = pkt_header + payload[:-1].encode('utf-8')
-        self._middleware.send(pkt, key)

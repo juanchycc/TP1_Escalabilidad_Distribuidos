@@ -66,8 +66,8 @@ def main():
     num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
     id = os.environ.get('FLIGHTS_MAX_ID', "1")
 
-    middleware = Middleware(config_params["in_exchange"],
-                            config_params["out_exchange"], id)
+    middleware = Middleware(config_params["in_exchange"],id,
+                            config_params["out_exchange"],'')
 
     serializer = Serializer(middleware, fields, num_filters)
 

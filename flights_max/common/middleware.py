@@ -1,47 +1,10 @@
 import pika
+from utils.base_middleware import BaseMiddleware
 
 
-class Middleware:
 
-    def __init__(self, in_exchange, out_exchange, in_key):
-
-        # Configure in queue
-        self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
-        self._in_channel = self._connection.channel()
-        self._in_exchange = in_exchange
-        self._in_channel.exchange_declare(
-            exchange=in_exchange, exchange_type='direct')
-        result = self._in_channel.queue_declare(
-            queue='', durable=True)
-        self._in_queue_name = result.method.queue
-        self._in_channel.queue_bind(
-            exchange=in_exchange, queue=self._in_queue_name, routing_key=in_key)
-
-        # Configure exit queue
-        self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
-        self._out_channel = self._connection.channel()
-        self._out_exchange = out_exchange
-        self._out_channel.exchange_declare(
-            exchange=out_exchange, exchange_type='direct')
-
-        self._key = in_key
-
-    def start_recv(self, callback):
-        self._in_channel.basic_consume(
-            queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
-        self._in_channel.start_consuming()
-
-    def send(self, bytes):
-        self._out_channel.basic_publish(
-            exchange=self._out_exchange, routing_key='', body=bytes)
+class Middleware(BaseMiddleware):
 
     def resend(self, bytes):
         self._in_channel.basic_publish(
-            exchange=self._in_exchange, routing_key=str(int(self._key) + 1), body=bytes)  # suma 1 para enviarlo al siguiente nodo
-
-    def shutdown(self):
-        self._in_channel.close()
-        self._out_channel.close()
-        self._connection.close()
+            exchange=self._in_exchange, routing_key=str(int(self._in_key) + 1), body=bytes)  # suma 1 para enviarlo al siguiente nodo

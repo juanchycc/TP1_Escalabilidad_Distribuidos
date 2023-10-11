@@ -2,7 +2,7 @@ import os
 import logging
 from configparser import ConfigParser
 from common.filter import AirportHandler
-from common.middleware import Middleware
+from utils.base_middleware import BaseMiddleware
 from common.protocol import Serializer
 
 
@@ -65,8 +65,8 @@ def main():
     fligth_fields = config_params["fligth_fields"].split(',')
     airport_fields = config_params["airport_fields"].split(',')
     
-    middleware = Middleware(config_params["in_exchange"], config_params["key_2"],
-                            config_params["out_exchange"])
+    middleware = BaseMiddleware(config_params["in_exchange"], config_params["key_2"],
+                            config_params["out_exchange"],'')
     
     serializer = Serializer(middleware,fligth_fields,airport_fields)
 

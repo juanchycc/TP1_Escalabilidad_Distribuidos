@@ -1,6 +1,6 @@
 import logging
 import isodate
-from datetime import timedelta
+
 
 
 class FilterFlightsMax:
@@ -10,7 +10,7 @@ class FilterFlightsMax:
         self._calculated_max = {}
 
     def run(self):
-        self._serializer.run(self.filter_fligths)
+        self._serializer.run(self.filter_fligths,self.get_maxs)
 
     def filter_fligths(self, flights):
 
@@ -45,7 +45,9 @@ class FilterFlightsMax:
                     self._calculated_max[journey].append(
                         self._create_new_max(flight, journey))
 
-        return self._calculated_max
+    def get_maxs(self):
+        self._serializer.send_pkt(self._calculated_max)
+        
 
     def _create_new_max(self, flight, journey):
         new_max = {field: flight[field] for field in self._filtered_fields}

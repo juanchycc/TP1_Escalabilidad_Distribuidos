@@ -1,18 +1,17 @@
 import pika
 import socket
 import logging
+from utils.base_middleware import BaseMiddleware
 
 
-class Middleware:
+class Middleware(BaseMiddleware):
 
     def __init__(self, port, exchange, batch_size):
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
-        self._out_channel = self._connection.channel()
-        self._exchange = exchange
-        self._out_channel.exchange_declare(
-            exchange=exchange, exchange_type='direct')
+        self._out_channel = self._connect_out_exchange(exchange)
+        self._out_exchange = exchange
 
         # Configure socket to listen to client
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,6 +44,8 @@ class Middleware:
 
             callback(bytes[:size_of_packet])
 
-    def send(self, bytes, routing_key):
-        self._out_channel.basic_publish(
-            exchange=self._exchange, routing_key=routing_key, body=bytes)
+    
+    def shutdown(self):
+        self._socket.close()
+        self._out_channel.close()
+        self._connection.close()
