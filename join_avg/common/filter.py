@@ -8,11 +8,12 @@ class JoinAvg:
         self._flights_amount = 0
 
     def run(self):
-        self._serializer.run(self.calc_avg)
+        self._serializer.run(self.calc_avg,self.get_avg)
 
-    def calc_avg(self, total, amount, finished):
-        if not finished:
-            self._total += total
-            self._flights_amount += amount
-        else:
-            return self._total / self._flights_amount
+    def calc_avg(self, total, amount):
+        self._total += total
+        self._flights_amount += amount
+        
+        
+    def get_avg(self):
+        self._serializer.send_pkt(self._total / self._flights_amount)

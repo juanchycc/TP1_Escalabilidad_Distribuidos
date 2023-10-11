@@ -6,7 +6,7 @@ class BaseMiddleware():
         """Default middleware configuration for a node"""
         # Configure in queue
         self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
+            pika.ConnectionParameters(host='rabbitmq',heartbeat=36000))
         self._in_channel,self._in_queue_name = self._connect_in_exchange(in_exchange,queue_name,in_key)
         self._in_exchange = in_exchange        
         self._in_key = in_key

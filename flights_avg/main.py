@@ -31,6 +31,8 @@ def initialize_config():
             'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
         config_params["out_filter_exchange"] = os.getenv(
             'OUT_FILTER_EXCHANGE', config["DEFAULT"]["OUT_FILTER_EXCHANGE"])
+        config_params["queue_name"] = os.getenv(
+            'QUEUE_NAME', config["DEFAULT"]["QUEUE_NAME"])
         config_params["key"] = os.getenv('KEY', config["DEFAULT"]["KEY"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
@@ -64,7 +66,7 @@ def main():
 
     fields = config_params["fields"].split(',')
     middleware = Middleware(config_params["in_exchange"], config_params["key"],
-                            config_params["out_exchange"], config_params["out_filter_exchange"])
+                            config_params["out_exchange"], config_params["out_filter_exchange"],config_params["queue_name"])
     num_filters = int(os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT', 1))
     num_groups = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
     serializer = Serializer(middleware, fields, num_filters, num_groups)

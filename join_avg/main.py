@@ -57,8 +57,8 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    middleware = Middleware(config_params["in_exchange"],
-                            config_params["out_exchange"])
+    middleware = Middleware(config_params["in_exchange"],'',
+                            config_params["out_exchange"],'')
 
     serializer = Serializer(middleware)
 

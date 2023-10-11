@@ -91,4 +91,5 @@ class Serializer(BaseSerializer):
 
     def _send_finished_pkt_join(self):
         pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
-        self._middleware.send(pkt, "")
+        logging.info(f"Entra acacacacac")
+        self._middleware.send(pkt,'')

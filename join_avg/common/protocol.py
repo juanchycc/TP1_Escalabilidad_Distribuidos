@@ -1,7 +1,5 @@
 import logging
-
-FLIGHTS_PKT = 0
-FLIGHTS_FINISHED_PKT = 3
+from utils.constants import *
 
 
 class Serializer:
@@ -9,11 +7,12 @@ class Serializer:
         self._middleware = middleware
         self._callback = None
 
-    def run(self, callback):
+    def run(self, callback,get_result_callback):
         self._callback = callback
+        self._get_result_callback = get_result_callback
         self._middleware.start_recv(self.bytes_to_pkt)
 
-    # TODO: Casi del todo repetido...
+    
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
@@ -24,18 +23,17 @@ class Serializer:
             total = float(avg_pkt[0])
             amount = int(avg_pkt[1])
 
-            self._callback(total, amount, False)
+            self._callback(total, amount)
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
             logging.info(f"Llego finished pkt: {bytes}")
-            avg = self._callback(0, 0, True)
-            logging.info(f"Avg Calculado: {avg}")
-            self.send_pkt(str(avg))
+            self._get_result_callback()
             self._middleware.shutdown()
 
-    # TODO: De nuevo casi todo repetido
+    
 
     def send_pkt(self, pkt):
-
+        logging.info(f"Avg Calculado: {pkt}")
+        pkt = str(pkt)    
         pkt = pkt.encode('utf-8')
-        self._middleware.send(pkt)
+        self._middleware.send(pkt,'')
