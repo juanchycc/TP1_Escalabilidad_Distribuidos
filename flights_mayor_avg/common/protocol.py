@@ -30,7 +30,6 @@ class Serializer:
         bytes = body
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
-        logging.info(f"payload: {payload}")
         if pkt_type == FLIGHTS_PKT:
 
             flights = payload.split('\n')
@@ -43,14 +42,15 @@ class Serializer:
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                self._middleware.send(pkt, "")
-
+                self._middleware.send(pkt, str(1))
+                self._middleware.send(pkt, "")  # To file writer
             else:
                 pkt = bytearray(
                     [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
                 logging.info(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
+
             self._middleware.shutdown()
 
     def send_pkt(self, pkt):

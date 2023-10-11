@@ -46,7 +46,7 @@ class Middleware:
 
     def resend(self, bytes):
         self._channel_flight.basic_publish(
-            exchange=self._in_flights_exchange, routing_key='', body=bytes)
+            exchange=self._in_flights_exchange, routing_key="", body=bytes)
 
     def shutdown(self):
         self._channel_flight.close()
