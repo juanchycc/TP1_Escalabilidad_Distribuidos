@@ -42,7 +42,7 @@ class Serializer:
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                # self._middleware.send(pkt, "")
+                self._middleware.send(pkt, "")
 
             else:
                 pkt = bytearray(
@@ -61,10 +61,10 @@ class Serializer:
 
         payload = "out_file_q4.csv\n"  # TODO: no hardcodear
         for key, value in pkt.items():
-            for i, element in enumerate(value):
-                payload += str(element)
-                if i != len(value) - 1:
-                    payload += ","
+            payload += str(key) + ","
+            avg = value[0] / value[1]
+            max = value[2]
+            payload += str(avg) + "," + str(max)
             payload += "\n"
         # El -1 remueve el ultimo caracter
         logging.info(f"Payload: {payload}")

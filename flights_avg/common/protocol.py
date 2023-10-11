@@ -85,7 +85,6 @@ class Serializer:
             pkt = pkt_header + payload.encode('utf-8')
             # Definir aleatoriamente a que nodo se envía:
             nodo_key = random.randint(1, self._num_groups)
-            logging.info(f'mando a: {nodo_key}')
             self._middleware.send_flights(pkt, str(nodo_key))
 
     def _send_finished_pkt(self):

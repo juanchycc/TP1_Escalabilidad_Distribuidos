@@ -8,7 +8,7 @@ class Middleware:
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
+            pika.ConnectionParameters(host='rabbitmq', heartbeat=36000))
 
         self._in_avg_exchange = in_avg_exchange
         self._in_flights_exchange = in_flights_exchange
@@ -20,7 +20,7 @@ class Middleware:
         self._id = id
         # Configure exit queue
         self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
+            pika.ConnectionParameters(host='rabbitmq', heartbeat=36000))
         self._out_channel = self._connection.channel()
         self._out_exchange = out_exchange
         self._out_channel.exchange_declare(

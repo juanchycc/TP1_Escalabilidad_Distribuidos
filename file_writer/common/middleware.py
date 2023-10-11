@@ -7,7 +7,7 @@ class Middleware:
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
+            pika.ConnectionParameters(host='rabbitmq', heartbeat=36000))
         self._in_channel = self._connection.channel()
         self._in_exchange = in_exchange
         self._in_channel.exchange_declare(
