@@ -42,15 +42,16 @@ class Serializer:
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                self._middleware.send(pkt, "")
-
+                self._send_finished_pkt_join()
+                self._send_flights()
+                self._send_finished_pkt()
             else:
                 pkt = bytearray(
                     [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
                 logging.info(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
-            self._send_flights()
+                self._send_flights()
             self._middleware.shutdown()
 
     # TODO: De nuevo casi todo repetido
@@ -64,7 +65,6 @@ class Serializer:
         pkt_header = bytearray(
             [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
         pkt = pkt_header + payload[:-1].encode('utf-8')
-        self._send_finished_pkt()
         self._middleware.send(pkt, key)
 
     def _send_flights(self):
@@ -86,3 +86,7 @@ class Serializer:
     def _send_finished_pkt(self):
         pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
         self._middleware.send_flights(pkt, "")
+
+    def _send_finished_pkt_join(self):
+        pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
+        self._middleware.send(pkt, "")
