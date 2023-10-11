@@ -226,6 +226,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_AVG_AMOUNT=4
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
@@ -245,6 +246,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_AVG_AMOUNT=4
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
@@ -264,6 +266,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_AVG_AMOUNT=4
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
@@ -283,6 +286,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_AVG_AMOUNT=4
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
@@ -319,7 +323,8 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_MAYOR_AVG_AMOUNT=2
+      - FLIGHTS_MAYOR_AVG_ID=1
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
       - FLIGHTS_AVG_JOURNEY_AMOUNT=2
     volumes:
       - ./flights_mayor_avg/config.ini:/config.ini
@@ -339,7 +344,50 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_MAYOR_AVG_AMOUNT=2
+      - FLIGHTS_MAYOR_AVG_ID=2
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=2
+    volumes:
+      - ./flights_mayor_avg/config.ini:/config.ini
+
+  flights_mayor_avg_3:
+    container_name: flights_mayor_avg_3
+    build:
+      context: ./flights_mayor_avg
+      dockerfile: Dockerfile
+    image: flights_mayor_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAYOR_AVG_ID=3
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=2
+    volumes:
+      - ./flights_mayor_avg/config.ini:/config.ini
+
+  flights_mayor_avg_4:
+    container_name: flights_mayor_avg_4
+    build:
+      context: ./flights_mayor_avg
+      dockerfile: Dockerfile
+    image: flights_mayor_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAYOR_AVG_ID=4
+      - FLIGHTS_MAYOR_AVG_AMOUNT=4
       - FLIGHTS_AVG_JOURNEY_AMOUNT=2
     volumes:
       - ./flights_mayor_avg/config.ini:/config.ini
@@ -376,7 +424,64 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_FILTER_DISTANCE_AMOUNT=1 
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=4
+    volumes:
+      - ./flights_filter_distance/config.ini:/config.ini
+
+  flights_filter_distance_2:
+    container_name: flights_filter_distance_2
+    build:
+      context: ./flights_filter_distance
+      dockerfile: Dockerfile
+    image: flights_filter_distance:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=4
+    volumes:
+      - ./flights_filter_distance/config.ini:/config.ini
+
+  flights_filter_distance_3:
+    container_name: flights_filter_distance_3
+    build:
+      context: ./flights_filter_distance
+      dockerfile: Dockerfile
+    image: flights_filter_distance:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=4
+    volumes:
+      - ./flights_filter_distance/config.ini:/config.ini
+
+  flights_filter_distance_4:
+    container_name: flights_filter_distance_4
+    build:
+      context: ./flights_filter_distance
+      dockerfile: Dockerfile
+    image: flights_filter_distance:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=4
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
 
@@ -396,6 +501,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_AVG_JOURNEY_ID=1
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=2
     volumes:
       - ./flights_avg_by_journey/config.ini:/config.ini
 
@@ -415,6 +521,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_AVG_JOURNEY_ID=2
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=2
     volumes:
       - ./flights_avg_by_journey/config.ini:/config.ini
 

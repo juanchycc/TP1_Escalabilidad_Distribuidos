@@ -6,13 +6,14 @@ FLIGHTS_FINISHED_PKT = 3
 
 
 class Serializer:
-    def __init__(self, middleware, fields, num_filters, num_groups):
+    def __init__(self, middleware, fields, num_filters, num_groups, id):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
         self._num_filters = num_filters
-        self._avg = 0
         self._num_groups = num_groups
+        self._avg = 0
+        self._id = id
 
     def run(self, callback):
         self._callback = callback
@@ -42,8 +43,11 @@ class Serializer:
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-                self._middleware.send(pkt, str(1))
-                self._middleware.send(pkt, "")  # To file writer
+
+                if self._id == self._num_filters:
+                    logging.info("Enviando finished packet")
+                    self._middleware.send(pkt, str(1))
+
             else:
                 pkt = bytearray(
                     [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])

@@ -55,7 +55,6 @@ class Serializer:
                 self.send_pkt(self._max)
 
             self._middleware.shutdown()
-    # TODO: De nuevo casi todo repetido
 
     def send_pkt(self, pkt):
 

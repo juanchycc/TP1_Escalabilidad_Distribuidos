@@ -66,7 +66,8 @@ def main():
     middleware = Middleware(config_params["in_exchange"], config_params["key"],
                             config_params["out_exchange"], config_params["out_filter_exchange"])
     num_filters = int(os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT', 1))
-    serializer = Serializer(middleware, fields, num_filters)
+    num_groups = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
+    serializer = Serializer(middleware, fields, num_filters, num_groups)
 
     filter = FilterAvg(serializer, fields)
     filter.run()

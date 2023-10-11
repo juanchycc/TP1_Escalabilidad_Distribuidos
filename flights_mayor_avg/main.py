@@ -61,13 +61,15 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
+    id = int(os.environ.get('FLIGHTS_MAYOR_AVG_ID', 1))
     middleware = Middleware(config_params["in_avg_exchange"], config_params["in_flights_exchange"],
-                            config_params["out_exchange"])
+                            config_params["out_exchange"], id)
 
     fields = config_params["fields"].split(',')
     num_filters = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
     num_groups = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
-    serializer = Serializer(middleware, fields, num_filters, num_groups)
+
+    serializer = Serializer(middleware, fields, num_filters, num_groups, id)
 
     filter = FilterMayorAvg(
         serializer)

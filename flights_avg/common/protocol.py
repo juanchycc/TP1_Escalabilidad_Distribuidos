@@ -1,4 +1,5 @@
 import logging
+import random
 
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
@@ -7,12 +8,13 @@ MAX_PACKET_SIZE = 8000
 
 
 class Serializer:
-    def __init__(self, middleware, fields, num_filters):
+    def __init__(self, middleware, fields, num_filters, num_groups):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
         self._flights_received = []
         self._num_filters = num_filters
+        self._num_groups = num_groups
 
     def run(self, callback):
         self._callback = callback
@@ -81,11 +83,14 @@ class Serializer:
             pkt_header = bytearray(
                 [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
             pkt = pkt_header + payload.encode('utf-8')
-            self._middleware.send_flights(pkt, "")
+            # Definir aleatoriamente a que nodo se envía:
+            nodo_key = random.randint(1, self._num_groups)
+            logging.info(f'mando a: {nodo_key}')
+            self._middleware.send_flights(pkt, str(nodo_key))
 
     def _send_finished_pkt(self):
         pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
-        self._middleware.send_flights(pkt, "")
+        self._middleware.send_flights(pkt, "1")  # Manda siempre primero al 1
 
     def _send_finished_pkt_join(self):
         pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])

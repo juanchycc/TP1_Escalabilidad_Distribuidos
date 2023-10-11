@@ -16,7 +16,8 @@ args = parser.parse_args()
 
 
 # list of names of output files
-output_files = ["out_file_q1.csv", "out_file_q2.csv", "out_file_q3.csv"]
+output_files = ["out_file_q1.csv", "out_file_q2.csv",
+                "out_file_q3.csv", "out_file_q4.csv"]
 
 # create output files
 for o in output_files:
@@ -165,6 +166,7 @@ flights_filter_avg = """  flights_filter_avg_#:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_AVG_AMOUNT=$
+      - FLIGHTS_MAYOR_AVG_AMOUNT=&
     volumes:
       - ./flights_avg/config.ini:/config.ini
 
@@ -185,7 +187,7 @@ flights_filter_distance_text = """  flights_filter_distance_#:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_FILTER_DISTANCE_AMOUNT=$ 
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=$
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
 
@@ -199,6 +201,7 @@ for i in range(1, args.q2 + 1):
         flights_filter_distance_text.replace('#', str(i))
 
 flights_filter_avg = flights_filter_avg.replace('$', str(args.avg))
+flights_filter_avg = flights_filter_avg.replace('&', str(args.Mavg))
 
 flights_filter_plus_3_text = flights_filter_plus_3_text.replace(
     '$', str(args.q3))
@@ -258,6 +261,7 @@ flights_mayor_avg = """  flights_mayor_avg_#:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAYOR_AVG_ID=#
       - FLIGHTS_MAYOR_AVG_AMOUNT=$
       - FLIGHTS_AVG_JOURNEY_AMOUNT=&
     volumes:
@@ -289,6 +293,7 @@ flights_avg_by_journey = """  flights_avg_by_journey_#:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_AVG_JOURNEY_ID=#
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=&
     volumes:
       - ./flights_avg_by_journey/config.ini:/config.ini
 
@@ -298,6 +303,8 @@ final_text_flights_avg_by_journey = ""
 for i in range(1, args.q4 + 1):
     final_text_flights_avg_by_journey = final_text_flights_avg_by_journey + \
         flights_avg_by_journey.replace('#', str(i))
+final_text_flights_avg_by_journey = final_text_flights_avg_by_journey.replace(
+    '&', str(args.q4))
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +

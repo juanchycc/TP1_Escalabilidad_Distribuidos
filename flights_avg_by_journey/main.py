@@ -62,12 +62,13 @@ def main():
 
     fields = config_params["fields"].split(',')
 
-    id = os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1")
+    id = int(os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1"))
 
     middleware = Middleware(config_params["in_exchange"],
                             config_params["out_exchange"], id)
 
-    serializer = Serializer(middleware, fields)
+    num_filters = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
+    serializer = Serializer(middleware, fields, num_filters)
 
     filter = FilterAvg(serializer, fields)
     filter.run()

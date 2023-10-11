@@ -16,7 +16,8 @@ class Middleware:
             queue="", durable=True)
         self._in_queue_name = result.method.queue
         self._in_channel.queue_bind(
-            exchange=in_exchange, queue=self._in_queue_name, routing_key=in_key
+            exchange=in_exchange, queue=self._in_queue_name, routing_key=str(
+                in_key)
         )
 
         self._key = in_key
@@ -38,7 +39,7 @@ class Middleware:
 
     def resend(self, bytes):
         self._in_channel.basic_publish(
-            exchange=self._in_exchange, routing_key=self._key, body=bytes)
+            exchange=self._in_exchange, routing_key=str(self._key + 1), body=bytes)
 
     def shutdown(self):
         self._in_channel.close()
