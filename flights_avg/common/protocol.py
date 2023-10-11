@@ -1,10 +1,6 @@
 import logging
 import random
-
-FLIGHTS_PKT = 0
-HEADERS_FLIGHTS_PKT = 1
-FLIGHTS_FINISHED_PKT = 3
-MAX_PACKET_SIZE = 8000
+from utils.constants import *
 
 
 class Serializer:

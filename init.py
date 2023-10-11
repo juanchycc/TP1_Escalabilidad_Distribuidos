@@ -305,6 +305,7 @@ flights_avg_by_journey = """  flights_avg_by_journey_#:
       - FLIGHTS_AVG_JOURNEY_AMOUNT=&
     volumes:
       - ./flights_avg_by_journey/config.ini:/config.ini
+      - ./utils:/utils
 
 """
 
