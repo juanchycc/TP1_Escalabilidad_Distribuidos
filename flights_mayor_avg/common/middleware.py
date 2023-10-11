@@ -1,8 +1,9 @@
 import pika
 import logging
+from utils.base_middleware import BaseMiddleware
 
 
-class Middleware:
+class Middleware(BaseMiddleware):
 
     def __init__(self, in_avg_exchange, in_flights_exchange, out_exchange, id):
 
@@ -12,11 +13,12 @@ class Middleware:
 
         self._in_avg_exchange = in_avg_exchange
         self._in_flights_exchange = in_flights_exchange
-
-        self._channel_avg, self._queue_avg = connect_exchange(self._connection, in_avg_exchange,
-                                                              '', '')
-        self._channel_flight, self._queue_flight = connect_exchange(self._connection, in_flights_exchange,
-                                                                    '', str(id))
+        self._channel_avg, self._queue_avg = self._connect_in_exchange(in_avg_exchange,'','')
+        self._channel_flight, self._queue_flight = self._connect_in_exchange(in_flights_exchange,'',str(id))
+        # self._channel_avg, self._queue_avg = connect_exchange(self._connection, in_avg_exchange,
+        #                                                       '', '')
+        # self._channel_flight, self._queue_flight = connect_exchange(self._connection, in_flights_exchange,
+        #                                                             '', str(id))
         self._id = id
         # Configure exit queue
         self._connection = pika.BlockingConnection(
@@ -55,15 +57,15 @@ class Middleware:
         self._connection.close()
 
 
-def connect_exchange(connection, key, queue, routing_key):
-    channel = connection.channel()
+# def connect_exchange(connection, key, queue, routing_key):
+#     channel = connection.channel()
 
-    channel.exchange_declare(
-        exchange=key, exchange_type='direct')
+#     channel.exchange_declare(
+#         exchange=key, exchange_type='direct')
 
-    result = channel.queue_declare(
-        queue=queue, durable=True)
-    queue_name = result.method.queue
-    channel.queue_bind(
-        exchange=key, queue=queue_name, routing_key=routing_key)
-    return channel, queue_name
+#     result = channel.queue_declare(
+#         queue=queue, durable=True)
+#     queue_name = result.method.queue
+#     channel.queue_bind(
+#         exchange=key, queue=queue_name, routing_key=routing_key)
+#     return channel, queue_name

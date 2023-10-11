@@ -2,7 +2,7 @@ import os
 import logging
 from configparser import ConfigParser
 from common.filter import JoinAvg
-from common.middleware import Middleware
+from utils.base_middleware import BaseMiddleware
 from common.protocol import Serializer
 
 
@@ -57,7 +57,7 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    middleware = Middleware(config_params["in_exchange"],'',
+    middleware = BaseMiddleware(config_params["in_exchange"],'',
                             config_params["out_exchange"],'')
 
     serializer = Serializer(middleware)

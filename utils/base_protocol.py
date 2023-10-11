@@ -64,8 +64,8 @@ class BaseSerializer():
         pkt = pkt_header + payload[:-1].encode('utf-8')
         self._middleware.send(pkt, key)
     
-    def _get_group(self, flight):
-        first_char = flight[2][0].lower()
+    def _get_group(self, journey):
+        first_char = journey[0].lower()
         if 'a' <= first_char <= 'z':
             # Calcula el grupo utilizando la posición relativa de la letra en el alfabeto
             posicion_letra = ord(first_char) - ord('a')
