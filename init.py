@@ -282,7 +282,7 @@ flights_mayor_avg = """  flights_mayor_avg_#:
       - FLIGHTS_AVG_JOURNEY_AMOUNT=&
     volumes:
       - ./flights_mayor_avg/config.ini:/config.ini
-      - ./utils:/
+      - ./utils:/utils
       - ./middleware:/middleware
 
 """
