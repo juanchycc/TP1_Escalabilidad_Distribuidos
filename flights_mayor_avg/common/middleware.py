@@ -13,9 +13,11 @@ class Middleware(BaseMiddleware):
 
         self._in_avg_exchange = in_avg_exchange
         self._in_flights_exchange = in_flights_exchange
-        self._channel_avg, self._queue_avg = self._connect_in_exchange(in_avg_exchange,'','')
-        self._channel_flight, self._queue_flight = self._connect_in_exchange(in_flights_exchange,'',str(id))
-    
+        self._channel_avg, self._queue_avg = self._connect_in_exchange(
+            in_avg_exchange, '', '')
+        self._channel_flight, self._queue_flight = self._connect_in_exchange(
+            in_flights_exchange, '', str(id))
+
         self._id = id
         # Configure exit queue
         self._connection = pika.BlockingConnection(
@@ -29,7 +31,6 @@ class Middleware(BaseMiddleware):
         self._channel_avg.basic_consume(
             queue=self._queue_avg, on_message_callback=callback, auto_ack=True)
         self._channel_avg.start_consuming()
-        logging.info("SALGO")
         self.start_recv(callback2)
 
     def close_avg(self):
@@ -52,6 +53,3 @@ class Middleware(BaseMiddleware):
         self._channel_flight.close()
         self._out_channel.close()
         self._connection.close()
-
-
-

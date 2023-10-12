@@ -17,21 +17,19 @@ class Serializer:
         self._callback = callback
         self._middleware.start_recv(self.bytes_to_pkt)
 
-    # TODO: Casi del todo repetido...
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
         payload = bytearray(bytes[3:]).decode('utf-8')
         if pkt_type == FLIGHTS_FINISHED_PKT:
-            logging.info(f"Recibo finished pkt")
+            logging.debug(f"Recibo finished pkt")
             self._finished_amount += 1
             if self._finished_amount == QUERY_AMOUNT:
-                logging.info(f"Todas las querys terminaron, puedo finalizar")
+                logging.debug(f"Todas las querys terminaron, puedo finalizar")
                 self._middleware.shutdown()
         else:
             self._callback(payload.split('\n'))
 
-    # TODO: De nuevo casi todo repetido
     def send_pkt(self, pkt):
         # logging.info(f"output: {pkt}")
         payload = ""
@@ -43,7 +41,7 @@ class Serializer:
                     payload += ','
             payload += '\n'
         # El -1 remueve el ultimo caracter
-        logging.info(f"Payload: {payload[:-1]}")
+        logging.debug(f"Payload: {payload[:-1]}")
 
         pkt_size = 3 + len(payload[:-1])
         pkt_header = bytearray(

@@ -14,12 +14,13 @@ class Client_Socket:
             self.client_socket.connect(self.address)
             return True
         except Exception as e:
-            logging.info(f'action: connect | result: connection refused - {e}')
+            logging.debug(
+                f'action: connect | result: connection refused - {e}')
             return False
 
     def send_packet(self, packet):
         if self.client_socket is None:
-            logging.info(
+            logging.debug(
                 f'action: send_packet | result: socket is not connected')
             return
 
@@ -29,9 +30,8 @@ class Client_Socket:
                 sent_bytes = self.client_socket.send(packet)
                 logging.debug(
                     f'action: send_packet | result: packet: {packet}')
-                logging.info(f'action: send_packet | result: in_progress')
+                logging.debug(f'action: send_packet | result: in_progress')
                 # Eliminar los bytes ya enviados
                 packet = packet[sent_bytes:]
             except Exception as e:
                 pass
-                # logging.info(f'Error al enviar mensaje: {str(e)}')

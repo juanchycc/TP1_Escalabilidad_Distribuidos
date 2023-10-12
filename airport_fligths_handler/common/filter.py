@@ -25,7 +25,7 @@ class AirportHandler:
             self._serializer.send_pkt(output)
 
     def recv_airports(self, airports):
-        logging.info(f"Airports: {airports}")
+        logging.debug(f"Airports: {airports}")
         for airport in airports:
             self._airports[airport["Airport Code"]] = {
                 "Latitude": airport["Latitude"], "Longitude": airport["Longitude"]}

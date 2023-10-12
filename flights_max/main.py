@@ -33,6 +33,8 @@ def initialize_config():
             'FIELDS', config["DEFAULT"]["FIELDS"])
         config_params["filter_fields"] = os.getenv(
             'FILTER_FIELDS', config["DEFAULT"]["FILTER_FIELDS"])
+        config_params["outfile"] = os.getenv(
+            'OUTFILE', config["DEFAULT"]["OUTFILE"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -66,10 +68,11 @@ def main():
     num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
     id = os.environ.get('FLIGHTS_MAX_ID', "1")
 
-    middleware = Middleware(config_params["in_exchange"],id,
-                            config_params["out_exchange"],'')
+    middleware = Middleware(config_params["in_exchange"], id,
+                            config_params["out_exchange"], '')
 
-    serializer = Serializer(middleware, fields, num_filters)
+    serializer = Serializer(
+        middleware, fields, num_filters, config_params["outfile"])
 
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))

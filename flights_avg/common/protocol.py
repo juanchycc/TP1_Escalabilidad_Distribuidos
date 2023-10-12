@@ -12,13 +12,12 @@ class Serializer(BaseSerializer):
         self._num_filters = num_filters
         self._num_groups = num_groups
 
-    def run(self, callback,save_flights_callback,get_flights_callback):
+    def run(self, callback, save_flights_callback, get_flights_callback):
         self._callback = callback
         self._save_flights_callback = save_flights_callback
         self._get_flights_callback = get_flights_callback
         self._middleware.start_recv(self.bytes_to_pkt)
 
-    # TODO: Casi del todo repetido...
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
@@ -36,10 +35,11 @@ class Serializer(BaseSerializer):
             self._callback(flight_list)
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
-            logging.info(f"Llego finished pkt: {bytes}")
+            logging.debug(f"Llego finished pkt: {bytes}")
             pkt = bytearray(bytes[:4])
             amount_finished = pkt[3]
-            logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
+            logging.debug(
+                f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
                 self._send_finished_pkt_join()
@@ -48,18 +48,16 @@ class Serializer(BaseSerializer):
             else:
                 pkt = bytearray(
                     [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
-                logging.info(
+                logging.debug(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
                 self._get_flights_callback()
             self._middleware.shutdown()
 
-    # TODO: De nuevo casi todo repetido
     def send_pkt(self, pkt, key):
-        # logging.info(f"output: {pkt}")
         payload = str(pkt[0]) + ',' + str(pkt[1]) + '\n'
 
-        logging.info(f"Payload: {payload}")
+        logging.debug(f"Payload: {payload}")
 
         pkt_size = 3 + len(payload)
         pkt_header = bytearray(
@@ -67,7 +65,7 @@ class Serializer(BaseSerializer):
         pkt = pkt_header + payload[:-1].encode('utf-8')
         self._middleware.send(pkt, key)
 
-    def send_flights(self,flights_received):
+    def send_flights(self, flights_received):
         i = 0
         while i < len(flights_received):
             # Forma un paquete a partir de varias entradas de la lista
@@ -91,5 +89,4 @@ class Serializer(BaseSerializer):
 
     def _send_finished_pkt_join(self):
         pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
-        logging.info(f"Entra acacacacac")
-        self._middleware.send(pkt,'')
+        self._middleware.send(pkt, '')

@@ -19,12 +19,15 @@ class FilterFlightsDistance:
             if flight["totalTravelDistance"] == '':
                 continue
             flight_distance = float(flight["totalTravelDistance"])
-            startCoordinates = (float(flight["startLatitude"]),float(flight["startLongitude"]))
-            destCoordinates = (float(flight["destLatitude"]),float(flight["destLongitude"]))
-            direct_distance = distance.distance(startCoordinates,destCoordinates).miles   
-            if flight_distance  > direct_distance * 4:                
+            startCoordinates = (
+                float(flight["startLatitude"]), float(flight["startLongitude"]))
+            destCoordinates = (
+                float(flight["destLatitude"]), float(flight["destLongitude"]))
+            direct_distance = distance.distance(
+                startCoordinates, destCoordinates).miles
+            if flight_distance > direct_distance * 4:
                 filtered_flight = [flight[field]
-                                   for field in self._filtered_fields] # TODO: revisar campos del output        
+                                   for field in self._filtered_fields]
                 output.append(filtered_flight)
         logging.debug(f"Output {output} ")
 

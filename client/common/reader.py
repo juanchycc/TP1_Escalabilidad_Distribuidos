@@ -7,7 +7,7 @@ class Reader:
         self.protocol = protocol
         self.batch_size = batch_size
 
-    def read(self,action,filename):
+    def read(self, action, filename):
 
         if not os.path.isfile(filename):
             logging.info(
@@ -34,19 +34,19 @@ class Reader:
                     envio_header = True
                     batch = []
                     continue
-                
+
                 size = len(new_line.encode('utf-8'))
                 logging.debug(
                     f'total_read: {total_read}, new_line: {size}')
                 # 3 = header size
                 if total_read + len(new_line.encode('utf-8')) >= self.batch_size - 3:
-                    logging.info(
+                    logging.debug(
                         f'action: {action} | result: batch: {batch}')
                     if action == "read_flights":
                         self.protocol.send_flights_packet(batch)
                     else:
-                        self.protocol.send_airports_packet(batch)    
-                        
+                        self.protocol.send_airports_packet(batch)
+
                     total_read = 0
                     batch = []
 
@@ -57,9 +57,9 @@ class Reader:
                 if action == "read_flights":
                     self.protocol.send_flights_packet(batch)
                 else:
-                    self.protocol.send_airports_packet(batch)      
+                    self.protocol.send_airports_packet(batch)
         if action == "read_flights":
             self.protocol.send_finished_flights_pkt()
         else:
             self.protocol.send_finished_airports_pkt()
-        logging.info(f'action: {action} | result: done')
+        logging.debug(f'action: {action} | result: done')

@@ -44,7 +44,6 @@ class Middleware(BaseMiddleware):
 
             callback(bytes[:size_of_packet])
 
-    
     def shutdown(self):
         self._socket.close()
         self._out_channel.close()
