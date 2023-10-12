@@ -1,9 +1,5 @@
 import logging
-
-FLIGHTS_PKT = 0
-HEADERS_FLIGHTS_PKT = 1
-FLIGHTS_FINISHED_PKT = 3
-MAX_PACKET_SIZE = 8000
+from utils.constants import *
 
 
 class Serializer:
@@ -14,11 +10,12 @@ class Serializer:
         self._num_filters = num_filters
         self._calculated_flights = None
 
-    def run(self, callback):
+    def run(self, callback,finish_callback):
         self._callback = callback
+        self._finish_callback = finish_callback
         self._middleware.start_recv(self.bytes_to_pkt)
 
-    # TODO: Casi del todo repetido...
+    
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
@@ -33,13 +30,14 @@ class Serializer:
                 data = flight.split(',')
                 flight_list.append(data)
 
-            self._calculated_flights = self._callback(flight_list)
+            self._callback(flight_list)
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
             logging.info(f"Llego finished pkt: {bytes}")
             pkt = bytearray(bytes[:4])
             amount_finished = pkt[3]
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
+            self._finish_callback()
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
                 self._middleware.send(pkt, "")
@@ -51,14 +49,13 @@ class Serializer:
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
 
-            # Enviar los maxs al file writer
-            if not self._calculated_flights is None:
-                self.send_pkt(self._calculated_flights)
+            
 
             self._middleware.shutdown()
 
     def send_pkt(self, pkt):
-
+        if len(pkt) == 0:
+            return
         payload = "out_file_q4.csv\n"  # TODO: no hardcodear
         for key, value in pkt.items():
             payload += str(key) + ","

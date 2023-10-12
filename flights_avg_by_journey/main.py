@@ -62,10 +62,10 @@ def main():
 
     fields = config_params["fields"].split(',')
 
-    id = int(os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1"))
+    id = str(os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1"))
 
-    middleware = Middleware(config_params["in_exchange"],
-                            config_params["out_exchange"], id)
+    middleware = Middleware(config_params["in_exchange"],id,
+                            config_params["out_exchange"], '')
 
     num_filters = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
     serializer = Serializer(middleware, fields, num_filters)

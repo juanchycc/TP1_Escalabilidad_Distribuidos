@@ -8,7 +8,7 @@ class FilterAvg:
         self._calculated_flights = {}
 
     def run(self):
-        self._serializer.run(self.filter_fligths)
+        self._serializer.run(self.filter_fligths,self.get_flights)
 
     def filter_fligths(self, flights):
         for flight in flights:
@@ -23,7 +23,7 @@ class FilterAvg:
                 self._calculated_flights[journey] = self._update_flight(
                     journey, flight)
         logging.info(f"Calculated flights: {self._calculated_flights}")
-        return self._calculated_flights
+        
 
     def _create_new_max(self, flight):
         return [float(flight[0]), 1, float(flight[0])]
@@ -44,3 +44,6 @@ class FilterAvg:
             return True
         else:
             return False
+
+    def get_flights(self):
+        self._serializer.send_pkt(self._calculated_flights)
