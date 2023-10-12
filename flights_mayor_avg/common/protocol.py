@@ -68,32 +68,4 @@ class Serializer(BaseSerializer):
                 self._send_pkt(output[i], str(i),FLIGHTS_PKT)
 
     
-    # def _send_pkt(self, pkt, key,header):
-    #     # logging.info(f"output: {pkt}")
-    #     payload = ""
-    #     for flight in pkt:
-    #         last_field = len(flight) - 1
-    #         for i, field in enumerate(flight):
-    #             payload += field
-    #             if i != last_field:
-    #                 payload += ','
-    #         payload += '\n'
-    #     # El -1 remueve el ultimo caracter
-    #     logging.debug(f"Payload: {payload[:-1]}")
 
-    #     pkt_size = 3 + len(payload[:-1])
-    #     pkt_header = bytearray(
-    #         [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
-    #     pkt = pkt_header + payload[:-1].encode('utf-8')
-
-    #     self._middleware.send(pkt, key)
-
-    # def _get_group(self, flight):
-    #     first_char = flight[1][0].lower()
-    #     if 'a' <= first_char <= 'z':
-    #         # Calcula el grupo utilizando la posición relativa de la letra en el alfabeto
-    #         posicion_letra = ord(first_char) - ord('a')
-    #         group = posicion_letra % self._num_groups
-    #     else:  # default group
-    #         group = "$"
-    #     return group + 1
