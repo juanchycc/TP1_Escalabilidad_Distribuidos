@@ -1,5 +1,6 @@
 import os
 import logging
+import signal
 from configparser import ConfigParser
 from common.filter import FilterFlightsDistance
 from utils.base_middleware import BaseMiddleware
@@ -72,6 +73,7 @@ def main():
         middleware, fields, num_filters, config_params["outfile"])
 
     filter = FilterFlightsDistance(serializer, fields)
+    signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
 
 

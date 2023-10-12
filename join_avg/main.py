@@ -1,5 +1,6 @@
 import os
 import logging
+import signal
 from configparser import ConfigParser
 from common.filter import JoinAvg
 from utils.base_middleware import BaseMiddleware
@@ -64,6 +65,9 @@ def main():
 
     filter = JoinAvg(
         serializer)
+    signal.signal(signal.SIGTERM,middleware.shutdown)
+
+
     filter.run()
 
 

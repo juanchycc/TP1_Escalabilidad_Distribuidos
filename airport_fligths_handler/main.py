@@ -1,5 +1,6 @@
 import os
 import logging
+import signal
 from configparser import ConfigParser
 from common.filter import AirportHandler
 from utils.base_middleware import BaseMiddleware
@@ -72,6 +73,7 @@ def main():
 
     
     filter = AirportHandler(serializer,fligth_fields)
+    signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
 
 

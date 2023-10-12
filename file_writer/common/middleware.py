@@ -1,5 +1,5 @@
 import pika
-
+import logging
 
 class Middleware:
 
@@ -26,3 +26,4 @@ class Middleware:
     def shutdown(self):
         self._in_channel.close()
         self._connection.close()
+        logging.info('action: shutdown | result: success')

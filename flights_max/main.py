@@ -1,5 +1,6 @@
 import os
 import logging
+import signal
 from configparser import ConfigParser
 from common.filter import FilterFlightsMax
 from common.middleware import Middleware
@@ -76,6 +77,7 @@ def main():
 
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))
+    signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
 
 

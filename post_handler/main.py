@@ -1,5 +1,6 @@
 import os
 import logging
+import signal
 from configparser import ConfigParser
 from common.filter import FilterFields
 from common.middleware import Middleware
@@ -69,6 +70,8 @@ def main():
             config_params["key_avg"], config_params["key_4"]]
     serializer = Serializer(middleware, keys)
     filter = FilterFields(serializer)
+    signal.signal(signal.SIGTERM,middleware.shutdown)
+
     filter.run()
 
 

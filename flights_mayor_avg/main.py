@@ -1,5 +1,6 @@
 import os
 import logging
+import signal
 from configparser import ConfigParser
 from common.filter import FilterMayorAvg
 from common.middleware import Middleware
@@ -73,6 +74,7 @@ def main():
 
     filter = FilterMayorAvg(
         serializer)
+    signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
 
 

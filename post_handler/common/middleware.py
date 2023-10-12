@@ -48,3 +48,4 @@ class Middleware(BaseMiddleware):
         self._socket.close()
         self._out_channel.close()
         self._connection.close()
+        logging.info('action: shutdown | result: success')

@@ -1,8 +1,5 @@
 import logging
-
-FLIGHTS_PKT = 0
-HEADERS_FLIGHTS_PKT = 1
-FLIGHTS_FINISHED_PKT = 3
+from utils.constants import *
 
 QUERY_AMOUNT = 4
 

@@ -53,3 +53,5 @@ class Middleware(BaseMiddleware):
         self._channel_flight.close()
         self._out_channel.close()
         self._connection.close()
+        logging.info('action: shutdown | result: success')
+

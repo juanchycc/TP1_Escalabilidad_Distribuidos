@@ -1,7 +1,7 @@
 from common.writer import Writer
 from common.middleware import Middleware
 from common.protocol import Serializer
-
+import signal
 import os
 import logging
 from configparser import ConfigParser
@@ -60,6 +60,7 @@ def main():
         config_params["in_exchange"])
     serializer = Serializer(middleware)
     writer = Writer(serializer)
+    signal.signal(signal.SIGTERM,middleware.shutdown)
     writer.run()
 
 
