@@ -15,14 +15,10 @@ class Client_Protocol:
 
     def _send_packet(self, batch, packet_type):
 
-        # TODO: si no envia loggear
-
-        # if packet_type < self.batch_size:
-
         batch_str = '\n'.join(str(x) for x in batch)
         packet_len = len(batch_str.encode('utf-8')) + 3  # 3 = header size
 
-        logging.info(
+        logging.debug(
             f'Batch Protocol: {packet_type, (packet_len >> 8) & 0xFF, packet_len & 0xFF}')
         packet_bytes = bytearray(
             [packet_type, (packet_len >> 8) & 0xFF, packet_len & 0xFF]) + batch_str.encode('utf-8')
@@ -35,20 +31,21 @@ class Client_Protocol:
 
     def send_flights_packet(self, batch):
         self._send_packet(batch, FLIGHTS_PKT)
-        
-    def send_airports_packet(self,batch):
+
+    def send_airports_packet(self, batch):
         self._send_packet(batch, AIRPORT_PKT)
-        
+
     def send_header_airports_packet(self, batch):
         self._send_packet(batch, HEADERS_AIRPORT_PKT)
 
-        
     def send_finished_flights_pkt(self):
         logging.info("Sending finished flights pkt")
         padding_length = self.batch_size - 3
-        self.socket.send_packet(bytearray([FLIGHTS_FINISHED_PKT,0,3]) + (b'\x00'*padding_length) )
-        
+        self.socket.send_packet(
+            bytearray([FLIGHTS_FINISHED_PKT, 0, 3]) + (b'\x00'*padding_length))
+
     def send_finished_airports_pkt(self):
-        logging.info("Sending airports flights pkt")
+        logging.debug("Sending airports flights pkt")
         padding_length = self.batch_size - 3
-        self.socket.send_packet(bytearray([AIRPORT_FINISHED_PKT,0,3]) + (b'\x00'*padding_length) )
+        self.socket.send_packet(
+            bytearray([AIRPORT_FINISHED_PKT, 0, 3]) + (b'\x00'*padding_length))

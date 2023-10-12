@@ -33,6 +33,8 @@ def initialize_config():
             'FIELDS', config["DEFAULT"]["FIELDS"])
         config_params["queue_name"] = os.getenv(
             'QUEUE_NAME', config["DEFAULT"]["QUEUE_NAME"])
+        config_params["outfile"] = os.getenv(
+            'OUTFILE', config["DEFAULT"]["OUTFILE"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -63,13 +65,12 @@ def main():
 
     fields = config_params["fields"].split(',')
     middleware = BaseMiddleware(config_params["in_exchange"], '',
-                            config_params["out_exchange"], config_params["queue_name"])
-    
-    
-    num_filters = int(os.environ.get('FLIGHTS_FILTER_DISTANCE_AMOUNT', 1))
-    serializer = Serializer(middleware, fields,num_filters)
+                                config_params["out_exchange"], config_params["queue_name"])
 
-    
+    num_filters = int(os.environ.get('FLIGHTS_FILTER_DISTANCE_AMOUNT', 1))
+    serializer = Serializer(
+        middleware, fields, num_filters, config_params["outfile"])
+
     filter = FilterFlightsDistance(serializer, fields)
     filter.run()
 

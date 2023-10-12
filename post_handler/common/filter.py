@@ -18,7 +18,6 @@ class FilterFields:
         self._serializer.run(self.filter_fligths, self.filter_airports)
 
     def filter_fligths(self, flights):
-        # TODO: Faltan los de la query 2
         query1_output = []
         query_avg_output = []
         query4_output = []
@@ -43,7 +42,7 @@ class FilterFields:
 
     def filter_airports(self, airports):
         output = []
-        logging.info(f"Airports {airports}")
+        logging.debug(f"Airports {airports}")
 
         for airport in airports:
             output.append([airport[field]

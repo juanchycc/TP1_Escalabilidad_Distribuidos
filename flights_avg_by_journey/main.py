@@ -32,6 +32,8 @@ def initialize_config():
         config_params["key"] = os.getenv('KEY', config["DEFAULT"]["KEY"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
+        config_params["outfile"] = os.getenv(
+            'OUTFILE', config["DEFAULT"]["OUTFILE"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -64,11 +66,12 @@ def main():
 
     id = str(os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1"))
 
-    middleware = Middleware(config_params["in_exchange"],id,
+    middleware = Middleware(config_params["in_exchange"], id,
                             config_params["out_exchange"], '')
 
     num_filters = int(os.environ.get('FLIGHTS_AVG_JOURNEY_AMOUNT', 1))
-    serializer = Serializer(middleware, fields, num_filters)
+    serializer = Serializer(
+        middleware, fields, num_filters, config_params["outfile"])
 
     filter = FilterAvg(serializer, fields)
     filter.run()

@@ -19,11 +19,9 @@ class Serializer(BaseSerializer):
 
     def start_protocol(self, ch, method, properties, body):
         bytes = body
-        logging.info(f"Recibo AVG: {bytearray(bytes).decode('utf-8')}")
+        logging.debug(f"Recibo AVG: {bytearray(bytes).decode('utf-8')}")
         self._avg = float(bytearray(bytes).decode('utf-8'))
         self._middleware.close_avg()
-
-    
 
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
@@ -35,65 +33,35 @@ class Serializer(BaseSerializer):
             self._callback(flights, self._avg)
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
-            logging.info(f"Llego finished pkt: {bytes}")
+            logging.debug(f"Llego finished pkt: {bytes}")
             pkt = bytearray(bytes[:4])
             amount_finished = pkt[3]
-            logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
+            logging.debug(
+                f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
                 pkt = bytearray([FLIGHTS_FINISHED_PKT, 0, 4, 0])
 
                 if self._id == self._num_filters:
-                    logging.info("Enviando finished packet")
+                    logging.debug("Enviando finished packet")
                     self._middleware.send(pkt, str(1))
 
             else:
                 pkt = bytearray(
                     [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
-                logging.info(
+                logging.debug(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
 
             self._middleware.shutdown()
 
     def send_pkt(self, pkt):
-        
+
         output = {i: [] for i in range(1, self._num_groups + 1)}
         for flight in pkt:
             group = self._get_group(flight[1])
-            logging.info(f"Flight: {flight}, grupo:{group}")
+            logging.debug(f"Flight: {flight}, grupo:{group}")
             output[group].append(flight)
 
         for i in range(1, self._num_groups + 1):  # Envia a cada nodo del filter max
             if len(output[i]) > 0:
-                self._send_pkt(output[i], str(i),FLIGHTS_PKT)
-
-    
-    # def _send_pkt(self, pkt, key,header):
-    #     # logging.info(f"output: {pkt}")
-    #     payload = ""
-    #     for flight in pkt:
-    #         last_field = len(flight) - 1
-    #         for i, field in enumerate(flight):
-    #             payload += field
-    #             if i != last_field:
-    #                 payload += ','
-    #         payload += '\n'
-    #     # El -1 remueve el ultimo caracter
-    #     logging.debug(f"Payload: {payload[:-1]}")
-
-    #     pkt_size = 3 + len(payload[:-1])
-    #     pkt_header = bytearray(
-    #         [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
-    #     pkt = pkt_header + payload[:-1].encode('utf-8')
-
-    #     self._middleware.send(pkt, key)
-
-    # def _get_group(self, flight):
-    #     first_char = flight[1][0].lower()
-    #     if 'a' <= first_char <= 'z':
-    #         # Calcula el grupo utilizando la posición relativa de la letra en el alfabeto
-    #         posicion_letra = ord(first_char) - ord('a')
-    #         group = posicion_letra % self._num_groups
-    #     else:  # default group
-    #         group = "$"
-    #     return group + 1
+                self._send_pkt(output[i], str(i), FLIGHTS_PKT)
