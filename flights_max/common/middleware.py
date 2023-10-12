@@ -1,5 +1,5 @@
 import pika
-from utils.base_middleware import BaseMiddleware
+from middleware.base_middleware import BaseMiddleware
 
 
 

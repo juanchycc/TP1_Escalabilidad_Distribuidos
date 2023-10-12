@@ -62,6 +62,7 @@ post_handler_text = """  post_handler:
     volumes:
       - ./post_handler/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
     ports:
       - 12345:12345
 
@@ -87,6 +88,7 @@ flights_filter_plus_3_text = """  flights_filter_plus_3_#:
     volumes:
       - ./flights_filter/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
 
 """
 
@@ -110,6 +112,7 @@ flights_filter_max_text = """  flights_filter_max_#:
     volumes:
       - ./flights_max/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
 
 """
 
@@ -131,6 +134,7 @@ file_writer_text = """  file_writer:
     volumes:
       - ./file_writer/config.ini:/config.ini
       - ./file_writer/:/out_files/
+      - ./utils:/utils
 
 """
 
@@ -151,6 +155,7 @@ airport_fligths_handler_text = """  airport_fligths_handler:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./utils:/utils
+      - ./middleware:/middleware
     
 
 """
@@ -175,6 +180,7 @@ flights_filter_avg = """  flights_filter_avg_#:
     volumes:
       - ./flights_avg/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
 
 """
 
@@ -197,6 +203,7 @@ flights_filter_distance_text = """  flights_filter_distance_#:
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
 
 """
 
@@ -251,6 +258,7 @@ flights_join_avg = """  flights_join_avg:
     volumes:
       - ./join_avg/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
 
 """
 
@@ -274,7 +282,8 @@ flights_mayor_avg = """  flights_mayor_avg_#:
       - FLIGHTS_AVG_JOURNEY_AMOUNT=&
     volumes:
       - ./flights_mayor_avg/config.ini:/config.ini
-      - ./utils:/utils
+      - ./utils:/
+      - ./middleware:/middleware
 
 """
 
@@ -306,6 +315,7 @@ flights_avg_by_journey = """  flights_avg_by_journey_#:
     volumes:
       - ./flights_avg_by_journey/config.ini:/config.ini
       - ./utils:/utils
+      - ./middleware:/middleware
 
 """
 

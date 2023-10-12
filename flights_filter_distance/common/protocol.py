@@ -1,6 +1,5 @@
-import logging
 from utils.constants import *
-from utils.base_protocol import BaseSerializer
+from middleware.base_protocol import BaseSerializer
 
 
 class Serializer(BaseSerializer):

@@ -3,7 +3,7 @@ import logging
 import signal
 from configparser import ConfigParser
 from common.filter import FilterFlightsDistance
-from utils.base_middleware import BaseMiddleware
+from middleware.base_middleware import BaseMiddleware
 from common.protocol import Serializer
 
 
