@@ -31,7 +31,7 @@ Para poder ejecutar correctamente el trabajo, se deberá contar con la última v
 ```
 cd client
 ```
-
+Se espera que en esta carpeta se encuentren los archivos flights.csv y airports.csv, los cuales contienen la información a ser enviada.
 Una vez en la carpeta del cliente y el Servidor activo para mandar los paquetes ejecutar:
 
 ```
