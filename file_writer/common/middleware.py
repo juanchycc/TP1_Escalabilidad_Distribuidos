@@ -1,6 +1,7 @@
 import pika
 import logging
 
+
 class Middleware:
 
     def __init__(self, in_exchange):
@@ -19,11 +20,16 @@ class Middleware:
             exchange=in_exchange, queue=self._in_queue_name, routing_key="")
 
     def start_recv(self, callback):
-        self._in_channel.basic_consume(
-            queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
-        self._in_channel.start_consuming()
+        try:
+            self._in_channel.basic_consume(
+                queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
+            self._in_channel.start_consuming()
+        except OSError as e:
+            logging.error(
+                'action: start_recv | result: failed | error: %s' % e)
 
-    def shutdown(self):
+    def shutdown(self, signum=None, frame=None):
+        self._in_channel.stop_consuming()
         self._in_channel.close()
         self._connection.close()
         logging.info('action: shutdown | result: success')

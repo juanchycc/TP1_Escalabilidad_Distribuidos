@@ -40,9 +40,13 @@ class BaseMiddleware():
 
     def start_recv(self, callback):
         logging.info('action: start_recv')
-        self._in_channel.basic_consume(
-            queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
-        self._in_channel.start_consuming()
+        try:
+            self._in_channel.basic_consume(
+                queue=self._in_queue_name, on_message_callback=callback, auto_ack=True)
+            self._in_channel.start_consuming()
+        except OSError as e:
+            logging.error(
+                'action: start_recv | result: failed | error: %s' % e)
 
     def send(self, bytes, routing_key):
         self._out_channel.basic_publish(
@@ -52,7 +56,8 @@ class BaseMiddleware():
         self._in_channel.basic_publish(
             exchange=self._in_exchange, routing_key=self._in_key, body=bytes)
 
-    def shutdown(self):
+    def shutdown(self, signum=None, frame=None):
+        self._in_channel.stop_consuming()
         self._in_channel.close()
         self._out_channel.close()
         self._connection.close()

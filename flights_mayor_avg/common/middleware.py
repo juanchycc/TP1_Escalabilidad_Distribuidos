@@ -37,9 +37,13 @@ class Middleware(BaseMiddleware):
         self._channel_avg.close()
 
     def start_recv(self, callback):
-        self._channel_flight.basic_consume(
-            queue=self._queue_flight, on_message_callback=callback, auto_ack=True)
-        self._channel_flight.start_consuming()
+        try:
+            self._channel_flight.basic_consume(
+                queue=self._queue_flight, on_message_callback=callback, auto_ack=True)
+            self._channel_flight.start_consuming()
+        except OSError as e:
+            logging.error(
+                'action: start_recv | result: failed | error: %s' % e)
 
     def send(self, bytes, key):
         self._out_channel.basic_publish(
@@ -49,9 +53,9 @@ class Middleware(BaseMiddleware):
         self._channel_flight.basic_publish(
             exchange=self._in_flights_exchange, routing_key=str(self._id + 1), body=bytes)
 
-    def shutdown(self):
+    def shutdown(self, signum=None, frame=None):
+        self._channel_flight.stop_consuming()
         self._channel_flight.close()
         self._out_channel.close()
         self._connection.close()
         logging.info('action: shutdown | result: success')
-
