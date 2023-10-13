@@ -1,7 +1,8 @@
 import socket
+import logging
 
 
-class Socket:
+class Client_Socket:
     def __init__(self, ip, port):
         self.address = (ip, port)
         self.client_socket = None
@@ -13,22 +14,24 @@ class Socket:
             self.client_socket.connect(self.address)
             return True
         except Exception as e:
-            print(f"Error al conectar con el servidor: {e}")
+            logging.debug(
+                f'action: connect | result: connection refused - {e}')
             return False
 
-    def send_batch(self, batch):
+    def send_packet(self, packet):
         if self.client_socket is None:
-            print("Error: socket is not connected")
+            logging.debug(
+                f'action: send_packet | result: socket is not connected')
             return
 
-        batch_bytes = batch.encode('utf-8')
-
         # Enviar mientras queden bytes por enviar
-        while len(batch_bytes) > 0:
+        while len(packet) > 0:
             try:
-                sent_bytes = self.client_socket.send(batch_bytes)
+                sent_bytes = self.client_socket.send(packet)
+                logging.debug(
+                    f'action: send_packet | result: packet: {packet}')
+                logging.debug(f'action: send_packet | result: in_progress')
                 # Eliminar los bytes ya enviados
-                batch_bytes = batch_bytes[sent_bytes:]
+                packet = packet[sent_bytes:]
             except Exception as e:
                 pass
-                # logging.info(f'Error al enviar mensaje: {str(e)}')

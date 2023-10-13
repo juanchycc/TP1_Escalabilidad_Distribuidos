@@ -3,3 +3,12 @@
 
 # Executables
 bin/
+
+# CSV files
+./client/*.csv
+
+#Outputs
+./file_writer/*.csv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
