@@ -1,4 +1,3 @@
-from common.writer import Writer
 from common.middleware import Middleware
 from common.protocol import Serializer
 import signal
@@ -65,9 +64,8 @@ def main():
     middleware = Middleware(
         config_params["in_exchange"], config_params["ip"], config_params["listener_port"])
     serializer = Serializer(middleware, config_params["batch_size"])
-    writer = Writer(serializer)
     signal.signal(signal.SIGTERM, middleware.shutdown)
-    writer.run()
+    serializer.run()
 
 
 if __name__ == "__main__":

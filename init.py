@@ -21,7 +21,7 @@ output_files = ["out_file_q1.csv", "out_file_q2.csv",
 
 # create output files
 for o in output_files:
-    file_path = "./file_writer/" + o
+    file_path = "./client/" + o
     if os.path.exists(file_path):
         os.remove(file_path)
     file = open(file_path, "w")

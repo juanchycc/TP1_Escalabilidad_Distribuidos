@@ -11,14 +11,12 @@ class Serializer:
         self._finished_amount = 0
         self._batch_size = batch_size
 
-    def run(self, callback):
-        self._callback = callback
+    def run(self):
         self._middleware.start_recv(self.bytes_to_pkt)
 
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
-        # payload = bytearray(bytes[3:]).decode('utf-8')
 
         padding_length = self._batch_size - len(bytes)
         packet = bytearray(bytes) + (b'\x00'*padding_length)
@@ -32,4 +30,3 @@ class Serializer:
                 self._middleware.shutdown()
         else:
             self._middleware.send_packet(packet)
-            # self._callback(payload.split('\n'))

@@ -38,8 +38,6 @@ class Middleware:
             self._client_socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             self._client_socket.connect(self._address)
-            logging.info(
-                f'Me conecte :)')
 
         if self._client_socket is None:
             logging.info(

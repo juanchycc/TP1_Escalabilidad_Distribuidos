@@ -12,16 +12,14 @@ class Client_Listener:
         self._batch_size = batch_size
 
     def start_recv(self, callback):
-        logging.info(f"ESPERANDO")
         listener_socket, addr = self._socket.accept()
-        logging.info(f"ACEPTADO")
+        logging.info(f"Coneccion aceptada")
         while not self._finished:
             bytes_read = 0
             bytes = []
             size_of_packet = self._batch_size
             size_read = False
             while bytes_read < self._batch_size:
-                logging.info(f"Espero a recibir")
                 bytes += list(listener_socket.recv(self._batch_size - bytes_read))
 
                 bytes_read = len(bytes)

@@ -8,7 +8,6 @@ class Writer():
         self._listener = listener
 
     def run(self):
-        logging.info(f"Hola, estoy vivo")
         self._listener.start_recv(self.bytes_to_pkt)
 
     def bytes_to_pkt(self, bytes):
@@ -17,7 +16,7 @@ class Writer():
         payload = bytearray(bytes[3:]).decode('utf-8-sig')
 
         if pkt_type == HEADER_PKT_FINISH:
-            logging.info(f"LLega un finish")
+            logging.info(f"Llego un finish, finalizo")
             self._listener.shutdown()
             return
 
