@@ -1,10 +1,11 @@
 import pika
 import logging
+import socket
 
 
 class Middleware:
 
-    def __init__(self, in_exchange):
+    def __init__(self, in_exchange, ip, port):
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
@@ -19,6 +20,9 @@ class Middleware:
         self._in_channel.queue_bind(
             exchange=in_exchange, queue=self._in_queue_name, routing_key="")
 
+        self._address = (ip, port)
+        self._client_socket = None
+
     def start_recv(self, callback):
         try:
             self._in_channel.basic_consume(
@@ -28,8 +32,35 @@ class Middleware:
             logging.error(
                 'action: start_recv | result: failed | error: %s' % e)
 
+    def send_packet(self, packet):
+
+        if self._client_socket is None:
+            self._client_socket = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
+            self._client_socket.connect(self._address)
+            logging.info(
+                f'Me conecte :)')
+
+        if self._client_socket is None:
+            logging.info(
+                f'action: send_packet | result: socket is not connected')
+            return
+
+        # Enviar mientras queden bytes por enviar
+        while len(packet) > 0:
+            try:
+                sent_bytes = self._client_socket.send(packet)
+                logging.debug(
+                    f'action: send_packet | result: packet: {packet}')
+                logging.debug(f'action: send_packet | result: in_progress')
+                # Eliminar los bytes ya enviados
+                packet = packet[sent_bytes:]
+            except Exception as e:
+                pass
+
     def shutdown(self, signum=None, frame=None):
         self._in_channel.stop_consuming()
         self._in_channel.close()
         self._connection.close()
+        self._client_socket.close()
         logging.info('action: shutdown | result: success')

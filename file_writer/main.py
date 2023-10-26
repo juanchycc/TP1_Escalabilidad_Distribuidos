@@ -28,6 +28,12 @@ def initialize_config():
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["in_exchange"] = os.getenv(
             'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
+        config_params["ip"] = os.getenv(
+            'SERVER_IP', config["DEFAULT"]["SERVER_IP"])
+        config_params["listener_port"] = int(
+            os.getenv('LISTENER_PORT', config["DEFAULT"]["LISTENER_PORT"]))
+        config_params["batch_size"] = int(os.getenv(
+            'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -57,10 +63,10 @@ def main():
     initialize_log(config_params["logging_level"])
 
     middleware = Middleware(
-        config_params["in_exchange"])
-    serializer = Serializer(middleware)
+        config_params["in_exchange"], config_params["ip"], config_params["listener_port"])
+    serializer = Serializer(middleware, config_params["batch_size"])
     writer = Writer(serializer)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     writer.run()
 
 

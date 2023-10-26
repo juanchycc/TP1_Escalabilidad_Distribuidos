@@ -1,3 +1,5 @@
+from common.client_listener import Client_Listener
+from common.writer import Writer
 from common.client_socket import Client_Socket
 from common.reader import Reader
 from common.client_protocol import Client_Protocol
@@ -5,6 +7,8 @@ from common.client_protocol import Client_Protocol
 from configparser import ConfigParser
 import os
 import logging
+
+import threading
 
 
 def initialize_config():
@@ -20,6 +24,8 @@ def initialize_config():
             'SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["port"] = int(
             os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
+        config_params["listener_port"] = int(
+            os.getenv('LISTENER_PORT', config["DEFAULT"]["LISTENER_PORT"]))
         config_params["batch_size"] = int(os.getenv(
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
         config_params["flights_filename"] = os.getenv(
@@ -61,12 +67,20 @@ def main():
     airports_filename = config_params['airports_filename']
 
     socket = Client_Socket(ip, port)
+    listener = Client_Listener(ip, config_params["listener_port"], batch_size)
 
     if socket.connect():
         protocol = Client_Protocol(socket, batch_size)
         reader = Reader(protocol, batch_size)
-        reader.read("read_airports",airports_filename)
-        reader.read("read_flights",flights_filename)
+
+        writer = Writer(listener)
+        handler = threading.Thread(target=writer.run)
+        handler.start()
+
+        reader.read("read_airports", airports_filename)
+        reader.read("read_flights", flights_filename)
+
+        handler.join()
     else:
         print("No se pudo establecer la conexión con el servidor")
 

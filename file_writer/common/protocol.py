@@ -5,10 +5,11 @@ QUERY_AMOUNT = 4
 
 
 class Serializer:
-    def __init__(self, middleware):
+    def __init__(self, middleware, batch_size):
         self._middleware = middleware
         self._callback = None
         self._finished_amount = 0
+        self._batch_size = batch_size
 
     def run(self, callback):
         self._callback = callback
@@ -17,31 +18,18 @@ class Serializer:
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
-        payload = bytearray(bytes[3:]).decode('utf-8')
+        # payload = bytearray(bytes[3:]).decode('utf-8')
+
+        padding_length = self._batch_size - len(bytes)
+        packet = bytearray(bytes) + (b'\x00'*padding_length)
+
         if pkt_type == FLIGHTS_FINISHED_PKT:
             logging.debug(f"Recibo finished pkt")
             self._finished_amount += 1
             if self._finished_amount == QUERY_AMOUNT:
-                logging.debug(f"Todas las querys terminaron, puedo finalizar")
+                logging.info(f"Todas las querys terminaron, puedo finalizar")
+                self._middleware.send_packet(packet)
                 self._middleware.shutdown()
         else:
-            self._callback(payload.split('\n'))
-
-    def send_pkt(self, pkt):
-        # logging.info(f"output: {pkt}")
-        payload = ""
-        for flight in pkt:
-            last_field = len(flight) - 1
-            for i, field in enumerate(flight):
-                payload += field
-                if i != last_field:
-                    payload += ','
-            payload += '\n'
-        # El -1 remueve el ultimo caracter
-        logging.debug(f"Payload: {payload[:-1]}")
-
-        pkt_size = 3 + len(payload[:-1])
-        pkt_header = bytearray(
-            [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
-        pkt = pkt_header + payload[:-1].encode('utf-8')
-        self._middleware.send(pkt)
+            self._middleware.send_packet(packet)
+            # self._callback(payload.split('\n'))
