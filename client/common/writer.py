@@ -28,6 +28,6 @@ class Writer():
 
     def write_fligths(self, flights, path):
 
-        with open("./" + path, 'a') as file:
+        with open("./out_file_q" + path + ".csv", 'a') as file:
             for f in flights:
                 file.write(f + '\n')
