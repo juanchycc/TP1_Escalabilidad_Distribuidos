@@ -12,6 +12,8 @@ parser.add_argument("-Mavg", type=int, help="amount of nodes in the avg query")
 parser.add_argument("-q4", type=int, help="amount of nodes in the avg query")
 parser.add_argument(
     "-q2", type=int, help="amount of nodes in the second query")
+parser.add_argument(
+    "-m", type=int, help="amount of managers")
 args = parser.parse_args()
 
 
@@ -319,6 +321,23 @@ flights_avg_by_journey = """  flights_avg_by_journey_#:
 
 """
 
+manager = """  manager_#:
+    container_name: manager_#
+    build:
+      context: ./manager
+      dockerfile: Dockerfile
+    image: manager:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    tty: true
+
+"""
+
+final_manager = ""
+for i in range(1, args.m + 1):
+    final_manager = final_manager + \
+        manager.replace('#', str(i))
+
 final_text_flights_avg_by_journey = ""
 for i in range(1, args.q4 + 1):
     final_text_flights_avg_by_journey = final_text_flights_avg_by_journey + \
@@ -328,4 +347,4 @@ final_text_flights_avg_by_journey = final_text_flights_avg_by_journey.replace(
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text + final_text_distance + final_text_flights_avg_by_journey)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text + final_text_distance + final_text_flights_avg_by_journey + final_manager)

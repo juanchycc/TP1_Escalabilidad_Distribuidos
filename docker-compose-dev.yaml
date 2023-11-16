@@ -621,3 +621,13 @@ services:
       - ./utils:/utils
       - ./middleware:/middleware
 
+  manager_1:
+    container_name: manager_1
+    build:
+      context: ./manager
+      dockerfile: Dockerfile
+    image: manager:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    tty: true
+
