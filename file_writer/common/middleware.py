@@ -33,7 +33,8 @@ class Middleware:
                 'action: start_recv | result: failed | error: %s' % e)
 
     def send_packet(self, packet):
-
+        logging.debug(
+                f'addr: {self._address}')
         if self._client_socket is None:
             self._client_socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)

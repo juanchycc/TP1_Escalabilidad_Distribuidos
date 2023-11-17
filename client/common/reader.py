@@ -17,7 +17,7 @@ class Reader:
         envio_header = False
         total_read = 0
 
-        with open(filename, 'r') as file:
+        with open(filename, 'r',encoding='utf-8-sig') as file:
 
             batch = []
             for line in file:
