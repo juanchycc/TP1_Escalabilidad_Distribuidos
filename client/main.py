@@ -32,6 +32,8 @@ def initialize_config():
             'flights_filename', config["DEFAULT"]["FLIGHTS_FILENAME"])
         config_params["airports_filename"] = os.getenv(
             'airports_filename', config["DEFAULT"]["AIRPORTS_FILENAME"])
+        config_params["id"] = int(os.getenv(
+            'BATCH_SIZE', config["DEFAULT"]["ID"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting client".format(e))
@@ -70,14 +72,14 @@ def main():
     listener = Client_Listener(ip, config_params["listener_port"], batch_size)
 
     if socket.connect():
-        protocol = Client_Protocol(socket, batch_size)
+        protocol = Client_Protocol(socket, batch_size,config_params["id"])
         reader = Reader(protocol, batch_size)
 
         writer = Writer(listener)
         handler = threading.Thread(target=writer.run)
         handler.start()
 
-        reader.read("read_airports", airports_filename)
+        reader.read("read_airports", airports_filename,config_params["listener_port"])
         reader.read("read_flights", flights_filename)
 
         handler.join()

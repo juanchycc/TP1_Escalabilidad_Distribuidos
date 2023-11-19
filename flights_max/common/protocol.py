@@ -18,19 +18,19 @@ class Serializer(BaseSerializer):
 
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
-        pkt_type = bytes[0]
-        payload = bytearray(bytes[3:]).decode('utf-8')
-        logging.debug(f"payload: {payload}")
+        pkt_type = bytes[PKT_TYPE_POSITION]
+        payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
+        logging.info(f"payload: {payload}")
         if pkt_type == FLIGHTS_PKT:
             self._callback(self._build_flights_or_airports(
                 payload, self._filtered_fields, ','))
 
         if pkt_type == FLIGHTS_FINISHED_PKT:
-            logging.debug(f"Llego finished pkt: {bytes}")
+            logging.info(f"Llego finished pkt: {bytes}")
             self._final_callback()
-            pkt = bytearray(bytes[:4])
-            amount_finished = pkt[3]
-            logging.debug(
+            pkt = bytearray(bytes[:9])
+            amount_finished = pkt[8]
+            logging.info(
                 f"Cantidad de nodos iguales que f: {amount_finished}")
 
             if amount_finished + 1 == self._num_filters:
@@ -38,14 +38,14 @@ class Serializer(BaseSerializer):
                 self._middleware.send(pkt, "")
             else:
                 pkt = bytearray(
-                    [FLIGHTS_FINISHED_PKT, 0, 4, amount_finished + 1])
-                logging.debug(
+                    [FLIGHTS_FINISHED_PKT,1, 0, 9,0,0,0,0, amount_finished + 1])
+                logging.info(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(pkt)
 
             self._middleware.shutdown()
 
-    def send_pkt(self, pkt):
+    def send_pkt(self, pkt,client_id = 0,sequence_number = [0,0,0,0]):
 
         payload = self._outfile + "\n"
         for value in pkt.values():
@@ -57,9 +57,9 @@ class Serializer(BaseSerializer):
                         payload += ','
                 payload += '\n'
         # El -1 remueve el ultimo caracter
-        logging.debug(f"Payload: {payload}")
-        pkt_size = 3 + len(payload[:-1])
+        logging.info(f"Payload: {payload}")
+        pkt_size = HEADER_SIZE + len(payload[:-1])
         pkt_header = bytearray(
-            [FLIGHTS_PKT, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
+            [FLIGHTS_PKT,client_id, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF]  + sequence_number)
         pkt = pkt_header + payload[:-1].encode('utf-8')
         self._middleware.send(pkt, '')

@@ -1,6 +1,7 @@
 import logging
 
 HEADER_PKT_FINISH = 3
+HEADER_SIZE = 8
 
 
 class Writer():
@@ -13,7 +14,7 @@ class Writer():
     def bytes_to_pkt(self, bytes):
 
         pkt_type = bytes[0]
-        payload = bytearray(bytes[3:]).decode('utf-8-sig')
+        payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8-sig')
 
         if pkt_type == HEADER_PKT_FINISH:
             logging.info(f"Llego un finish, finalizo")
@@ -27,7 +28,6 @@ class Writer():
         self.write_fligths(data, path)
 
     def write_fligths(self, flights, path):
-
         with open("./out_file_q" + path + ".csv", 'a') as file:
             for f in flights:
                 file.write(f + '\n')

@@ -20,8 +20,9 @@ class Serializer(BaseSerializer):
 
     def bytes_to_pkt(self, bytes):
         logging.debug(f"LLegan bytes: {bytes}")
-        pkt_type = bytes[0]
-        payload = bytearray(bytes[3:]).decode('utf-8-sig')
+        pkt_type = bytes[PKT_TYPE_POSITION]
+        client_id = bytes[CLIENT_ID_POSITION]
+        payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8-sig')
         if pkt_type == HEADERS_FLIGHTS_PKT:
             self._flight_fields = payload.split(',')
         if pkt_type == FLIGHTS_PKT:
@@ -32,7 +33,7 @@ class Serializer(BaseSerializer):
             # Mando uno por cada key
             logging.info(
                 'action: bytes_to_pkt | info: rec finished flights pkt')
-            pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
+            pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT,client_id)
             for key in self._keys:
                 logging.debug(f"Sending finished pkt | key: {key}")
                 self._middleware.send(pkt, key)
@@ -49,6 +50,13 @@ class Serializer(BaseSerializer):
                 'action: bytes_to_pkt | info: rec finished airport pkt')
             pkt = self._build_finish_pkt(AIRPORT_FINISHED_PKT)
             self._middleware.send(pkt, self._keys[1])
+    # TODO: implementar
+        if pkt_type == LISTENER_PORT_PKT:
+            logging.info(
+                'action: bytes_to_pkt | info: rec listener port pkt')
+
+    def send_listener_pkt(self,pkt):
+        self._middleware.send_pkt_to_sink()
 
     def send_pkt_query1(self, pkt):
         self._send_pkt(pkt, self._keys[0], FLIGHTS_PKT)

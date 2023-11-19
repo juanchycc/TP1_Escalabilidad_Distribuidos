@@ -39,8 +39,10 @@ class Middleware(BaseMiddleware):
                 if not size_read:
                     if bytes_read == 0:
                         return
-                    size_of_packet = (bytes[1] << 8) | bytes[2]
-                    size_read = True
+                    logging.debug(f'bytes: {bytes}')
+                    if bytes_read > 3:
+                        size_of_packet = (bytes[2] << 8) | bytes[3]
+                        size_read = True
 
             callback(bytes[:size_of_packet])
 
@@ -49,3 +51,6 @@ class Middleware(BaseMiddleware):
         self._out_channel.close()
         self._connection.close()
         logging.info('action: shutdown | result: success')
+
+    #def send_pkt_to_sink(self,pkt):
+        
