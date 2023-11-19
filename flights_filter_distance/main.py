@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from common.filter import FilterFlightsDistance
 from middleware.base_middleware import BaseMiddleware
 from common.protocol import Serializer
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -64,6 +65,8 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
+    server_thread = health_chequer_handler(12316)
+
     fields = config_params["fields"].split(',')
     middleware = BaseMiddleware(config_params["in_exchange"], '',
                                 config_params["out_exchange"], config_params["queue_name"])
@@ -73,7 +76,7 @@ def main():
         middleware, fields, num_filters, config_params["outfile"])
 
     filter = FilterFlightsDistance(serializer, fields)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 
 

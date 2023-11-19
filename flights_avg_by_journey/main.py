@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from common.filter import FilterAvg
 from common.middleware import Middleware
 from common.protocol import Serializer
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -63,6 +64,8 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
+    server_thread = health_chequer_handler(12315)
+
     fields = config_params["fields"].split(',')
 
     id = str(os.environ.get('FLIGHTS_AVG_JOURNEY_ID', "1"))
@@ -75,7 +78,7 @@ def main():
         middleware, fields, num_filters, config_params["outfile"])
 
     filter = FilterAvg(serializer, fields)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 
 

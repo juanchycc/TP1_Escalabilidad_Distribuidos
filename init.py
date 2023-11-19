@@ -16,6 +16,8 @@ parser.add_argument(
     "-m", type=int, help="amount of managers")
 args = parser.parse_args()
 
+layers = {"flights_filter_": args.q1,
+          "flights_max_": args.q3, "flights_avg_": args.avg, "flights_mayor_avg_": args.Mavg, "flights_avg_by_journey_": args.q4, "flights_filter_distance_": args.q2}
 
 # list of names of output files
 output_files = ["out_file_q1.csv", "out_file_q2.csv",
@@ -67,7 +69,6 @@ post_handler_text = """  post_handler:
       - ./middleware:/middleware
     ports:
       - 12345:12345
-
 """
 
 flights_filter_plus_3_text = """  flights_filter_plus_3_#:
@@ -91,7 +92,6 @@ flights_filter_plus_3_text = """  flights_filter_plus_3_#:
       - ./flights_filter/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 flights_filter_max_text = """  flights_filter_max_#:
@@ -115,7 +115,6 @@ flights_filter_max_text = """  flights_filter_max_#:
       - ./flights_max/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 file_writer_text = """  file_writer:
@@ -137,7 +136,6 @@ file_writer_text = """  file_writer:
       - ./file_writer/config.ini:/config.ini
       - ./file_writer/:/out_files/
       - ./utils:/utils
-
 """
 
 airport_fligths_handler_text = """  airport_fligths_handler:
@@ -158,7 +156,6 @@ airport_fligths_handler_text = """  airport_fligths_handler:
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware
-    
 
 """
 
@@ -183,7 +180,6 @@ flights_filter_avg = """  flights_filter_avg_#:
       - ./flights_avg/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 flights_filter_distance_text = """  flights_filter_distance_#:
@@ -206,7 +202,6 @@ flights_filter_distance_text = """  flights_filter_distance_#:
       - ./flights_filter_distance/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 flights_filter_distance_text = flights_filter_distance_text.replace(
@@ -261,7 +256,6 @@ flights_join_avg = """  flights_join_avg:
       - ./join_avg/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 flights_mayor_avg = """  flights_mayor_avg_#:
@@ -286,7 +280,6 @@ flights_mayor_avg = """  flights_mayor_avg_#:
       - ./flights_mayor_avg/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 final_text_mayor_avg = ""
@@ -318,7 +311,6 @@ flights_avg_by_journey = """  flights_avg_by_journey_#:
       - ./flights_avg_by_journey/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
-
 """
 
 manager = """  manager_#:
@@ -327,11 +319,20 @@ manager = """  manager_#:
       context: ./manager
       dockerfile: Dockerfile
     image: manager:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAYER=!
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    tty: true
 
 """
+
+manager = manager.replace('!', str(layers).replace(' ', ''))
 
 final_manager = ""
 for i in range(1, args.m + 1):

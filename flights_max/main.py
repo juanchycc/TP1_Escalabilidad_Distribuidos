@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from common.filter import FilterFlightsMax
 from common.middleware import Middleware
 from common.protocol import Serializer
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -65,6 +66,8 @@ def main():
     initialize_log(config_params["logging_level"])
     fields = config_params["fields"].split(',')
 
+    server_thread = health_chequer_handler(12312)
+
     # read from docker env, default 1
     num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
     id = os.environ.get('FLIGHTS_MAX_ID', "1")
@@ -77,7 +80,7 @@ def main():
 
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 
 

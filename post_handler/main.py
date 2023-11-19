@@ -62,15 +62,18 @@ def initialize_log(logging_level):
 
 
 def main():
+
     config_params = initialize_config()
+
     initialize_log(config_params["logging_level"])
+
     middleware = Middleware(
         config_params["port"], config_params["exchange"], config_params["batch_size"])
     keys = [config_params["key_1"], config_params["key_2"],
             config_params["key_avg"], config_params["key_4"]]
     serializer = Serializer(middleware, keys)
     filter = FilterFields(serializer)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
 
     filter.run()
 
