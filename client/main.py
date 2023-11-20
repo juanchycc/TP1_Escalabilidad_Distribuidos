@@ -7,7 +7,7 @@ from common.client_protocol import Client_Protocol
 from configparser import ConfigParser
 import os
 import logging
-
+import sys
 import threading
 
 
@@ -32,8 +32,6 @@ def initialize_config():
             'flights_filename', config["DEFAULT"]["FLIGHTS_FILENAME"])
         config_params["airports_filename"] = os.getenv(
             'airports_filename', config["DEFAULT"]["AIRPORTS_FILENAME"])
-        config_params["id"] = int(os.getenv(
-            'BATCH_SIZE', config["DEFAULT"]["ID"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting client".format(e))
@@ -59,8 +57,14 @@ def initialize_log(logging_level):
 
 
 def main():
+    if len(sys.argv) != 2:
+        logging.error("Ingrese exactamente un páramentro")
+
+    id = int(sys.argv[1])
+    
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
+    logging.info(f'Id de cliente: {id}')
 
     port = config_params["port"]
     ip = config_params["ip"]
@@ -69,13 +73,13 @@ def main():
     airports_filename = config_params['airports_filename']
 
     socket = Client_Socket(ip, port)
-    listener = Client_Listener(ip, config_params["listener_port"], batch_size)
+    listener = Client_Listener(ip, config_params["listener_port"] + id, batch_size)
 
     if socket.connect():
-        protocol = Client_Protocol(socket, batch_size,config_params["id"])
+        protocol = Client_Protocol(socket, batch_size,id)
         reader = Reader(protocol, batch_size)
 
-        writer = Writer(listener)
+        writer = Writer(listener,str(id))
         handler = threading.Thread(target=writer.run)
         handler.start()
 

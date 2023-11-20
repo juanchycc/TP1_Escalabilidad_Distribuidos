@@ -23,6 +23,7 @@ class Serializer(BaseSerializer):
         pkt_type = bytes[PKT_TYPE_POSITION]
         client_id = bytes[CLIENT_ID_POSITION]
         payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8-sig')
+        logging.info(f'Recibo paquete del cliente: {client_id}')
         if pkt_type == HEADERS_FLIGHTS_PKT:
             self._flight_fields = payload.split(',')
         if pkt_type == FLIGHTS_PKT:

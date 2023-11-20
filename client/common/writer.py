@@ -5,8 +5,9 @@ HEADER_SIZE = 8
 
 
 class Writer():
-    def __init__(self, listener):
+    def __init__(self, listener,id):
         self._listener = listener
+        self.id = id
 
     def run(self):
         self._listener.start_recv(self.bytes_to_pkt)
@@ -28,6 +29,6 @@ class Writer():
         self.write_fligths(data, path)
 
     def write_fligths(self, flights, path):
-        with open("./out_file_q" + path + ".csv", 'a') as file:
+        with open("./out_file_q" + path + "-" + self.id + ".csv", 'a') as file:
             for f in flights:
                 file.write(f + '\n')

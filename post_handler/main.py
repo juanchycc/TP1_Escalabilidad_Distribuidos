@@ -1,6 +1,8 @@
 import os
 import logging
 import signal
+import socket
+import threading
 from configparser import ConfigParser
 from common.filter import FilterFields
 from common.middleware import Middleware
@@ -60,19 +62,36 @@ def initialize_log(logging_level):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
+def initialize(config_params,client_socket):
+    middleware = Middleware(
+            client_socket, config_params["exchange"], config_params["batch_size"])
+    keys = [config_params["key_1"], config_params["key_2"],
+        config_params["key_avg"], config_params["key_4"]]
+    serializer = Serializer(middleware, keys)
+    filter = FilterFields(serializer)
+    #signal.signal(signal.SIGTERM,middleware.shutdown)
+    filter.run()
 
 def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
-    middleware = Middleware(
-        config_params["port"], config_params["exchange"], config_params["batch_size"])
-    keys = [config_params["key_1"], config_params["key_2"],
-            config_params["key_avg"], config_params["key_4"]]
-    serializer = Serializer(middleware, keys)
-    filter = FilterFields(serializer)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
 
-    filter.run()
+
+    logging.info('action: waiting_client_connection | result: in_progress')
+    listening_socket  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listening_socket.bind(("", config_params["port"]))
+    listening_socket.listen()
+    while True:
+        client_socket, addr = listening_socket.accept()
+        logging.info(
+            f'action: accept_connection | result: in_progress | addr: {addr}')       
+        
+
+        joiner = threading.Thread(target=initialize,args=(config_params,client_socket,))
+        joiner.start()
+        
+
+
 
 
 if __name__ == "__main__":

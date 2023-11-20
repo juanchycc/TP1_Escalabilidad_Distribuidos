@@ -20,7 +20,7 @@ class Serializer(BaseSerializer):
         bytes = body
         pkt_type = bytes[PKT_TYPE_POSITION]
         payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
-        logging.info(f"payload: {payload}")
+        logging.debug(f"payload: {payload}")
         if pkt_type == FLIGHTS_PKT:
             self._callback(self._build_flights_or_airports(
                 payload, self._filtered_fields, ','))
@@ -57,7 +57,7 @@ class Serializer(BaseSerializer):
                         payload += ','
                 payload += '\n'
         # El -1 remueve el ultimo caracter
-        logging.info(f"Payload: {payload}")
+        logging.debug(f"Payload: {payload}")
         pkt_size = HEADER_SIZE + len(payload[:-1])
         pkt_header = bytearray(
             [FLIGHTS_PKT,client_id, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF]  + sequence_number)
