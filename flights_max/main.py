@@ -37,6 +37,8 @@ def initialize_config():
             'FILTER_FIELDS', config["DEFAULT"]["FILTER_FIELDS"])
         config_params["outfile"] = os.getenv(
             'OUTFILE', config["DEFAULT"]["OUTFILE"])
+        config_params["port_manager"] = int(os.getenv(
+            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -66,7 +68,7 @@ def main():
     initialize_log(config_params["logging_level"])
     fields = config_params["fields"].split(',')
 
-    server_thread = health_chequer_handler(12312)
+    server_thread = health_chequer_handler(config_params["port_manager"])
 
     # read from docker env, default 1
     num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))

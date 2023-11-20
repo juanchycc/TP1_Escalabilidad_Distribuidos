@@ -38,6 +38,8 @@ def initialize_config():
         config_params["key"] = os.getenv('KEY', config["DEFAULT"]["KEY"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
+        config_params["port_manager"] = int(os.getenv(
+            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -66,7 +68,7 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    server_thread = health_chequer_handler(12313)
+    server_thread = health_chequer_handler(config_params["port_manager"])
 
     fields = config_params["fields"].split(',')
     middleware = Middleware(config_params["in_exchange"], config_params["key"],

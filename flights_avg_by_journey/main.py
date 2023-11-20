@@ -36,6 +36,8 @@ def initialize_config():
             'FIELDS', config["DEFAULT"]["FIELDS"])
         config_params["outfile"] = os.getenv(
             'OUTFILE', config["DEFAULT"]["OUTFILE"])
+        config_params["port_manager"] = int(os.getenv(
+            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -64,7 +66,7 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    server_thread = health_chequer_handler(12315)
+    server_thread = health_chequer_handler(config_params["port_manager"])
 
     fields = config_params["fields"].split(',')
 

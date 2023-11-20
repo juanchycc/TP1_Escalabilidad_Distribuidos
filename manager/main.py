@@ -7,6 +7,11 @@ import threading
 from configparser import ConfigParser
 import socket
 
+MAX_RETRIES_HEALTCHECK = 5
+TIMEOUT_HEALTCHCHECK = 5.0
+INTERVAL_HEALTCHCHECK = 2
+SIZE_HEALTCHECK = 1024
+
 
 def initialize_config():
     """ Parse env variables or config file to find program config params
@@ -67,7 +72,8 @@ def main():
     ports_dict = json.loads(ports)
 
     logging.info("Starting manager server, layers")
-    time.sleep(120)  # esperar a que se levanten todos los nodos
+    # TODO: no es necesario, sirve para las pruebas -> esperar a que se levanten todos los nodos
+    time.sleep(30)
     create_healthchecks(layers_dict, config_params["port"], ports_dict)
 
 
@@ -93,33 +99,34 @@ def layer_health_controller(rec_address, layer_address, send_port, amount):
     sock.bind(rec_address)
 
     message = "healthcheck"
-    for i in range(amount):
-        send_address = (layer_address + str(i + 1), send_port)
+    while True:
+        for i in range(amount):
+            send_address = (layer_address + str(i + 1), send_port)
 
-        # Establecer un tiempo de espera de 5 segundos
-        sock.settimeout(10.0)
+            sock.settimeout(TIMEOUT_HEALTCHCHECK)
 
-        retries = 0
-        while retries <= 5:
-            # Enviar datos
-            print('sending {!r}'.format(message))
-            sent = sock.sendto(message.encode(), send_address)
+            retries = 0
+            while retries <= MAX_RETRIES_HEALTCHECK:
+                try:
+                    # Enviar datos
+                    sent = sock.sendto(message.encode(), send_address)
 
-            try:
-                # Recibir respuesta
-                print('waiting to receive')
-                data, server = sock.recvfrom(4096)
-                print('received {!r}'.format(data.decode()))
-                break
-            except socket.timeout:
-                print('no response received, resending message')
-                retries += 1
-                time.sleep(2 ** retries)
+                    # Recibir respuesta
+                    data, server = sock.recvfrom(SIZE_HEALTCHECK)
+                    break
+                except socket.timeout:
+                    retries += 1
+                    time.sleep(INTERVAL_HEALTCHCHECK ** retries)
+                except Exception as e:
+                    logging.error(f"Error sending message: {e}")
+                    retries = MAX_RETRIES_HEALTCHECK + 1
 
-        if retries > 5:
-            print('Failed to receive response after 5 retries')
-    print('closing socket')
-    sock.close()
+            if retries > MAX_RETRIES_HEALTCHECK:
+                logging.info("Layer {} is down".format(
+                    layer_address + str(i + 1)))
+                os.system("docker start " + layer_address + str(i + 1))
+    # TODO: en caso de graceful shutdown o finalizacion debe cerrar el socket
+    # sock.close()
 
 
 if __name__ == "__main__":
