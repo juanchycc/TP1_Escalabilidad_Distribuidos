@@ -326,6 +326,8 @@ manager = """  manager_#:
         condition: service_healthy
     environment:
       - PYTHONUNBUFFERED=1
+      - MANAGER_ID=#
+      - MANAGER_AMOUNT=$
       - LAYER=!
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -333,6 +335,7 @@ manager = """  manager_#:
 """
 
 manager = manager.replace('!', str(layers).replace(' ', ''))
+manager = manager.replace('$', str(args.m))
 
 final_manager = ""
 for i in range(1, args.m + 1):
