@@ -16,12 +16,12 @@ class Serializer(BaseSerializer):
         self._callback = callback
         self._middleware.start_recv(self.bytes_to_pkt)
 
-    def send_pkt(self, pkt):
+    def send_pkt(self, pkt,original_pkt):
 
         if len(pkt) > 0:
             pkt.insert(0, [self._outfile])
 
-            self._send_pkt(pkt, "", FLIGHTS_PKT)
+            self._send_pkt(pkt, "", FLIGHTS_PKT,original_pkt)
             pkt.pop(0)
 
         output = {i: [] for i in range(1, self._num_groups + 1)}
@@ -32,4 +32,25 @@ class Serializer(BaseSerializer):
 
         for i in range(1, self._num_groups + 1):  # Envia a cada nodo del filter max
             if len(output[i]) > 0:
-                self._send_pkt(output[i], str(i), FLIGHTS_PKT)
+                self._send_pkt(output[i], str(i), FLIGHTS_PKT,original_pkt)
+
+    #TODO: Volver a generalizar esto
+    def _send_pkt(self, pkt, key,header,original_pkt):
+        # logging.info(f"output: {pkt}")
+        
+        payload = ""
+        for flight in pkt:
+            last_field = len(flight) - 1
+            for i, field in enumerate(flight):
+                payload += field
+                if i != last_field:
+                    payload += ','
+            payload += '\n'
+        # El -1 remueve el ultimo caracter
+        logging.debug(f"Payload: {payload[:-1]}")
+
+        pkt_size = HEADER_SIZE + len(payload[:-1])
+        pkt_header = bytearray(
+            [header,original_pkt.get_client_id(), (pkt_size >> 8) & 0xFF, pkt_size & 0xFF] + original_pkt.get_pkt_number_bytes())
+        pkt = pkt_header + payload[:-1].encode('utf-8')
+        self._middleware.send(pkt, key)

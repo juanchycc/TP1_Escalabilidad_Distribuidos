@@ -1,32 +1,31 @@
 import logging
 from utils.constants import *
+from utils.packet import *
 
 
 class BaseSerializer():
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
-        pkt_type = bytes[PKT_TYPE_POSITION]
-        payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
-        if pkt_type == FLIGHTS_PKT:
-            self._callback(self._build_flights_or_airports(payload,self._filtered_fields,','))
+        pkt = pkt_from_bytes(bytes,self._filtered_fields)
+        #pkt_type = bytes[PKT_TYPE_POSITION]
+        #payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
+        if pkt.get_pkt_type() == FLIGHTS_PKT:
+            self._callback(pkt)
 
-        if pkt_type == FLIGHTS_FINISHED_PKT:
-            
-            logging.info(f"Llego finished pkt: {bytes}")
-            pkt = bytearray(bytes[:9])
-            amount_finished = pkt[8]
+        if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:            
+            logging.info(f"Llego finished pkt: {bytes}")            
+            amount_finished = pkt.get_payload()
             logging.info(f"Cantidad de nodos iguales que f: {amount_finished}")
             if amount_finished + 1 == self._num_filters:
-                pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
-                self._middleware.send(pkt, str(1))
-                self._middleware.send(pkt, "")  # To file writer
+                packet = build_finish_pkt(pkt.get_client_id(),pkt.get_pkt_number_bytes(),0)
+                self._middleware.send(packet, str(1))
+                self._middleware.send(packet, "")  # To file writer
 
             else:
-                pkt = bytearray(
-                    [FLIGHTS_FINISHED_PKT,1, 0, 9,0,0,0,0, amount_finished + 1])
+                packet = build_finish_pkt(pkt.get_client_id(),pkt.get_pkt_number_bytes(),amount_finished + 1)
                 logging.info(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
-                self._middleware.resend(pkt)
+                self._middleware.resend(packet)
 
             self._middleware.shutdown()
     

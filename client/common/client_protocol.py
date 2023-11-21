@@ -46,13 +46,13 @@ class Client_Protocol:
 
     def send_finished_flights_pkt(self):
         logging.info("Sending finished flights pkt")
-        padding_length = self.batch_size - HEADER_SIZE
+        padding_length = self.batch_size - HEADER_SIZE - 1
         self.socket.send_packet(
-            bytearray([FLIGHTS_FINISHED_PKT,self.id, 0, HEADER_SIZE] + self.get_pkt_number()) + (b'\x00'*padding_length))
+            bytearray([FLIGHTS_FINISHED_PKT,self.id, 0, HEADER_SIZE] + self.get_pkt_number() + [0])  + (b'\x00'*padding_length))
 
     def send_finished_airports_pkt(self):
         logging.info("Sending airports flights pkt")
-        padding_length = self.batch_size - HEADER_SIZE
+        padding_length = self.batch_size - HEADER_SIZE 
         self.socket.send_packet(
             bytearray([AIRPORT_FINISHED_PKT,self.id, 0, HEADER_SIZE] + self.get_pkt_number()) + (b'\x00'*padding_length))
         
