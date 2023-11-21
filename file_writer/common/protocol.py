@@ -22,7 +22,7 @@ class Serializer:
         #logging.info(f'Llego: {aux}')
         padding_length = self._batch_size - len(bytes)
         packet = bytearray(bytes) + (b'\x00'*padding_length)
-
+        pkt = pkt_from_bytes(bytes)
         if pkt_type == FLIGHTS_FINISHED_PKT:
             logging.debug(f"Recibo finished pkt")
             self._finished_amount += 1
@@ -30,7 +30,11 @@ class Serializer:
                 logging.info(f"Todas las querys terminaron, puedo finalizar")
                 self._middleware.send_packet(packet)
                 self._middleware.shutdown()
-        else:
-            pkt = pkt_from_bytes(bytes)
-            logging.info(f'Llego paquete de {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
-            self._middleware.send_packet(packet)
+        
+        
+        if pkt_type == LISTENER_PORT_PKT:
+            logging.info(f'Llego listener port packet | puerto {pkt.get_payload()}')
+            self._middleware.connect_to_client(pkt.get_client_id(),int(pkt.get_payload()))
+        if pkt_type == FLIGHTS_PKT:
+            logging.debug(f'Llego paquete de {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
+            self._middleware.send_packet(packet,pkt.get_client_id())

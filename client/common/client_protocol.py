@@ -58,7 +58,7 @@ class Client_Protocol:
         
     def send_listener_port(self,listener_port):
         logging.info("Sending listener port pkt")
-        str_listener_port = str(listener_port)
+        str_listener_port = str(listener_port + self.id)
         padding_length = self.batch_size - HEADER_SIZE - len(str_listener_port)
         self.socket.send_packet(
             bytearray([LISTENER_PORT_PKT,self.id, 0, HEADER_SIZE + len(str_listener_port)] + self.get_pkt_number()) + str_listener_port.encode('utf-8') + (b'\x00'*padding_length))

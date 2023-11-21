@@ -39,6 +39,8 @@ def initialize_config():
         config_params["key_4"] = os.getenv('KEY_4', config["DEFAULT"]["KEY_4"])
         config_params["batch_size"] = int(os.getenv(
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
+        config_params["sink_exchange"] = os.getenv(
+            'EXCHANGE', config["DEFAULT"]["SINK_EXCHANGE"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -64,7 +66,7 @@ def initialize_log(logging_level):
 
 def initialize(config_params,client_socket):
     middleware = Middleware(
-            client_socket, config_params["exchange"], config_params["batch_size"])
+            client_socket, config_params["exchange"], config_params["batch_size"],config_params["sink_exchange"])
     keys = [config_params["key_1"], config_params["key_2"],
         config_params["key_avg"], config_params["key_4"]]
     serializer = Serializer(middleware, keys)

@@ -29,8 +29,6 @@ def initialize_config():
             'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
         config_params["ip"] = os.getenv(
             'SERVER_IP', config["DEFAULT"]["SERVER_IP"])
-        config_params["listener_port"] = int(
-            os.getenv('LISTENER_PORT', config["DEFAULT"]["LISTENER_PORT"]))
         config_params["batch_size"] = int(os.getenv(
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
     except KeyError as e:
@@ -62,7 +60,7 @@ def main():
     initialize_log(config_params["logging_level"])
 
     middleware = Middleware(
-        config_params["in_exchange"], config_params["ip"], config_params["listener_port"])
+        config_params["in_exchange"], config_params["ip"])
     serializer = Serializer(middleware, config_params["batch_size"])
     signal.signal(signal.SIGTERM, middleware.shutdown)
     serializer.run()

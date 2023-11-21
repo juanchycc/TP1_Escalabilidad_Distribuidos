@@ -6,7 +6,7 @@ from middleware.base_middleware import BaseMiddleware
 
 class Middleware(BaseMiddleware):
 
-    def __init__(self, client_socket, exchange, batch_size):
+    def __init__(self, client_socket, exchange, batch_size,sink_exchange):
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -18,6 +18,7 @@ class Middleware(BaseMiddleware):
         self._finished = False
 
         self._batch_size = batch_size
+        self._sink_exchange = sink_exchange
 
     def start_recv(self, callback):
         
@@ -47,5 +48,9 @@ class Middleware(BaseMiddleware):
         self._connection.close()
         logging.info('action: shutdown | result: success')
 
-    #def send_pkt_to_sink(self,pkt):
+    def send_pkt_to_sink(self,pkt):
+        channel = self._connect_out_exchange(self._sink_exchange)
+        channel.basic_publish(exchange=self._sink_exchange,routing_key='',body=pkt)
+        channel.close()
+
         

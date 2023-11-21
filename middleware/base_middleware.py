@@ -31,10 +31,10 @@ class BaseMiddleware():
             exchange=exchange, queue=queue_name, routing_key=routing_key)
         return channel, queue_name
 
-    def _connect_out_exchange(self, exchange):
+    def _connect_out_exchange(self, exchange,exchange_type = 'direct'):
         channel = self._connection.channel()
         channel.exchange_declare(
-            exchange=exchange, exchange_type='direct')
+            exchange=exchange, exchange_type=exchange_type)
 
         return channel
 

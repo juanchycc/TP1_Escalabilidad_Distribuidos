@@ -36,6 +36,7 @@ class Serializer(BaseSerializer):
         if pkt.get_pkt_type() == LISTENER_PORT_PKT:
             logging.info(
                 'action: bytes_to_pkt | info: rec listener port pkt')
+            self._middleware.send_pkt_to_sink(bytearray(bytes))
 
         if pkt.get_pkt_type() == HEADERS_AIRPORT_PKT:
             self._airport_fields = pkt.get_payload()

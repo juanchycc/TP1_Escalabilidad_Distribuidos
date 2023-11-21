@@ -22,7 +22,7 @@ class Serializer(BaseSerializer):
         #pkt_type = bytes[PKT_TYPE_POSITION]
         #payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
         pkt = pkt_from_bytes(body,self._filtered_fields)
-        logging.info(f'Recibo paquete del cliente: {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
+        logging.debug(f'Recibo paquete del cliente: {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
         #logging.info(f'Payload: {pkt.get_payload()}')
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             self._callback(pkt.get_payload()) # Aca mandar todo/ client id, para que sepa el filter

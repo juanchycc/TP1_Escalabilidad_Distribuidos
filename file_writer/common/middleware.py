@@ -5,7 +5,7 @@ import socket
 
 class Middleware:
 
-    def __init__(self, in_exchange, ip, port):
+    def __init__(self, in_exchange, ip):
 
         # Configure in queue
         self._connection = pika.BlockingConnection(
@@ -20,8 +20,8 @@ class Middleware:
         self._in_channel.queue_bind(
             exchange=in_exchange, queue=self._in_queue_name, routing_key="")
 
-        self._address = (ip, port)
-        self._client_socket = None
+        self._client_ip = ip
+        self._client_sockets = {}
 
     def start_recv(self, callback):
         try:
@@ -32,23 +32,31 @@ class Middleware:
             logging.error(
                 'action: start_recv | result: failed | error: %s' % e)
 
-    def send_packet(self, packet):
-        logging.debug(
-                f'addr: {self._address}')
-        if self._client_socket is None:
-            self._client_socket = socket.socket(
+    def connect_to_client(self,client,port):
+        client_socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
-            self._client_socket.connect(self._address)
+        client_socket.connect((self._client_ip,port))
 
-        if self._client_socket is None:
+        if client_socket is None:
+            logging.info(
+                f'action: send_packet | result: socket for client: {client} could not be connected')
+            return
+
+        self._client_sockets[client] = client_socket
+
+    def send_packet(self, packet,client):
+        
+        client_socket = self._client_sockets.get(client,None)
+
+        if client_socket is None:
             logging.info(
                 f'action: send_packet | result: socket is not connected')
-            return
+            return        
 
         # Enviar mientras queden bytes por enviar
         while len(packet) > 0:
             try:
-                sent_bytes = self._client_socket.send(packet)
+                sent_bytes = client_socket.send(packet)
                 logging.debug(
                     f'action: send_packet | result: packet: {packet}')
                 logging.debug(f'action: send_packet | result: in_progress')
@@ -61,5 +69,5 @@ class Middleware:
         self._in_channel.stop_consuming()
         self._in_channel.close()
         self._connection.close()
-        self._client_socket.close()
+        #self._client_socket.close() -> Cerrar todas las conexiones activas ahora
         logging.info('action: shutdown | result: success')
