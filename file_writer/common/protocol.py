@@ -1,5 +1,6 @@
 import logging
 from utils.constants import *
+from utils.packet import *
 
 QUERY_AMOUNT = 2
 
@@ -30,4 +31,6 @@ class Serializer:
                 self._middleware.send_packet(packet)
                 self._middleware.shutdown()
         else:
+            pkt = pkt_from_bytes(bytes)
+            logging.info(f'Llego paquete de {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
             self._middleware.send_packet(packet)
