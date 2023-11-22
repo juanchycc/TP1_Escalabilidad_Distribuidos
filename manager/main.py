@@ -4,8 +4,9 @@ import signal
 import time
 import json
 from configparser import ConfigParser
-from common.healthcheck import start_healthchecks
+from common.healthcheck import *
 from common.bully import Bully
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -74,8 +75,22 @@ def main():
     time.sleep(30)
     bully = Bully(manager_amount, manager_id, 5000)
     bully.start_listener()
-    bully.start_lider_election()
-    # start_healthchecks(layers_dict, config_params["port"], ports_dict)
+
+    finish = False
+
+    while not finish:
+        lider = bully.start_lider_election()
+        if lider:
+            logging.info("Soy el lider")
+            server_thread = health_chequer_handler(12347)
+            # chequear nodos
+            start_healthchecks(layers_dict, config_params["port"], ports_dict)
+        else:
+
+            leader = bully.get_leader()
+            # chequear lider
+            print(f"debo chequear al lider: {leader}")
+            layer_health_controller(("", 12347), leader, 12347, 1)
 
 
 if __name__ == "__main__":

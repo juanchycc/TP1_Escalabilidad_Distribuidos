@@ -22,7 +22,7 @@ def udp_manager(rec_address, send_port):
     sock.bind(rec_address)
     while True:
         data, address = sock.recvfrom(PACKET_SIZE)
-
+        print("recibo")
         if data:
             sent = sock.sendto("Hello, Client!".encode(),
                                (address[0], send_port))

@@ -330,6 +330,7 @@ manager = """  manager_#:
       - MANAGER_AMOUNT=$
       - LAYER=!
     volumes:
+      - ./utils:/utils
       - /var/run/docker.sock:/var/run/docker.sock
 
 """

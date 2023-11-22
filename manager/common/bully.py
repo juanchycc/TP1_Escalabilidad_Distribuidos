@@ -34,46 +34,40 @@ class Bully:
     def wait_for_ok(self, timeout):
         self._ok_received.wait(timeout=timeout)
 
-    def start_lider_election(self):
+    def get_leader(self) -> str:
+        return self._leader
+
+    def start_lider_election(self) -> bool:
 
         self._leader_set.clear()
         self._leader = ""
 
         if self._id == self._manager_amount:
-            message = str(LIDER_TYPE) + ";" + str(self._id)
+            type = LIDER_TYPE
             self._leader = "manager_" + str(self._id)
             start = 1
         else:
             self._ok_received.clear()
             self._ok_status = ""
-            message = str(ELECTION_TYPE) + ";" + str(self._id)
+            type = ELECTION_TYPE
             start = self._id + 1
 
-        for i in range(start, self._manager_amount + 1):
-            if i == self._id:
-                continue
-            try:
-                # Enviar election
-                sent = self._sock.sendto(
-                    message.encode(), ("manager_" + str(i), self._port))
-            except Exception as e:
-                logging.error(f"Error sending message: {e}")
+        self.send_mesagges(type, start)
 
         if not self._id == self._manager_amount:
             self.wait_for_ok(BULLY_TIMEOUT)
 
             if self._ok_received == "":
                 logging.info(f"Nadie respondio OK, soy el lider")
-                return
+                return True
 
             self.wait_for_leader(BULLY_TIMEOUT)
 
             if self._leader == "":
                 logging.info(f"Nadie respondio LIDER, soy el lider")
-                return
-
-        logging.info(f"Electo {self._leader}")
-        self._listener.join()
+                return True
+        else:
+            return True
 
     def listen_messages(self):
         logging.info(f"ESPERANDO")
@@ -105,16 +99,7 @@ class Bully:
                     except Exception as e:
                         logging.error(f"Error sending message: {e}")
                 else:
-                    for i in range(self._id + 1, self._manager_amount + 1):
-                        if i == self._id:
-                            continue
-                        try:
-                            # Enviar election
-                            message = str(ELECTION_TYPE) + ";" + str(self._id)
-                            sent = self._sock.sendto(
-                                message.encode(), ("manager_" + str(i), self._port))
-                        except Exception as e:
-                            logging.error(f"Error sending message: {e}")
+                    self.send_mesagges(ELECTION_TYPE, self._id + 1)
 
             elif rec_data[0] == str(OK_TYPE):
                 self._ok_status = "OK"
@@ -123,3 +108,16 @@ class Bully:
             elif rec_data[0] == str(LIDER_TYPE):
                 self._leader = "manager_" + str(rec_data[1])
                 self._leader_set.set()
+
+    def send_mesagges(self, message_type, start):
+
+        message = str(message_type) + ";" + str(self._id)
+
+        for i in range(start, self._manager_amount + 1):
+            if i == self._id:
+                continue
+            try:
+                sent = self._sock.sendto(
+                    message.encode(), ("manager_" + str(i), self._port))
+            except Exception as e:
+                logging.error(f"Error sending message: {e}")
