@@ -52,7 +52,8 @@ class Serializer(BaseSerializer):
             packet = self._build_finish_pkt(FLIGHTS_FINISHED_PKT,pkt.get_client_id())
             for key in self._keys:
                 logging.debug(f"Sending finished pkt | key: {key}")
-                self._middleware.send(packet, key)       
+                self._middleware.send(packet, key)
+            self._middleware.send(packet,"1") # Al primer flight filter    
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(

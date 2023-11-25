@@ -1,6 +1,6 @@
 import logging
 
-HEADER_PKT_FINISH = 3
+FLIGHTS_FINISHED_PKT = 3
 HEADER_SIZE = 8
 
 
@@ -17,7 +17,7 @@ class Writer():
         pkt_type = bytes[0]
         payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8-sig')
 
-        if pkt_type == HEADER_PKT_FINISH:
+        if pkt_type == FLIGHTS_FINISHED_PKT:
             logging.info(f"Llego un finish, finalizo")
             self._listener.shutdown()
             return

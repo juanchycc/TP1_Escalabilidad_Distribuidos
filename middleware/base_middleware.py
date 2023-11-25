@@ -52,9 +52,9 @@ class BaseMiddleware():
         self._out_channel.basic_publish(
             exchange=self._out_exchange, routing_key=routing_key, body=bytes)
 
-    def resend(self, bytes):
+    def resend(self, bytes,key):
         self._in_channel.basic_publish(
-            exchange=self._in_exchange, routing_key=self._in_key, body=bytes)
+            exchange=self._in_exchange, routing_key=key, body=bytes)
 
     def send_ack(self,ch,method):
         self._in_channel.basic_ack(method.delivery_tag)
