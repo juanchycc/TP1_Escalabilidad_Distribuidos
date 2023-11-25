@@ -18,18 +18,16 @@ class Serializer(BaseSerializer):
         self._middleware.start_recv(self.bytes_to_pkt)
 
     def bytes_to_pkt(self, ch, method, properties, body):
-        #bytes = body
-        #pkt_type = bytes[PKT_TYPE_POSITION]
-        #payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
+        
         pkt = pkt_from_bytes(body,self._filtered_fields)
         logging.debug(f'Recibo paquete del cliente: {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
         #logging.info(f'Payload: {pkt.get_payload()}')
         if pkt.get_pkt_type() == FLIGHTS_PKT:
-            self._callback(pkt.get_payload()) # Aca mandar todo/ client id, para que sepa el filter
+            self._callback(pkt.get_payload(),pkt.get_client_id()) # Aca mandar todo/ client id, para que sepa el filter
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
-            logging.info(f"Llego finished pkt: {bytes}")
-            self._final_callback()            
+            logging.info(f"Llego finished pkt")
+            self._final_callback(pkt.get_client_id())            
             amount_finished = pkt.get_payload()
             logging.info(
                 f"Cantidad de nodos iguales que f: {amount_finished}")
@@ -41,9 +39,9 @@ class Serializer(BaseSerializer):
                 packet = build_finish_pkt(pkt.get_client_id(),pkt.get_pkt_number_bytes(),amount_finished + 1)
                 logging.info(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
-                self._middleware.resend(packet)
+                self._middleware.resend(packet) # Corregir para eliminar el middleware de este nodo
 
-            self._middleware.shutdown()
+            
 
     def send_pkt(self, pkt,client_id = 0):
         
