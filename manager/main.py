@@ -27,7 +27,9 @@ def initialize_config():
     config_params = {}
     try:
         config_params["port"] = int(
-            os.getenv('_MANAGER_PORT', config["DEFAULT"]["MANAGER_PORT"]))
+            os.getenv('MANAGER_PORT', config["DEFAULT"]["MANAGER_PORT"]))
+        config_params["bully_port"] = int(
+            os.getenv('BULLY_PORT', config["DEFAULT"]["BULLY_PORT"]))
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["layers_ports"] = os.getenv(
@@ -73,24 +75,24 @@ def main():
     logging.info("Starting manager server")
     # TODO: no es necesario, sirve para las pruebas -> esperar a que se levanten todos los nodos
     time.sleep(30)
-    bully = Bully(manager_amount, manager_id, 5000)
+    port = config_params["port"]
+
+    bully = Bully(manager_amount, manager_id,
+                  config_params["bully_port"], port)
     bully.start_listener()
 
     finish = False
+
+    server_thread = health_chequer_handler(port)
 
     while not finish:
         lider = bully.start_lider_election()
         if lider:
             logging.info("Soy el lider")
-            server_thread = health_chequer_handler(12347)
-            # chequear nodos
-            start_healthchecks(layers_dict, config_params["port"], ports_dict)
-        else:
 
-            leader = bully.get_leader()
-            # chequear lider
-            print(f"debo chequear al lider: {leader}")
-            layer_health_controller(("", 12347), leader, 12347, 1)
+            # chequear nodos
+            start_healthchecks(layers_dict, port, ports_dict,
+                               "manager_" + str(manager_id), True)
 
 
 if __name__ == "__main__":

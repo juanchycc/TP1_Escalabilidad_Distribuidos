@@ -1,3 +1,4 @@
+from common.healthcheck import layer_health_controller
 import socket
 import logging
 import threading
@@ -11,7 +12,7 @@ OK_TYPE = 2
 
 
 class Bully:
-    def __init__(self, manager_amount, id, port):
+    def __init__(self, manager_amount, id, port, health_port):
         self._manager_amount = manager_amount
         self._id = id
         self._port = port
@@ -21,6 +22,7 @@ class Bully:
         self._ok_status = ""
         self._listener = threading.Thread(target=self.listen_messages)
         self._leader = ""
+        self._health_port = health_port
 
     def start_listener(self):
         self._listener.start()
@@ -68,6 +70,9 @@ class Bully:
                 return True
         else:
             return True
+        layer_health_controller(("", self._health_port), self.get_leader(), self._health_port,
+                                1, "manager_" + str(self._id), False)
+        print(f"debo chequear al lider")
 
     def listen_messages(self):
         logging.info(f"ESPERANDO")
