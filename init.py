@@ -16,16 +16,16 @@ args = parser.parse_args()
 
 
 # list of names of output files
-output_files = ["out_file_q1.csv", "out_file_q2.csv",
-                "out_file_q3.csv", "out_file_q4.csv"]
+#output_files = ["out_file_q1.csv", "out_file_q2.csv",
+#                "out_file_q3.csv", "out_file_q4.csv"]
 
 # create output files
-for o in output_files:
-    file_path = "./client/" + o
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    file = open(file_path, "w")
-    file.close()
+#for o in output_files:
+#    file_path = "./client/" + o
+#    if os.path.exists(file_path):
+#        os.remove(file_path)
+#    file = open(file_path, "w")
+#    file.close()
 
 initial_text = """version: '3.9'
 services:
@@ -59,6 +59,7 @@ post_handler_text = """  post_handler:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=&
     volumes:
       - ./post_handler/config.ini:/config.ini
       - ./utils:/utils
@@ -85,6 +86,7 @@ flights_filter_plus_3_text = """  flights_filter_plus_3_#:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_PLUS_AMOUNT=& 
       - FLIGHTS_MAX_AMOUNT=$
+      - FLIGHT_FILTER_ID=#
     volumes:
       - ./flights_filter/config.ini:/config.ini
       - ./utils:/utils
@@ -325,6 +327,8 @@ for i in range(1, args.q4 + 1):
         flights_avg_by_journey.replace('#', str(i))
 final_text_flights_avg_by_journey = final_text_flights_avg_by_journey.replace(
     '&', str(args.q4))
+
+post_handler_text = post_handler_text.replace('&',str(args.q1))
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +

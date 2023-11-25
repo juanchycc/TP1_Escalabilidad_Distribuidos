@@ -1,17 +1,19 @@
 import logging
 from utils.constants import *
 from utils.packet import *
+import time
 
 
 class BaseSerializer():
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt = pkt_from_bytes(bytes,self._filtered_fields)
-        #pkt_type = bytes[PKT_TYPE_POSITION]
-        #payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8')
+        #logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()}')
+        #time.sleep(5)
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             self._callback(pkt)
-
+            self._middleware.send_ack(ch,method)
+        
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:            
             logging.info(f"Llego finished pkt: {bytes}")            
             amount_finished = pkt.get_payload()

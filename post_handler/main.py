@@ -64,12 +64,13 @@ def initialize_log(logging_level):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-def initialize(config_params,client_socket):
+def initialize(config_params,client_socket,fligth_filter_amount):
     middleware = Middleware(
             client_socket, config_params["exchange"], config_params["batch_size"],config_params["sink_exchange"])
     keys = [config_params["key_1"], config_params["key_2"],
         config_params["key_avg"], config_params["key_4"]]
-    serializer = Serializer(middleware, keys)
+    
+    serializer = Serializer(middleware, keys,fligth_filter_amount)
     filter = FilterFields(serializer)
     #signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
@@ -88,8 +89,8 @@ def main():
         logging.info(
             f'action: accept_connection | result: in_progress | addr: {addr}')       
         
-
-        joiner = threading.Thread(target=initialize,args=(config_params,client_socket,))
+        fligth_filter_amount = int(os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT',1))
+        joiner = threading.Thread(target=initialize,args=(config_params,client_socket,fligth_filter_amount,))
         joiner.start()
         
 

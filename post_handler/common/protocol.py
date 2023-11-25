@@ -5,7 +5,7 @@ from middleware.base_protocol import BaseSerializer
 
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, keys):
+    def __init__(self, middleware, keys,flight_filter_amount):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -13,6 +13,7 @@ class Serializer(BaseSerializer):
         self._airport_callback = None
         self._airport_fields = None
         self._keys = keys
+        self._flight_filter_amount = flight_filter_amount
 
     def run(self, fligth_callback, airport_callback):
         self._fligth_callback = fligth_callback
@@ -65,7 +66,11 @@ class Serializer(BaseSerializer):
         self._middleware.send_pkt_to_sink()
 
     def send_pkt_query1(self, pkt,original_pkt):
-        self._send_pkt(pkt, self._keys[0], FLIGHTS_PKT,original_pkt)
+        # TODO: Probablemente se puede generalizar en una funcion
+        pkt_number = original_pkt.get_pkt_number()
+        key = pkt_number % self._flight_filter_amount
+        if key == 0: key += self._flight_filter_amount
+        self._send_pkt(pkt, str(key), FLIGHTS_PKT,original_pkt)
 
     def send_pkt_query_avg(self, pkt,original_pkt):
         self._send_pkt(pkt, self._keys[2], FLIGHTS_PKT,original_pkt)
