@@ -7,7 +7,7 @@ class Reader:
         self.protocol = protocol
         self.batch_size = batch_size
 
-    def read(self, action, filename):
+    def read(self, action, filename,listener_port = None):
 
         if not os.path.isfile(filename):
             logging.info(
@@ -17,7 +17,10 @@ class Reader:
         envio_header = False
         total_read = 0
 
-        with open(filename, 'r') as file:
+        if listener_port is not None:
+            self.protocol.send_listener_port(listener_port)
+
+        with open(filename, 'r',encoding='utf-8-sig') as file:
 
             batch = []
             for line in file:
@@ -39,7 +42,7 @@ class Reader:
                 logging.debug(
                     f'total_read: {total_read}, new_line: {size}')
                 # 3 = header size
-                if total_read + len(new_line.encode('utf-8')) >= self.batch_size - 3:
+                if total_read + len(new_line.encode('utf-8')) >= self.batch_size - 8:
                     logging.debug(
                         f'action: {action} | result: batch: {batch}')
                     if action == "read_flights":

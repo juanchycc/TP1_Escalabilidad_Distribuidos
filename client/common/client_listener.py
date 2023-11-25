@@ -27,7 +27,7 @@ class Client_Listener:
                 if not size_read:
                     if bytes_read == 0:
                         return
-                    size_of_packet = (bytes[1] << 8) | bytes[2]
+                    size_of_packet = (bytes[2] << 8) | bytes[3]
                     size_read = True
             callback(bytes[:size_of_packet])
 

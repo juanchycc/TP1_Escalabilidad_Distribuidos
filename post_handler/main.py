@@ -1,6 +1,8 @@
 import os
 import logging
 import signal
+import socket
+import threading
 from configparser import ConfigParser
 from common.filter import FilterFields
 from common.middleware import Middleware
@@ -37,6 +39,8 @@ def initialize_config():
         config_params["key_4"] = os.getenv('KEY_4', config["DEFAULT"]["KEY_4"])
         config_params["batch_size"] = int(os.getenv(
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
+        config_params["sink_exchange"] = os.getenv(
+            'EXCHANGE', config["DEFAULT"]["SINK_EXCHANGE"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -60,6 +64,16 @@ def initialize_log(logging_level):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
+def initialize(config_params,client_socket,fligth_filter_amount):
+    middleware = Middleware(
+            client_socket, config_params["exchange"], config_params["batch_size"],config_params["sink_exchange"])
+    keys = [config_params["key_1"], config_params["key_2"],
+        config_params["key_avg"], config_params["key_4"]]
+    
+    serializer = Serializer(middleware, keys,fligth_filter_amount)
+    filter = FilterFields(serializer)
+    #signal.signal(signal.SIGTERM,middleware.shutdown)
+    filter.run()
 
 def main():
 
@@ -67,15 +81,21 @@ def main():
 
     initialize_log(config_params["logging_level"])
 
-    middleware = Middleware(
-        config_params["port"], config_params["exchange"], config_params["batch_size"])
-    keys = [config_params["key_1"], config_params["key_2"],
-            config_params["key_avg"], config_params["key_4"]]
-    serializer = Serializer(middleware, keys)
-    filter = FilterFields(serializer)
-    signal.signal(signal.SIGTERM, middleware.shutdown)
+    logging.info('action: waiting_client_connection | result: in_progress')
+    listening_socket  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listening_socket.bind(("", config_params["port"]))
+    listening_socket.listen()
+    while True:
+        client_socket, addr = listening_socket.accept()
+        logging.info(
+            f'action: accept_connection | result: in_progress | addr: {addr}')       
+        
+        fligth_filter_amount = int(os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT',1))
+        joiner = threading.Thread(target=initialize,args=(config_params,client_socket,fligth_filter_amount,))
+        joiner.start()
+        
 
-    filter.run()
+
 
 
 if __name__ == "__main__":

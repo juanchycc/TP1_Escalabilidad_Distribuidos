@@ -9,9 +9,9 @@ class FilterFlightsPlusThree:
     def run(self):
         self._serializer.run(self.filter_fligths)
 
-    def filter_fligths(self, flights):
+    def filter_fligths(self, batch):
         output = []
-
+        flights = batch.get_payload()
         logging.debug(f"Flights {flights} ")
 
         for flight in flights:
@@ -24,4 +24,4 @@ class FilterFlightsPlusThree:
                 output.append(filtered_flight)
         logging.debug(f"Output {output} ")
 
-        self._serializer.send_pkt(output)
+        self._serializer.send_pkt(output,batch)

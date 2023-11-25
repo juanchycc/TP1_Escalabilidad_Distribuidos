@@ -6,7 +6,7 @@ from middleware.base_middleware import BaseMiddleware
 
 class Middleware(BaseMiddleware):
 
-    def __init__(self, port, exchange, batch_size):
+    def __init__(self, client_socket, exchange, batch_size,sink_exchange):
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -14,33 +14,31 @@ class Middleware(BaseMiddleware):
         self._out_exchange = exchange
 
         # Configure socket to listen to client
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.bind(("", port))
-        self._socket.listen()
+        self._client_socket = client_socket
         self._finished = False
 
         self._batch_size = batch_size
+        self._sink_exchange = sink_exchange
 
     def start_recv(self, callback):
-        logging.info('action: waiting_client_connection | result: in_progress')
-        client_socket, addr = self._socket.accept()
-        logging.info(
-            f'action: accept_connection | result: in_progress | addr: {addr}')
+        
         while not self._finished:
             bytes_read = 0
             bytes = []
             size_of_packet = self._batch_size
             size_read = False
             while bytes_read < self._batch_size:
-                bytes += list(client_socket.recv(self._batch_size - bytes_read))
+                bytes += list(self._client_socket.recv(self._batch_size - bytes_read))
                 logging.debug(f'bytes: {bytes}')
                 bytes_read = len(bytes)
                 logging.debug(f'bytes len: {bytes_read}')
                 if not size_read:
                     if bytes_read == 0:
                         return
-                    size_of_packet = (bytes[1] << 8) | bytes[2]
-                    size_read = True
+                    logging.debug(f'bytes: {bytes}')
+                    if bytes_read > 3:
+                        size_of_packet = (bytes[2] << 8) | bytes[3]
+                        size_read = True
 
             callback(bytes[:size_of_packet])
 
@@ -49,3 +47,10 @@ class Middleware(BaseMiddleware):
         self._out_channel.close()
         self._connection.close()
         logging.info('action: shutdown | result: success')
+
+    def send_pkt_to_sink(self,pkt):
+        channel = self._connect_out_exchange(self._sink_exchange)
+        channel.basic_publish(exchange=self._sink_exchange,routing_key='',body=pkt)
+        channel.close()
+
+        
