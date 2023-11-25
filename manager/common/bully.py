@@ -4,7 +4,7 @@ import logging
 import threading
 
 SIZE_BULLY = 1024
-BULLY_TIMEOUT = 100
+BULLY_TIMEOUT = 60
 
 ELECTION_TYPE = 0
 LIDER_TYPE = 1

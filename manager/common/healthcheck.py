@@ -72,6 +72,7 @@ def layer_health_controller(rec_address, layer_address, send_port, amount, manag
                         ip))
                     os.system("docker start " + ip)
                     if not leader and manager:
+                        logging.info(f"Se debe iniciar eleccion de lider")
                         return
                 else:
                     retries = MAX_RETRIES_HEALTCHECK + 1
