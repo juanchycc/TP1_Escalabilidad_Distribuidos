@@ -53,7 +53,7 @@ def layer_health_controller(rec_address, layer_address, send_port, amount, manag
             retries = 0
             while retries <= MAX_RETRIES_HEALTCHECK:
                 try:
-                    logging.info(f"Sending healthcheck to {ip} {send_port}")
+                    logging.debug(f"Sending healthcheck to {ip} {send_port}")
                     # Enviar datos
                     sent = sock.sendto(message.encode(), send_address)
 

@@ -72,7 +72,6 @@ class Bully:
             return True
         layer_health_controller(("", self._health_port), self.get_leader(), self._health_port,
                                 1, "manager_" + str(self._id), False)
-        print(f"debo chequear al lider")
 
     def listen_messages(self):
         logging.info(f"ESPERANDO")
