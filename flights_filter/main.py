@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from common.filter import FilterFlightsPlusThree
 from middleware.base_middleware import BaseMiddleware
 from common.protocol import Serializer
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -37,6 +38,8 @@ def initialize_config():
             'QUEUE_NAME', config["DEFAULT"]["QUEUE_NAME"])
         config_params["outfile"] = os.getenv(
             'OUTFILE', config["DEFAULT"]["OUTFILE"])
+        config_params["port_manager"] = int(os.getenv(
+            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -65,6 +68,8 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
+    server_thread = health_chequer_handler(config_params["port_manager"])
+
     fields = config_params["fields"].split(',')
     id = os.environ.get('FLIGHT_FILTER_ID',1)
     middleware = BaseMiddleware(config_params["in_exchange"], str(id),
@@ -77,7 +82,7 @@ def main():
                             num_filters, config_params["outfile"],id)
 
     filter = FilterFlightsPlusThree(serializer, fields)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 
 

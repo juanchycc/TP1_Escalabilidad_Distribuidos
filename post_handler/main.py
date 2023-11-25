@@ -76,9 +76,10 @@ def initialize(config_params,client_socket,fligth_filter_amount):
     filter.run()
 
 def main():
-    config_params = initialize_config()
-    initialize_log(config_params["logging_level"])
 
+    config_params = initialize_config()
+
+    initialize_log(config_params["logging_level"])
 
     logging.info('action: waiting_client_connection | result: in_progress')
     listening_socket  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

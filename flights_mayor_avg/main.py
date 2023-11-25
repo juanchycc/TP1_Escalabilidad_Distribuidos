@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from common.filter import FilterMayorAvg
 from common.middleware import Middleware
 from common.protocol import Serializer
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -34,6 +35,8 @@ def initialize_config():
             'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
         config_params["fields"] = os.getenv(
             'FIELDS', config["DEFAULT"]["FIELDS"])
+        config_params["port_manager"] = int(os.getenv(
+            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -62,6 +65,8 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
+    server_thread = health_chequer_handler(config_params["port_manager"])
+
     id = int(os.environ.get('FLIGHTS_MAYOR_AVG_ID', 1))
     middleware = Middleware(config_params["in_avg_exchange"], config_params["in_flights_exchange"],
                             config_params["out_exchange"], id)
@@ -74,7 +79,7 @@ def main():
 
     filter = FilterMayorAvg(
         serializer)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 
 

@@ -1,10 +1,11 @@
 import os
 import logging
 import signal
+import time
+import json
 from configparser import ConfigParser
-from common.filter import FilterFlightsDistance
-from middleware.base_middleware import BaseMiddleware
-from common.protocol import Serializer
+from common.healthcheck import *
+from common.bully import Bully
 from utils.health_chequer_handler import health_chequer_handler
 
 
@@ -25,20 +26,14 @@ def initialize_config():
 
     config_params = {}
     try:
+        config_params["port"] = int(
+            os.getenv('MANAGER_PORT', config["DEFAULT"]["MANAGER_PORT"]))
+        config_params["bully_port"] = int(
+            os.getenv('BULLY_PORT', config["DEFAULT"]["BULLY_PORT"]))
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
-        config_params["in_exchange"] = os.getenv(
-            'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
-        config_params["out_exchange"] = os.getenv(
-            'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
-        config_params["fields"] = os.getenv(
-            'FIELDS', config["DEFAULT"]["FIELDS"])
-        config_params["queue_name"] = os.getenv(
-            'QUEUE_NAME', config["DEFAULT"]["QUEUE_NAME"])
-        config_params["outfile"] = os.getenv(
-            'OUTFILE', config["DEFAULT"]["OUTFILE"])
-        config_params["port_manager"] = int(os.getenv(
-            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
+        config_params["layers_ports"] = os.getenv(
+            'LAYERS_PORTS', config["DEFAULT"]["LAYERS_PORTS"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -67,19 +62,37 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    server_thread = health_chequer_handler(config_params["port_manager"])
+    layers = os.environ.get('LAYER', '')
+    layers = layers.replace("'", '"')
+    layers_dict = json.loads(layers)
 
-    fields = config_params["fields"].split(',')
-    middleware = BaseMiddleware(config_params["in_exchange"], '',
-                                config_params["out_exchange"], config_params["queue_name"])
+    manager_amount = int(os.environ.get('MANAGER_AMOUNT', ''))
+    manager_id = int(os.environ.get('MANAGER_ID', ''))
 
-    num_filters = int(os.environ.get('FLIGHTS_FILTER_DISTANCE_AMOUNT', 1))
-    serializer = Serializer(
-        middleware, fields, num_filters, config_params["outfile"])
+    ports = config_params["layers_ports"].replace("'", '"')
+    ports_dict = json.loads(ports)
 
-    filter = FilterFlightsDistance(serializer, fields)
-    signal.signal(signal.SIGTERM, middleware.shutdown)
-    filter.run()
+    logging.info("Starting manager server")
+    # TODO: no es necesario, sirve para las pruebas -> esperar a que se levanten todos los nodos
+    time.sleep(30)
+    port = config_params["port"]
+
+    bully = Bully(manager_amount, manager_id,
+                  config_params["bully_port"], port)
+    bully.start_listener()
+
+    finish = False
+
+    server_thread = health_chequer_handler(port)
+
+    while not finish:
+        lider = bully.start_lider_election()
+        if lider:
+            logging.info("Soy el lider")
+
+            # chequear nodos
+            start_healthchecks(layers_dict, port, ports_dict,
+                               "manager_" + str(manager_id), True)
 
 
 if __name__ == "__main__":
