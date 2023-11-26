@@ -5,17 +5,17 @@ import logging
 
 class Middleware(BaseMiddleware):
 
-    def __init__(self, in_flights_exchange, in_airports_exchange, in_key, out_exchange, queue_name):
+    def __init__(self, in_flights_exchange, in_airports_exchange, in_key, out_exchange, queue_name, id):
 
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq', heartbeat=36000))
         self._in_channel, self._in_queue_name_flights, self._in_queue_name_airports = self._connect_in_exchange(
-            in_flights_exchange, in_airports_exchange, queue_name, in_key)
+            in_flights_exchange, in_airports_exchange, queue_name, in_key, id)
         self._in_key = in_key
         self._out_channel = self._connect_out_exchange(out_exchange)
         self._out_exchange = out_exchange
 
-    def _connect_in_exchange(self, flights_exchange, airports_exchange, queue, routing_key):
+    def _connect_in_exchange(self, flights_exchange, airports_exchange, queue, routing_key, id):
         channel = self._connection.channel()
         # channel.basic_qos(prefetch_count=1)
         channel.exchange_declare(
@@ -27,7 +27,7 @@ class Middleware(BaseMiddleware):
             queue=queue, durable=True)
         queue_name_flights = result.method.queue
         channel.queue_bind(
-            exchange=flights_exchange, queue=queue, routing_key=routing_key)
+            exchange=flights_exchange, queue=queue, routing_key=id)
         result = channel.queue_declare(
             queue=queue, durable=True)
         queue_name_airports = result.method.queue

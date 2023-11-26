@@ -5,7 +5,7 @@ from middleware.base_protocol import BaseSerializer
 
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, keys, flight_filter_amount):
+    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -14,6 +14,7 @@ class Serializer(BaseSerializer):
         self._airport_fields = None
         self._keys = keys
         self._flight_filter_amount = flight_filter_amount
+        self._airport_handler_amount = airport_handler_amount
 
     def run(self, fligth_callback, airport_callback):
         self._fligth_callback = fligth_callback
@@ -81,11 +82,17 @@ class Serializer(BaseSerializer):
         self._send_pkt(pkt, self._keys[3], FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query2(self, pkt, original_pkt):
-        logging.info('MANDO FLIGHTS')
-        self._send_pkt(pkt, self._keys[1], FLIGHTS_PKT, original_pkt, False)
+        output = {i: [] for i in range(1, self._airport_handler_amount + 1)}
+        for flight in pkt:
+            group = self._get_group(flight[1], self._airport_handler_amount)
+            output[group].append(flight)
+
+        for i in range(1, self._airport_handler_amount + 1):  # Envia a cada nodo del filter max
+            if len(output[i]) > 0:
+                self._send_pkt(output[i], str(
+                    i), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_airport(self, pkt, original_pkt):
-        logging.info('MANDO AIRPORTS')
         self._send_pkt(pkt, self._keys[1], AIRPORT_PKT, original_pkt, True)
 
     # TODO: Volver a generalizar esto

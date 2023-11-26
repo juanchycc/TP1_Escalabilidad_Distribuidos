@@ -14,17 +14,19 @@ parser.add_argument(
     "-q2", type=int, help="amount of nodes in the second query")
 parser.add_argument(
     "-m", type=int, help="amount of managers")
+parser.add_argument(
+    "-a", type=int, help="amount of airports handlers")
 args = parser.parse_args()
 
 layers = {"flights_filter_": args.q1,
           "flights_max_": args.q3, "flights_avg_": args.avg, "flights_mayor_avg_": args.Mavg, "flights_avg_by_journey_": args.q4, "flights_filter_distance_": args.q2, "manager_": args.m}
 
 # list of names of output files
-#output_files = ["out_file_q1.csv", "out_file_q2.csv",
+# output_files = ["out_file_q1.csv", "out_file_q2.csv",
 #                "out_file_q3.csv", "out_file_q4.csv"]
 
 # create output files
-#for o in output_files:
+# for o in output_files:
 #    file_path = "./client/" + o
 #    if os.path.exists(file_path):
 #        os.remove(file_path)
@@ -64,6 +66,7 @@ post_handler_text = """  post_handler:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_PLUS_AMOUNT=&
+      - AIRPORTS_HANDLER_AMOUNT=$
     volumes:
       - ./post_handler/config.ini:/config.ini
       - ./utils:/utils
@@ -138,27 +141,6 @@ file_writer_text = """  file_writer:
       - ./file_writer/config.ini:/config.ini
       - ./file_writer/:/out_files/
       - ./utils:/utils
-"""
-
-airport_fligths_handler_text = """  airport_fligths_handler:
-    container_name: airport_fligths_handler
-    build:
-      context: ./airport_fligths_handler
-      dockerfile: Dockerfile
-    image: airport_fligths_handler:latest
-    entrypoint: python3 ./main.py
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    links:
-      - rabbitmq
-    environment:
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ./utils:/utils
-      - ./middleware:/middleware
-
 """
 
 flights_filter_avg = """  flights_filter_avg_#:
@@ -345,6 +327,35 @@ for i in range(1, args.m + 1):
     final_manager = final_manager + \
         manager.replace('#', str(i))
 
+airport_fligths_handler_text = """  airport_fligths_handler_#:
+    container_name: airport_fligths_handler_#
+    build:
+      context: ./airport_fligths_handler
+      dockerfile: Dockerfile
+    image: airport_fligths_handler:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HANDLER_ID=#
+      - HANDLER_AMOUNT=$
+    volumes:
+      - ./utils:/utils
+      - ./middleware:/middleware
+
+"""
+airport_fligths_handler_text = airport_fligths_handler_text.replace(
+    '$', str(args.a))
+final_airport_fligths_handler = ""
+for i in range(1, args.a + 1):
+    final_airport_fligths_handler = final_airport_fligths_handler + \
+        airport_fligths_handler_text.replace('#', str(i))
+
 final_text_flights_avg_by_journey = ""
 for i in range(1, args.q4 + 1):
     final_text_flights_avg_by_journey = final_text_flights_avg_by_journey + \
@@ -352,8 +363,9 @@ for i in range(1, args.q4 + 1):
 final_text_flights_avg_by_journey = final_text_flights_avg_by_journey.replace(
     '&', str(args.q4))
 
-post_handler_text = post_handler_text.replace('&',str(args.q1))
+post_handler_text = post_handler_text.replace('&', str(args.q1))
+post_handler_text = post_handler_text.replace('$', str(args.a))
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + airport_fligths_handler_text + final_text_distance + final_text_flights_avg_by_journey + final_manager)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + final_airport_fligths_handler + final_text_distance + final_text_flights_avg_by_journey + final_manager)

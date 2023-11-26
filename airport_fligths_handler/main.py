@@ -66,8 +66,12 @@ def main():
     fligth_fields = config_params["fligth_fields"].split(',')
     airport_fields = config_params["airport_fields"].split(',')
 
+    # read from docker env, default 1
+    id = os.environ.get('HANDLER_ID', 1)
+    amount = int(os.environ.get('HANDLER_AMOUNT', 1))
+
     middleware = Middleware(config_params["in_exchange"], "airports", config_params["key_2"],
-                            config_params["out_exchange"], "")  # TODO: harcodeo de exchange airport
+                            config_params["out_exchange"], "", id)  # TODO: harcodeo de exchange airport
 
     serializer = Serializer(middleware, fligth_fields, airport_fields)
 
