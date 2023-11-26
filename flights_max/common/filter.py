@@ -10,7 +10,7 @@ class FilterFlightsMax:
         self._calculated_max = {}
 
     def run(self):
-        self._serializer.run(self.filter_fligths,self.get_maxs)
+        self._serializer.run(self.filter_fligths,self.get_maxs,self.get_data,self.load_data)
 
     def filter_fligths(self, flights,id):
 
@@ -65,3 +65,10 @@ class FilterFlightsMax:
         duration2 = calculated_max[journey][index]["travelDuration"]
         time2 = isodate.parse_duration(duration2)
         return time1 > time2
+
+    def get_data(self,id):
+        return self._calculated_max[id]
+    
+    def load_data(self,id,data):
+        self._calculated_max[id] = data
+        #logging.info(f'Calculated max: {self._calculated_max}')

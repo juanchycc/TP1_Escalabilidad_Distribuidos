@@ -73,12 +73,12 @@ def main():
     # read from docker env, default 1
     num_filters = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
     id = os.environ.get('FLIGHTS_MAX_ID', "1")
-
+    queue= "cola_calculate_max_" + id
     middleware = Middleware(config_params["in_exchange"], id,
-                            config_params["out_exchange"], '')
+                            config_params["out_exchange"], queue)
 
     serializer = Serializer(
-        middleware, fields, num_filters, config_params["outfile"])
+        middleware, fields, num_filters, config_params["outfile"],id)
 
     filter = FilterFlightsMax(
         serializer, config_params["filter_fields"].split(','))

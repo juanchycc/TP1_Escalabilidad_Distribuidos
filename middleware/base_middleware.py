@@ -56,8 +56,8 @@ class BaseMiddleware():
         self._in_channel.basic_publish(
             exchange=self._in_exchange, routing_key=key, body=bytes)
 
-    def send_ack(self,ch,method):
-        self._in_channel.basic_ack(method.delivery_tag)
+    def send_ack(self,ch,method,multiple = False):
+        self._in_channel.basic_ack(method.delivery_tag,multiple)
 
     def shutdown(self, signum=None, frame=None):
         self._in_channel.stop_consuming()
