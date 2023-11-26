@@ -8,7 +8,7 @@ class BaseMiddleware():
         """Default middleware configuration for a node"""
         # Configure in queue
         self._connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq', heartbeat=36000)) # Agregar heartbeat=3600 sin sleeps
+            pika.ConnectionParameters(host='rabbitmq', heartbeat=36000))
         self._in_channel, self._in_queue_name = self._connect_in_exchange(
             in_exchange, queue_name, in_key)
         self._in_exchange = in_exchange
@@ -20,7 +20,7 @@ class BaseMiddleware():
 
     def _connect_in_exchange(self, exchange, queue, routing_key):
         channel = self._connection.channel()
-        #channel.basic_qos(prefetch_count=1)
+        # channel.basic_qos(prefetch_count=1)
         channel.exchange_declare(
             exchange=exchange, exchange_type='direct')
 
@@ -31,14 +31,14 @@ class BaseMiddleware():
             exchange=exchange, queue=queue_name, routing_key=routing_key)
         return channel, queue_name
 
-    def _connect_out_exchange(self, exchange,exchange_type = 'direct'):
+    def _connect_out_exchange(self, exchange, exchange_type='direct'):
         channel = self._connection.channel()
         channel.exchange_declare(
             exchange=exchange, exchange_type=exchange_type)
 
         return channel
 
-    def start_recv(self, callback,auto_ack = True):
+    def start_recv(self, callback, auto_ack=True):
         logging.info('action: start_recv')
         try:
             self._in_channel.basic_consume(
@@ -52,11 +52,11 @@ class BaseMiddleware():
         self._out_channel.basic_publish(
             exchange=self._out_exchange, routing_key=routing_key, body=bytes)
 
-    def resend(self, bytes,key):
+    def resend(self, bytes, key):
         self._in_channel.basic_publish(
             exchange=self._in_exchange, routing_key=key, body=bytes)
 
-    def send_ack(self,ch,method):
+    def send_ack(self, ch, method):
         self._in_channel.basic_ack(method.delivery_tag)
 
     def shutdown(self, signum=None, frame=None):

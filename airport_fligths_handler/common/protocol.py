@@ -18,7 +18,15 @@ class Serializer(BaseSerializer):
         self._fligth_callback = fligth_callback
         self._airport_callback = airport_callback
         self._airport_finished_callback = airport_finished_callback
-        self._middleware.start_recv(self.bytes_to_pkt)
+        self._middleware.start_recv(self.rec_flights, self.rec_airports)
+
+    def rec_airports(self, ch, method, properties, body):
+        bytes = body
+        logging.info(f"Llegan aeropuertos bytes: {bytes}")
+
+    def rec_flights(self, ch, method, properties, body):
+        bytes = body
+        logging.info(f"Llegan vuelos bytes: {bytes}")
 
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
