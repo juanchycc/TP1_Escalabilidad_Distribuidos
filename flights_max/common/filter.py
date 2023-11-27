@@ -10,11 +10,16 @@ class FilterFlightsMax:
         self._calculated_max = {}
 
     def run(self):
-        self._serializer.run(self.filter_fligths,self.get_maxs)
+        self._serializer.run(self.filter_fligths,self.get_maxs,self.get_data,self.load_data)
 
-    def filter_fligths(self, flights):
+    def filter_fligths(self, flights,id):
 
         logging.debug(f"Flights {flights} ")
+
+        if id not in self._calculated_max:
+            self._calculated_max[id] = {}
+
+        calculated_max = self._calculated_max[id]
 
         for flight in flights:
 
@@ -22,31 +27,31 @@ class FilterFlightsMax:
                 "-" + flight["destinationAirport"]
 
             # case 1: journey not in calculated_max
-            if journey not in self._calculated_max:
-                self._calculated_max[journey] = [
+            if journey not in calculated_max:
+                calculated_max[journey] = [
                     self._create_new_max(flight, journey)]
             # case 2: 1 journey in calculated_max
-            elif len(self._calculated_max[journey]) < 2:
+            elif len(calculated_max[journey]) < 2:
                 # the max always in first position
-                if self._compare_duration(flight, journey, 0):
-                    self._calculated_max[journey].insert(
+                if self._compare_duration(flight, journey, 0,calculated_max):
+                    calculated_max[journey].insert(
                         0, self._create_new_max(flight, journey))
                 else:
-                    self._calculated_max[journey].append(
+                    calculated_max[journey].append(
                         self._create_new_max(flight, journey))
             # case 3: 2 journeys in calculated_max
             else:
-                if self._compare_duration(flight, journey, 0):
-                    self._calculated_max[journey].pop(1)
-                    self._calculated_max[journey].insert(
+                if self._compare_duration(flight, journey, 0,calculated_max):
+                    calculated_max[journey].pop(1)
+                    calculated_max[journey].insert(
                         0, self._create_new_max(flight, journey))
-                elif self._compare_duration(flight, journey, 1):
-                    self._calculated_max[journey].pop(1)
-                    self._calculated_max[journey].append(
+                elif self._compare_duration(flight, journey, 1,calculated_max):
+                    calculated_max[journey].pop(1)
+                    calculated_max[journey].append(
                         self._create_new_max(flight, journey))
 
-    def get_maxs(self):
-        self._serializer.send_pkt(self._calculated_max)
+    def get_maxs(self,id):
+        self._serializer.send_pkt(self._calculated_max[id],id)
         
 
     def _create_new_max(self, flight, journey):
@@ -54,9 +59,16 @@ class FilterFlightsMax:
         new_max["journey"] = journey
         return new_max
 
-    def _compare_duration(self, flight, journey, index):
+    def _compare_duration(self, flight, journey, index,calculated_max):
         duration1 = flight["travelDuration"]
         time1 = isodate.parse_duration(duration1)
-        duration2 = self._calculated_max[journey][index]["travelDuration"]
+        duration2 = calculated_max[journey][index]["travelDuration"]
         time2 = isodate.parse_duration(duration2)
         return time1 > time2
+
+    def get_data(self,id):
+        return self._calculated_max[id]
+    
+    def load_data(self,id,data):
+        self._calculated_max[id] = data
+        #logging.info(f'Calculated max: {self._calculated_max}')

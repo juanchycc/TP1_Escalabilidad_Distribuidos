@@ -72,8 +72,9 @@ def main():
 
     fields = config_params["fields"].split(',')
     id = os.environ.get('FLIGHT_FILTER_ID',1)
+    queue = "cola_flight_filter_" + id
     middleware = BaseMiddleware(config_params["in_exchange"], str(id),
-                                config_params["out_exchange"],'')
+                                config_params["out_exchange"],queue)
 
     # read from docker env, default 1
     num_groups = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
