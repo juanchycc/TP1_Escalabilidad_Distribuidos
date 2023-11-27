@@ -6,13 +6,13 @@ from middleware.base_middleware import BaseMiddleware
 
 class Middleware(BaseMiddleware):
 
-    def __init__(self, client_socket, exchange, batch_size,sink_exchange):
+    def __init__(self, client_socket, exchange, airport_exchange, batch_size, sink_exchange):
         # Configure exit queue
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
         self._out_channel = self._connect_out_exchange(exchange)
         self._out_exchange = exchange
-
+        self._airport_exhange = airport_exchange
         # Configure socket to listen to client
         self._client_socket = client_socket
         self._finished = False
@@ -21,7 +21,7 @@ class Middleware(BaseMiddleware):
         self._sink_exchange = sink_exchange
 
     def start_recv(self, callback):
-        
+
         while not self._finished:
             bytes_read = 0
             bytes = []
@@ -48,9 +48,12 @@ class Middleware(BaseMiddleware):
         self._connection.close()
         logging.info('action: shutdown | result: success')
 
-    def send_pkt_to_sink(self,pkt):
+    def send_pkt_to_sink(self, pkt):
         channel = self._connect_out_exchange(self._sink_exchange)
-        channel.basic_publish(exchange=self._sink_exchange,routing_key='',body=pkt)
+        channel.basic_publish(exchange=self._sink_exchange,
+                              routing_key='', body=pkt)
         channel.close()
 
-        
+    def send_airport(self, bytes, routing_key):
+        self._out_channel.basic_publish(
+            exchange=self._airport_exhange, routing_key=routing_key, body=bytes)

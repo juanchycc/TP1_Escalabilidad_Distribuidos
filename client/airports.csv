@@ -1,0 +1,5 @@
+Airport Code;Airport Name;City Name;Country Name;Country Code;Latitude;Longitude;World Area Code;City Name geo_name_id;Country Name geo_name_id;coordinates
+LAX;Cambridge Bay;Cambridge Bay;Canada;CA;69.116667;-105.133333;906;\N;6251999;69.116667, -105.133333
+ATL;Township Airport;Kincardine;Canada;CA;44.201389;-81.606667;906;\N;6251999;44.201389, -81.606667
+ZAX;Township Airport;Kincardine;Canada;CA;44.201389;-81.606667;906;\N;6251999;44.201389, -81.606667
+AAX;Township Airport;Kincardine;Canada;CA;44.201389;-81.606667;906;\N;6251999;44.201389, -81.606667

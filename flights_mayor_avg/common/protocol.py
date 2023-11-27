@@ -58,7 +58,7 @@ class Serializer(BaseSerializer):
 
         output = {i: [] for i in range(1, self._num_groups + 1)}
         for flight in pkt:
-            group = self._get_group(flight[1])
+            group = self._get_group(flight[1], self._num_groups)
             logging.debug(f"Flight: {flight}, grupo:{group}")
             output[group].append(flight)
 

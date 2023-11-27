@@ -64,16 +64,19 @@ def initialize_log(logging_level):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-def initialize(config_params,client_socket,fligth_filter_amount):
+
+def initialize(config_params, client_socket, fligth_filter_amount, airport_handler_amount):
     middleware = Middleware(
-            client_socket, config_params["exchange"], config_params["batch_size"],config_params["sink_exchange"])
+        client_socket, config_params["exchange"], "airports", config_params["batch_size"], config_params["sink_exchange"])  # TODO: hardcodeo exchange ariport
     keys = [config_params["key_1"], config_params["key_2"],
-        config_params["key_avg"], config_params["key_4"]]
-    
-    serializer = Serializer(middleware, keys,fligth_filter_amount)
+            config_params["key_avg"], config_params["key_4"]]
+
+    serializer = Serializer(
+        middleware, keys, fligth_filter_amount, airport_handler_amount)
     filter = FilterFields(serializer)
-    #signal.signal(signal.SIGTERM,middleware.shutdown)
+    # signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
+
 
 def main():
 
@@ -82,20 +85,21 @@ def main():
     initialize_log(config_params["logging_level"])
 
     logging.info('action: waiting_client_connection | result: in_progress')
-    listening_socket  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listening_socket.bind(("", config_params["port"]))
     listening_socket.listen()
     while True:
         client_socket, addr = listening_socket.accept()
         logging.info(
-            f'action: accept_connection | result: in_progress | addr: {addr}')       
-        
-        fligth_filter_amount = int(os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT',1))
-        joiner = threading.Thread(target=initialize,args=(config_params,client_socket,fligth_filter_amount,))
+            f'action: accept_connection | result: in_progress | addr: {addr}')
+
+        fligth_filter_amount = int(
+            os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT', 1))
+        airport_handler_amount = int(
+            os.environ.get('AIRPORTS_HANDLER_AMOUNT', 1))
+        joiner = threading.Thread(target=initialize, args=(
+            config_params, client_socket, fligth_filter_amount, airport_handler_amount))
         joiner.start()
-        
-
-
 
 
 if __name__ == "__main__":

@@ -73,8 +73,7 @@ def main():
     ports_dict = json.loads(ports)
 
     logging.info("Starting manager server")
-    # TODO: no es necesario, sirve para las pruebas -> esperar a que se levanten todos los nodos
-    time.sleep(30)
+
     port = config_params["port"]
 
     bully = Bully(manager_amount, manager_id,

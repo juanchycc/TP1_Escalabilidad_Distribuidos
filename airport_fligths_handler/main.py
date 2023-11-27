@@ -3,7 +3,7 @@ import logging
 import signal
 from configparser import ConfigParser
 from common.filter import AirportHandler
-from middleware.base_middleware import BaseMiddleware
+from common.middleware import Middleware
 from common.protocol import Serializer
 
 
@@ -65,15 +65,18 @@ def main():
 
     fligth_fields = config_params["fligth_fields"].split(',')
     airport_fields = config_params["airport_fields"].split(',')
-    
-    middleware = BaseMiddleware(config_params["in_exchange"], config_params["key_2"],
-                            config_params["out_exchange"],'')
-    
-    serializer = Serializer(middleware,fligth_fields,airport_fields)
 
-    
-    filter = AirportHandler(serializer,fligth_fields)
-    signal.signal(signal.SIGTERM,middleware.shutdown)
+    # read from docker env, default 1
+    id = os.environ.get('HANDLER_ID', 1)
+    amount = int(os.environ.get('HANDLER_AMOUNT', 1))
+
+    middleware = Middleware(config_params["in_exchange"], "airports", config_params["key_2"],
+                            config_params["out_exchange"], "", id)  # TODO: harcodeo de exchange airport
+
+    serializer = Serializer(middleware, fligth_fields, airport_fields)
+
+    filter = AirportHandler(serializer, fligth_fields)
+    signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 
 
