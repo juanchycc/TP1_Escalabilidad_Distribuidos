@@ -16,6 +16,8 @@ parser.add_argument(
     "-m", type=int, help="amount of managers")
 parser.add_argument(
     "-a", type=int, help="amount of airports handlers")
+parser.add_argument(
+    "-ja", type=int, help="amount of join avgs")
 args = parser.parse_args()
 
 layers = {"flights_filter_": args.q1,
@@ -67,6 +69,7 @@ post_handler_text = """  post_handler:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_PLUS_AMOUNT=&
       - AIRPORTS_HANDLER_AMOUNT=$
+      - FLIGHTS_FILTER_AVG_AMOUNT=#
     volumes:
       - ./post_handler/config.ini:/config.ini
       - ./utils:/utils
@@ -159,7 +162,8 @@ flights_filter_avg = """  flights_filter_avg_#:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_AVG_AMOUNT=$
-      - FLIGHTS_MAYOR_AVG_AMOUNT=&
+      - ID=#
+      - JOIN_AVG_AMOUNT=&
     volumes:
       - ./flights_avg/config.ini:/config.ini
       - ./utils:/utils
@@ -196,7 +200,12 @@ for i in range(1, args.q2 + 1):
         flights_filter_distance_text.replace('#', str(i))
 
 flights_filter_avg = flights_filter_avg.replace('$', str(args.avg))
-flights_filter_avg = flights_filter_avg.replace('&', str(args.Mavg))
+flights_filter_avg = flights_filter_avg.replace('&', str(args.ja))
+
+flights_filter_avg_final = ""
+for i in range(1, args.avg + 1):
+  flights_filter_avg_final += flights_filter_avg.replace('#',str(i))
+
 
 flights_filter_plus_3_text = flights_filter_plus_3_text.replace(
     '$', str(args.q3))
@@ -221,8 +230,8 @@ for i in range(1, args.avg + 1):
     final_text_avg = final_text_avg + \
         flights_filter_avg.replace('#', str(i))
 
-flights_join_avg = """  flights_join_avg:
-    container_name: flights_join_avg
+flights_join_avg = """  flights_join_avg_#:
+    container_name: flights_join_avg_#
     build:
       context: ./join_avg
       dockerfile: Dockerfile
@@ -236,11 +245,17 @@ flights_join_avg = """  flights_join_avg:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - ID=#
     volumes:
       - ./join_avg/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
 """
+
+flights_join_avg_final = ""
+for i in range(1, args.ja + 1):
+  flights_join_avg_final += flights_join_avg.replace('#',str(i))
+
 
 flights_mayor_avg = """  flights_mayor_avg_#:
     container_name: flights_mayor_avg_#
@@ -365,7 +380,8 @@ final_text_flights_avg_by_journey = final_text_flights_avg_by_journey.replace(
 
 post_handler_text = post_handler_text.replace('&', str(args.q1))
 post_handler_text = post_handler_text.replace('$', str(args.a))
+post_handler_text = post_handler_text.replace('#', str(args.avg))
 
 with open(FILENAME, 'w') as f:
     f.write(initial_text + rabbit_text + post_handler_text +
-            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg + final_text_mayor_avg + final_airport_fligths_handler + final_text_distance + final_text_flights_avg_by_journey + final_manager)
+            final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg_final + final_text_mayor_avg + final_airport_fligths_handler + final_text_distance + final_text_flights_avg_by_journey + final_manager)

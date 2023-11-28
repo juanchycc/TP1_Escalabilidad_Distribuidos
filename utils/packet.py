@@ -24,7 +24,7 @@ class Packet:
         return self.payload
         
 
-def pkt_from_bytes(bytes,flight_fields = None,airport_fields = None) -> Packet:
+def pkt_from_bytes(bytes,flight_fields = None,airport_fields = None,avg = False) -> Packet:
     pkt_type = bytes[PKT_TYPE_POSITION]
     client_id = bytes[CLIENT_ID_POSITION]
     # TODO: Esto se puede modificar para que te de el numero si es necesario mas adelante
@@ -37,10 +37,25 @@ def pkt_from_bytes(bytes,flight_fields = None,airport_fields = None) -> Packet:
         pkt_number += byte << (8 * (len(pkt_number_bytes) - 1 - i))
 
     if pkt_type == FLIGHTS_PKT and flight_fields is not None:
-        payload = build_flights_or_airports(payload,flight_fields,',')
+        if avg:
+            flights = payload.split('\n')
+            flight_list = []
+            for flight in flights:
+                data = flight.split(',')
+                flight_list.append(data[0])
+            payload = flight_list
+        else:
+            payload = build_flights_or_airports(payload,flight_fields,',')
+
     
     if pkt_type == AIRPORT_PKT:
         payload = build_flights_or_airports(payload,airport_fields,';')
+
+    if pkt_type == AVG_PKT:
+        avg_pkt = payload.strip().split(',')
+        total = float(avg_pkt[0])
+        amount = int(avg_pkt[1])
+        payload = (total,amount)
 
     if pkt_type == HEADERS_AIRPORT_PKT:
         payload = payload.split(';')
