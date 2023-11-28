@@ -1,0 +1,57 @@
+version: '3.9'
+services:
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+    ports:
+      - 15672:15672
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:15672" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  post_handler:
+    container_name: post_handler
+    build:
+      context: ./post_handler
+      dockerfile: Dockerfile
+    image: post_handler:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=2
+      - AIRPORTS_HANDLER_AMOUNT=2
+    volumes:
+      - ./post_handler/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
+    ports:
+      - 12345:12345
+
+  airport_fligths_handler_1:
+    container_name: airport_fligths_handler_1
+    build:
+      context: ./airport_fligths_handler
+      dockerfile: Dockerfile
+    image: airport_fligths_handler:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HANDLER_ID=1
+      - HANDLER_AMOUNT=2
+    volumes:
+      - ./utils:/utils
+      - ./middleware:/middleware

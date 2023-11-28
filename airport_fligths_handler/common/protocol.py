@@ -15,14 +15,16 @@ class Serializer(BaseSerializer):
         self._flight_fields = fligth_fields
         self._airport_callback = None
         self._airport_fields = airport_fields
-        self._airports_ended = False
-        self._flight_ended = False
+        self._airports_ended = {}
+        self._flight_ended = {}
         self._flights_received = {}
         self._airports_received = {}
         self._persist_airport_counter = 0
         self._persist_flights_counter = 0
+        self._airports_to_send = []
+        self._flights_to_send = []
 
-    def run(self, fligth_callback, airport_callback, airport_finished_callback, data_flights_callback, data_airports_callback):
+    def run(self, fligth_callback, airport_callback, airport_finished_callback):
         self._fligth_callback = fligth_callback
         self._airport_callback = airport_callback
         self._airport_finished_callback = airport_finished_callback
@@ -31,12 +33,13 @@ class Serializer(BaseSerializer):
 
     def rec_airports(self, ch, method, properties, body):
         logging.info(f"Llegan aeropuertos bytes: {bytes}")
-        pkt = pkt_from_bytes(body, self._airport_fields)
+        pkt = pkt_from_bytes(
+            body, airport_fields=self._airport_fields, test=True)
 
         if pkt.get_pkt_type() == AIRPORT_PKT:
             if pkt.get_client_id() not in self._airports_received:
                 self._airports_received[pkt.get_client_id()] = {}
-                self._register_client_airport()
+                self._register_client("airport", pkt.get_client_id())
 
             if pkt.get_pkt_number() in self._airports_received[pkt.get_client_id()]:
                 # Duplicado
@@ -45,31 +48,34 @@ class Serializer(BaseSerializer):
                 # Guarda en memoria
                 self._airports_received[pkt.get_client_id(
                 )][pkt.get_pkt_number()] = pkt.get_pkt_number()
+                self._airports_to_send.append(body)
 
             self._persist_airport_counter += 1
+            self._airport_callback(pkt.get_payload(), pkt.get_client_id())
 
             # Guarda en Disco
             if self._persist_airport_counter % WRITE_TO_DISK == 0:
-                pkts = self._flights_received[pkt.get_client_id()]
-                self._persist_data(pkt.get_client_id(), pkts, "airport")
+                self._persist_data(pkt.get_client_id(),
+                                   self._airports_to_send, "airport")
                 self._middleware.send_ack(ch, method, True)
+                self._airports_to_send = []
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
-            logging.debug(f"Llego finished airports pkt")
-            self._airports_ended = True
-            self._airport_finished_callback()
-            if self._flight_ended:
-                logging.debug("Sending finisehd pkt 2")
+            logging.info(f"Llego finished airports pkt")
+
+            self._airports_ended[pkt.get_client_id()] = True
+            if self._flight_ended[pkt.get_client_id()]:
+                self._airport_finished_callback(pkt.get_client_id())
                 self._send_finish_pkt()
 
     def rec_flights(self, ch, method, properties, body):
         logging.info(f"Llegan vuelos bytes: {bytes}")
-        pkt = pkt_from_bytes(body, self._flight_fields)
+        pkt = pkt_from_bytes(body, flight_fields=self._flight_fields)
 
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             if pkt.get_client_id() not in self._flights_received:
                 self._flights_received[pkt.get_client_id()] = {}
-                self._register_client_flight
+                self._register_client("flights", pkt.get_client_id())
 
             if pkt.get_pkt_number() in self._flights_received[pkt.get_client_id()]:
                 # Duplicado
@@ -78,35 +84,24 @@ class Serializer(BaseSerializer):
                 # Guarda en memoria
                 self._flights_received[pkt.get_client_id(
                 )][pkt.get_pkt_number()] = pkt.get_pkt_number()
+                self._flights_to_send.append(body)
 
             self._persist_flights_counter += 1
+            self._fligth_callback(pkt.get_payload(), pkt.get_client_id())
 
             if self._persist_flights_counter % WRITE_TO_DISK == 0:
-                pkts = self._flights_received[pkt.get_client_id()]
-                self._persist_data(pkt.get_client_id(), pkts, "flights")
+                self._persist_data(pkt.get_client_id(),
+                                   self._airports_to_send, "flights")
                 self._middleware.send_ack(ch, method, True)
+                self._flights_to_send = []
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
+            logging.info(f"Llego finished flights pkt")
 
-            logging.debug(f"Llego finished flights pkt")
-            self._flight_ended = True
-            if self._airports_ended:
-                logging.debug("Sending finisehd pkt 1")
+            self._flight_ended[pkt.get_client_id()] = True
+            if self._flight_ended[pkt.get_client_id()]:
+                self._airport_finished_callback(pkt.get_client_id())
                 self._send_finish_pkt()
-
-    def _register_client_airport(self):
-        with open("clients_airports" + ".txt", 'w') as file:
-            line = ""
-            for key in self._airports_received.keys():
-                line += str(key) + ','
-            file.write(line[:-1])
-
-    def _register_client_flight(self):
-        with open("clients_flights" + ".txt", 'w') as file:
-            line = ""
-            for key in self._flights_received.keys():
-                line += str(key) + ','
-            file.write(line[:-1])
 
     def _persist_data(self, id, pkts, type):
         # logging.info(f'pkts: {pkts}')
@@ -166,33 +161,49 @@ class Serializer(BaseSerializer):
             for line in file:
                 line = line.rstrip()
                 if not pkts_read:
+                    if type == 'airport':
+                        pkt = pkt_from_bytes(
+                            line, airport_fields=self._airport_fields)
+                        self._airport_callback(
+                            pkt.get_payload(), pkt.get_client_id())
+                    else:
+                        pkt = pkt_from_bytes(
+                            line, flight_fields=self._flight_fields)
+                        self._fligth_callback(
+                            pkt.get_payload(), pkt.get_client_id())
                     for id in line.split(','):
-                        pkts[id] = id
+                        pkts[id] = pkt.get_pkt_number()
                     pkts_read = True
                     continue
 
-                journey = line.split(':')[0]
-                saved_fields = line.split(':')[1]
-                saved_fields = saved_fields.split(',')
-                fields = {}
-                # logging.info(f'saved_fields: {saved_fields}')
-                for i in range(0, len(saved_fields), 2):
-                    fields[saved_fields[i]] = saved_fields[i + 1]
+        return pkts
 
-                other_max = data.get(journey, [])
-                other_max.append(fields)
-                data[journey] = other_max
+    def _register_client(self, type, id):
+        with open(type + "_clients" + ".txt", 'a') as file:
+            file.write(str(id))
 
-        return pkts, data
+    def _get_clients(self, type):
+        if not os.path.exists(type + "_clients.txt"):
+            return None
+        with open(type + "_clients.txt", 'r') as file:
+            line = file.readline().rstrip()
+            return line
 
     def _load_state(self):
-        clients = self._get_clients()
-        if clients is None:
+        flights_clients = self._get_clients("flights")
+        airports_clients = self._get_clients("airports")
+        if flights_clients is None and airports_clients is None:
             return
-        clients = [int(client) for client in clients]
+        flights_clients = [int(flights_clients)
+                           for flights_clients in flights_clients]
+        airports_clients = [int(airports_clients)
+                            for airports_clients in airports_clients]
+
         data = {}
-        for client in clients:
+        for client in flights_clients:
             self._flights_received[client], data[client] = self._get_saved_data(
                 client, "flights")
-            self._airports_received[client], data[client] = self._get_saved_data(
+        data = {}
+        for client in airports_clients:
+            self._airports_received[client] = self._get_saved_data(
                 client, "airports")

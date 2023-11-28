@@ -71,7 +71,7 @@ def main():
     amount = int(os.environ.get('HANDLER_AMOUNT', 1))
 
     middleware = Middleware(config_params["in_exchange"], "airports", config_params["key_2"],
-                            config_params["out_exchange"], "", id)  # TODO: harcodeo de exchange airport
+                            config_params["out_exchange"], id, id)  # TODO: harcodeo de exchange airport
 
     serializer = Serializer(middleware, fligth_fields, airport_fields)
 
