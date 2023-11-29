@@ -65,14 +65,14 @@ def initialize_log(logging_level):
     )
 
 
-def initialize(config_params, client_socket, fligth_filter_amount, airport_handler_amount):
+def initialize(config_params, client_socket, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount):
     middleware = Middleware(
         client_socket, config_params["exchange"], "airports", config_params["batch_size"], config_params["sink_exchange"])  # TODO: hardcodeo exchange ariport
     keys = [config_params["key_1"], config_params["key_2"],
             config_params["key_avg"], config_params["key_4"]]
 
     serializer = Serializer(
-        middleware, keys, fligth_filter_amount, airport_handler_amount)
+        middleware, keys, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount)
     filter = FilterFields(serializer)
     # signal.signal(signal.SIGTERM,middleware.shutdown)
     filter.run()
@@ -97,8 +97,10 @@ def main():
             os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT', 1))
         airport_handler_amount = int(
             os.environ.get('AIRPORTS_HANDLER_AMOUNT', 1))
+        flight_filter_avg_amount = int(
+            os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT',1))
         joiner = threading.Thread(target=initialize, args=(
-            config_params, client_socket, fligth_filter_amount, airport_handler_amount))
+            config_params, client_socket, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount))
         joiner.start()
 
 

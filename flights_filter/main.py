@@ -73,7 +73,7 @@ def main():
     fields = config_params["fields"].split(',')
     id = os.environ.get('FLIGHT_FILTER_ID',1)
     queue = "cola_flight_filter_" + id
-    middleware = BaseMiddleware(config_params["in_exchange"], str(id),
+    middleware = BaseMiddleware(config_params["in_exchange"], str("q1_" + id),
                                 config_params["out_exchange"],queue)
 
     # read from docker env, default 1

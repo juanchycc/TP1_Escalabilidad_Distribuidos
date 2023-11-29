@@ -71,11 +71,14 @@ def main():
     server_thread = health_chequer_handler(config_params["port_manager"])
 
     fields = config_params["fields"].split(',')
-    middleware = Middleware(config_params["in_exchange"], config_params["key"],
-                            config_params["out_exchange"], config_params["out_filter_exchange"], config_params["queue_name"])
+    id = os.environ.get('ID',1)
+    queue = "cola_flight_filter_avg_" + id
+    middleware = Middleware(config_params["in_exchange"],"avg" + id ,
+                            config_params["out_exchange"], config_params["out_filter_exchange"],queue)
     num_filters = int(os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT', 1))
-    num_groups = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
-    serializer = Serializer(middleware, fields, num_filters, num_groups)
+    num_join_avg = int(os.environ.get('JOIN_AVG_AMOUNT', 1))
+    num_mayor_avg = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
+    serializer = Serializer(middleware, fields, num_filters, num_join_avg,int(id),num_mayor_avg)
 
     filter = FilterAvg(serializer, fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)

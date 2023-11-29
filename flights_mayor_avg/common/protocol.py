@@ -1,5 +1,6 @@
 import logging
 from utils.constants import *
+from utils.packet import *
 from middleware.base_protocol import BaseSerializer
 
 
@@ -10,29 +11,26 @@ class Serializer(BaseSerializer):
         self._filtered_fields = fields
         self._num_filters = num_filters
         self._num_groups = num_groups
-        self._avg = 0
+        self._avg = None
         self._id = id
 
     def run(self, callback):
         self._callback = callback
-        self._middleware.wait_avg(self.start_protocol, self.bytes_to_pkt)
+        self._middleware.start_recv(self.bytes_to_pkt)
 
-    def start_protocol(self, ch, method, properties, body):
-        bytes = body
-        logging.debug(f"Recibo AVG: {bytearray(bytes).decode('utf-8')}")
-        self._avg = float(bytearray(bytes).decode('utf-8'))
-        self._middleware.close_avg()
 
     def bytes_to_pkt(self, ch, method, properties, body):
-        bytes = body
-        pkt_type = bytes[0]
-        payload = bytearray(bytes[3:]).decode('utf-8')
-        if pkt_type == FLIGHTS_PKT:
+        
+        pkt = pkt_from_bytes(body,self._filtered_fields)        
+        logging.info(f'llega paquete numero: {pkt.get_pkt_number()} | payload: {pkt.get_payload()}')
+        # Se crea bien el pkt, corregir capa de negocio
+        if pkt.get_pkt_type() == FLIGHTS_PKT:
+            return
+            self._callback(pkt)
+            #
+            #self._callback(flights, self._avg)
 
-            flights = payload.split('\n')
-            self._callback(flights, self._avg)
-
-        if pkt_type == FLIGHTS_FINISHED_PKT:
+        if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
             logging.debug(f"Llego finished pkt: {bytes}")
             pkt = bytearray(bytes[:4])
             amount_finished = pkt[3]

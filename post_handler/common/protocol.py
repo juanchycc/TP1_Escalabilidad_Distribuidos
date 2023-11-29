@@ -5,7 +5,7 @@ from middleware.base_protocol import BaseSerializer
 
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount):
+    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount,flight_filter_avg_amount):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -15,6 +15,7 @@ class Serializer(BaseSerializer):
         self._keys = keys
         self._flight_filter_amount = flight_filter_amount
         self._airport_handler_amount = airport_handler_amount
+        self._flight_filter_avg_amount = flight_filter_avg_amount
 
     def run(self, fligth_callback, airport_callback):
         self._fligth_callback = fligth_callback
@@ -56,7 +57,11 @@ class Serializer(BaseSerializer):
             for key in self._keys:
                 logging.debug(f"Sending finished pkt | key: {key}")
                 self._middleware.send(packet, key)
+
             self._middleware.send(packet, self._keys[1] + "1")  # Al primer flight filter
+            self._middleware.send(packet, "q1_1")  # Al primer flight filter
+            self._middleware.send(packet, "avg1") # Al primer AVG
+
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(
@@ -64,8 +69,8 @@ class Serializer(BaseSerializer):
             packet = self._build_finish_pkt(AIRPORT_FINISHED_PKT)
             self._middleware.send(packet, self._keys[1])
 
-    def send_listener_pkt(self, pkt):
-        self._middleware.send_pkt_to_sink()
+    #def send_listener_pkt(self, pkt):
+    #    self._middleware.send_pkt_to_sink(pkt)
 
     def send_pkt_query1(self, pkt, original_pkt):
         # TODO: Probablemente se puede generalizar en una funcion
@@ -73,15 +78,21 @@ class Serializer(BaseSerializer):
         key = pkt_number % self._flight_filter_amount
         if key == 0:
             key += self._flight_filter_amount
-        self._send_pkt(pkt, str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, "q1_" + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query_avg(self, pkt, original_pkt):
-        self._send_pkt(pkt, self._keys[2], FLIGHTS_PKT, original_pkt, False)
+        # TODO: Generalizar con la de arriba
+        pkt_number = original_pkt.get_pkt_number()
+        key = pkt_number % self._flight_filter_avg_amount
+        if key == 0:
+            key += self._flight_filter_avg_amount
+        self._send_pkt(pkt,"avg" + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query4(self, pkt, original_pkt):
         self._send_pkt(pkt, self._keys[3], FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query2(self, pkt, original_pkt):
+        return
         output = {i: [] for i in range(1, self._airport_handler_amount + 1)}
         for flight in pkt:
             group = self._get_group(flight[1], self._airport_handler_amount)
@@ -93,10 +104,12 @@ class Serializer(BaseSerializer):
                     i), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_airport(self, pkt, original_pkt):
+        return
         self._send_pkt(pkt, self._keys[1], AIRPORT_PKT, original_pkt, True)
 
-    # TODO: Volver a generalizar esto
-    def _send_pkt(self, pkt, key, header, original_pkt, airport=False):
+
+    def _send_pkt(self, pkt, key, header, original_pkt, airport = False):
+
         # logging.info(f"output: {pkt}")
 
         payload = ""

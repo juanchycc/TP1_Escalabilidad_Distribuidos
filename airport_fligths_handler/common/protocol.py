@@ -32,6 +32,7 @@ class Serializer(BaseSerializer):
         self._middleware.start_recv(self.rec_flights, self.rec_airports)
 
     def rec_airports(self, ch, method, properties, body):
+
         #logging.info(f"Llegan aeropuertos bytes: {bytes}")
         pkt = pkt_from_bytes(
             body, airport_fields=self._airport_fields, test=True)
@@ -120,7 +121,7 @@ class Serializer(BaseSerializer):
                         line += field + ',' + value + ','
                     file.write(line[:-1])
                     file.write('\n')
-        return
+     
 
     def _send_finish_pkt(self):
         pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)

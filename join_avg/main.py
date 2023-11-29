@@ -57,9 +57,10 @@ def initialize_log(logging_level):
 def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
-
-    middleware = BaseMiddleware(config_params["in_exchange"],'',
-                            config_params["out_exchange"],'')
+    id = os.environ.get('ID',1)
+    queue = "join_avg_queue_" + id
+    middleware = BaseMiddleware(config_params["in_exchange"],id,
+                            config_params["out_exchange"],queue)
 
     serializer = Serializer(middleware)
 

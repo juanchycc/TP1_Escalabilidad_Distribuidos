@@ -38,11 +38,10 @@ class Serializer(BaseSerializer):
             if pkt.get_pkt_number() in self._pkts_received[pkt.get_client_id()]:
                 # Duplicado
                 return
-            else:
-                # Guarda en memoria
-                self._pkts_received[pkt.get_client_id(
-                )][pkt.get_pkt_number()] = pkt.get_pkt_number()
 
+                # Sino lo guardo -> Esto en realidad tiene que ir despues de procesarlo
+                self._pkts_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()
+            
             self._persist_counter += 1
             self._callback(pkt.get_payload(), pkt.get_client_id())
 
