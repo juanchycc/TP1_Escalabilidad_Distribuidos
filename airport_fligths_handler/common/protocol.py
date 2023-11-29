@@ -32,10 +32,10 @@ class Serializer(BaseSerializer):
         self._middleware.start_recv(self.rec_flights, self.rec_airports)
 
     def rec_airports(self, ch, method, properties, body):
-        logging.info(f"Llegan aeropuertos bytes: {bytes}")
+        #logging.info(f"Llegan aeropuertos bytes: {bytes}")
         pkt = pkt_from_bytes(
             body, airport_fields=self._airport_fields, test=True)
-
+        logging.info(f'llega el paquete numero: {pkt.get_pkt_number()}')
         if pkt.get_pkt_type() == AIRPORT_PKT:
             if pkt.get_client_id() not in self._airports_received:
                 self._airports_received[pkt.get_client_id()] = {}
@@ -54,11 +54,11 @@ class Serializer(BaseSerializer):
             self._airport_callback(pkt.get_payload(), pkt.get_client_id())
 
             # Guarda en Disco
-            if self._persist_airport_counter % WRITE_TO_DISK == 0:
-                self._persist_data(pkt.get_client_id(),
-                                   self._airports_to_send, "airport")
-                self._middleware.send_ack(ch, method, True)
-                self._airports_to_send = []
+            #if self._persist_airport_counter % WRITE_TO_DISK == 0:
+            #    self._persist_data(pkt.get_client_id(),
+            #                       self._airports_to_send, "airport")
+            #    self._middleware.send_ack(ch, method, True)
+            #    self._airports_to_send = []
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(f"Llego finished airports pkt")
@@ -66,12 +66,12 @@ class Serializer(BaseSerializer):
             self._airports_ended[pkt.get_client_id()] = True
             if self._flight_ended[pkt.get_client_id()]:
                 self._airport_finished_callback(pkt.get_client_id())
-                # self._send_finish_pkt()
+                #self._send_finish_pkt()
 
     def rec_flights(self, ch, method, properties, body):
-        logging.info(f"Llegan vuelos bytes: {bytes}")
+        #logging.info(f"Llegan vuelos bytes: {bytes}")
         pkt = pkt_from_bytes(body, flight_fields=self._flight_fields)
-
+        logging.info(f'llega el paquete numero: {pkt.get_pkt_number()}')
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             if pkt.get_client_id() not in self._flights_received:
                 self._flights_received[pkt.get_client_id()] = {}
@@ -89,19 +89,19 @@ class Serializer(BaseSerializer):
             self._persist_flights_counter += 1
             self._fligth_callback(pkt.get_payload(), pkt.get_client_id())
 
-            if self._persist_flights_counter % WRITE_TO_DISK == 0:
-                self._persist_data(pkt.get_client_id(),
-                                   self._airports_to_send, "flights")
-                self._middleware.send_ack(ch, method, True)
-                self._flights_to_send = []
+            # if self._persist_flights_counter % WRITE_TO_DISK == 0:
+            #     self._persist_data(pkt.get_client_id(),
+            #                        self._airports_to_send, "flights")
+            #     self._middleware.send_ack(ch, method, True)
+            #     self._flights_to_send = []
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
-            logging.info(f"Llego finished flights pkt")
-
-            self._flight_ended[pkt.get_client_id()] = True
-            if self._flight_ended[pkt.get_client_id()]:
-                self._airport_finished_callback(pkt.get_client_id())
-                # self._send_finish_pkt()
+           logging.info(f"Llego finished flights pkt")
+        
+           self._flight_ended[pkt.get_client_id()] = True
+           if self._flight_ended[pkt.get_client_id()]:
+               self._airport_finished_callback(pkt.get_client_id())
+               # self._send_finish_pkt()
 
     def _persist_data(self, id, pkts, type):
         # logging.info(f'pkts: {pkts}')
@@ -148,7 +148,7 @@ class Serializer(BaseSerializer):
                 pkt_header = bytearray(
                     [header, id, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
                 pkt = pkt_header + payload[:-1].encode('utf-8')
-                self._middleware.send(pkt, '')
+                self._middleware.send(pkt, '1')
                 logging.info(f"Header: {pkt_header}")
                 payload = ""
 

@@ -48,7 +48,7 @@ class Serializer(BaseSerializer):
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt = pkt_from_bytes(bytes, self._filtered_fields)
-        # logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()}')
+        logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()}')
         # time.sleep(5)
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             self._callback(pkt.get_payload(), pkt.get_client_id())

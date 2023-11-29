@@ -27,7 +27,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_PLUS_AMOUNT=2
-      - AIRPORTS_HANDLER_AMOUNT=2
+      - AIRPORTS_HANDLER_AMOUNT=1
     volumes:
       - ./post_handler/config.ini:/config.ini
       - ./utils:/utils
@@ -70,7 +70,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - HANDLER_ID=1
-      - HANDLER_AMOUNT=2
+      - HANDLER_AMOUNT=1
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware

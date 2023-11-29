@@ -72,8 +72,8 @@ def main():
     fields = config_params["fields"].split(',')
     id = os.environ.get('FLIGHTS_FILTER_DISTANCE_ID', 1)
 
-    middleware = BaseMiddleware(config_params["in_exchange"], '',
-                                config_params["out_exchange"], config_params["queue_name"] + id)
+    middleware = BaseMiddleware(config_params["in_exchange"],'1',
+                                config_params["out_exchange"], config_params["queue_name"] + str(id))
 
     num_filters = int(os.environ.get('FLIGHTS_FILTER_DISTANCE_AMOUNT', 1))
 
