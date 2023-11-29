@@ -77,7 +77,8 @@ def main():
                             config_params["out_exchange"], config_params["out_filter_exchange"],queue)
     num_filters = int(os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT', 1))
     num_join_avg = int(os.environ.get('JOIN_AVG_AMOUNT', 1))
-    serializer = Serializer(middleware, fields, num_filters, num_join_avg,int(id))
+    num_mayor_avg = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))
+    serializer = Serializer(middleware, fields, num_filters, num_join_avg,int(id),num_mayor_avg)
 
     filter = FilterAvg(serializer, fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)

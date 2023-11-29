@@ -6,12 +6,13 @@ from middleware.base_protocol import BaseSerializer
 
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, fields, num_filters, num_join_avg,id):
+    def __init__(self, middleware, fields, num_filters, num_join_avg,id,num_flight_mayor_avg):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
         self._num_filters = num_filters
         self._num_join_avg = num_join_avg
+        self._num_flight_mayor_avg = num_flight_mayor_avg
         self._id = id
 
     def run(self, callback):
@@ -24,9 +25,12 @@ class Serializer(BaseSerializer):
         logging.info(f"Recibi el paquete numero: {pkt.get_pkt_number()}")
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             self._callback(pkt)
-            # Chequear si ack y mandar el paquete como vino a vuelos
+            self._middleware.send_flights(body,self._get_key_to_send(pkt.get_pkt_number(),self._num_flight_mayor_avg))
+            #TODO: Revisar política de ack, tambien en flight filter
+            #self._middleware.send_ack(ch,method), esto rompe no se porque
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
+            # No funciona bien
             logging.info("Llego finished pkt")
             amount_finished = pkt.get_payload()
             logging.info(
@@ -34,7 +38,7 @@ class Serializer(BaseSerializer):
             if amount_finished + 1 == self._num_filters:
                 packet = build_finish_pkt(
                     pkt.get_client_id(), pkt.get_pkt_number_bytes(), 0)
-                self._middleware.send(packet,self._get_key_to_send(pkt.get_client_id()))
+                self._middleware.send(packet,self._get_key_to_send(pkt.get_client_id(),self._num_join_avg))
                 
             else:
                 packet = build_finish_pkt(
@@ -54,7 +58,7 @@ class Serializer(BaseSerializer):
 
         pkt = pkt_header + payload[:-1].encode('utf-8')
 
-        key = self._get_key_to_send(original_pkt.get_client_id())
+        key = self._get_key_to_send(original_pkt.get_client_id(),self._num_join_avg)
         self._middleware.send(pkt, key)
 
 
@@ -64,9 +68,9 @@ class Serializer(BaseSerializer):
 
     
 
-    def _get_key_to_send(self,id):
-        key = id % self._num_join_avg
+    def _get_key_to_send(self,id,num_group):
+        key = id % num_group
         if key == 0:
-            key += self._num_join_avg
+            key += num_group
 
         return str(key)

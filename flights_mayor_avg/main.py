@@ -27,8 +27,6 @@ def initialize_config():
     try:
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
-        config_params["in_avg_exchange"] = os.getenv(
-            'IN_AVG_EXCHANGE', config["DEFAULT"]["IN_AVG_EXCHANGE"])
         config_params["in_flights_exchange"] = os.getenv(
             'IN_FLIGHTS_EXCHANGE', config["DEFAULT"]["IN_FLIGHTS_EXCHANGE"])
         config_params["out_exchange"] = os.getenv(
@@ -68,8 +66,9 @@ def main():
     server_thread = health_chequer_handler(config_params["port_manager"])
 
     id = int(os.environ.get('FLIGHTS_MAYOR_AVG_ID', 1))
-    middleware = Middleware(config_params["in_avg_exchange"], config_params["in_flights_exchange"],
-                            config_params["out_exchange"], id)
+    queue = "mayor_avg_queue_" + str(id)
+    middleware = Middleware(config_params["in_flights_exchange"], str(id),
+                            config_params["out_exchange"], queue)
 
     fields = config_params["fields"].split(',')
     num_filters = int(os.environ.get('FLIGHTS_MAYOR_AVG_AMOUNT', 1))

@@ -73,6 +73,7 @@ services:
       - FLIGHTS_FILTER_AVG_AMOUNT=2
       - ID=1
       - JOIN_AVG_AMOUNT=2
+      - FLIGHTS_MAYOR_AVG_AMOUNT=2
     volumes:
       - ./flights_avg/config.ini:/config.ini
       - ./utils:/utils
@@ -95,6 +96,7 @@ services:
       - FLIGHTS_FILTER_AVG_AMOUNT=2
       - ID=2
       - JOIN_AVG_AMOUNT=2
+      - FLIGHTS_MAYOR_AVG_AMOUNT=2
     volumes:
       - ./flights_avg/config.ini:/config.ini
       - ./utils:/utils
@@ -137,6 +139,50 @@ services:
       - ID=2
     volumes:
       - ./join_avg/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
+  flights_mayor_avg_1:
+    container_name: flights_mayor_avg_1
+    build:
+      context: ./flights_mayor_avg
+      dockerfile: Dockerfile
+    image: flights_mayor_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAYOR_AVG_ID=1
+      - FLIGHTS_MAYOR_AVG_AMOUNT=2
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=1
+    volumes:
+      - ./flights_mayor_avg/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
+  flights_mayor_avg_2:
+    container_name: flights_mayor_avg_2
+    build:
+      context: ./flights_mayor_avg
+      dockerfile: Dockerfile
+    image: flights_mayor_avg:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAYOR_AVG_ID=2
+      - FLIGHTS_MAYOR_AVG_AMOUNT=2
+      - FLIGHTS_AVG_JOURNEY_AMOUNT=1
+    volumes:
+      - ./flights_mayor_avg/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
   

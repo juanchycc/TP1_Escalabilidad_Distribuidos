@@ -164,6 +164,7 @@ flights_filter_avg = """  flights_filter_avg_#:
       - FLIGHTS_FILTER_AVG_AMOUNT=$
       - ID=#
       - JOIN_AVG_AMOUNT=&
+      - FLIGHTS_MAYOR_AVG_AMOUNT=%
     volumes:
       - ./flights_avg/config.ini:/config.ini
       - ./utils:/utils
@@ -201,6 +202,7 @@ for i in range(1, args.q2 + 1):
 
 flights_filter_avg = flights_filter_avg.replace('$', str(args.avg))
 flights_filter_avg = flights_filter_avg.replace('&', str(args.ja))
+flights_filter_avg = flights_filter_avg.replace('%', str(args.Mavg))
 
 flights_filter_avg_final = ""
 for i in range(1, args.avg + 1):

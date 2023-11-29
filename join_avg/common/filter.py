@@ -8,7 +8,7 @@ class JoinAvg:
         
 
     def run(self):
-        self._serializer.run(self.calc_avg,self.get_avg)
+        self._serializer.run(self.calc_avg,self.get_avg,self.load_avg)
 
     def calc_avg(self, batch,id):
         total,amount = batch.get_payload()
@@ -23,4 +23,8 @@ class JoinAvg:
         
         
     def get_avg(self,id):
-        return self._client_totals[id]["total"] / self._client_totals[id]["amount"]
+        return (self._client_totals[id]["total"] , self._client_totals[id]["amount"])
+    
+    def load_avg(self,id,data):
+        self._client_totals[id] = data
+        logging.info(f'Estado tras carga: {self._client_totals}')
