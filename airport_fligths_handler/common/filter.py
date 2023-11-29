@@ -44,12 +44,12 @@ class AirportHandler:
         for flight in self._fligths[id]:
             output.append(self._append_coordinates(flight, id))
             if len(output) >= PACKETS_TO_PERSIST:
-                self._serializer.send_pkt(output)
+                self._serializer.send_pkt(output, id)
                 logging.info("Mando los vuelos concatenados")
                 output = []
         if output:
             logging.info("Mando los vuelos concatenados")
-            self._serializer.send_pkt(output)
+            self._serializer.send_pkt(output, id)
 
     def _append_coordinates(self, fligth, id):
         output_fligth = [fligth[field]

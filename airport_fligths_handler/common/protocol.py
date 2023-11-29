@@ -127,10 +127,10 @@ class Serializer(BaseSerializer):
         self._middleware.send(pkt, '')
         # self._middleware.shutdown()
 
-    def send_pkt(self, pkt):
-        self._send_pkt(pkt, FLIGHTS_PKT)
+    def send_pkt(self, pkt, id):
+        self._send_pkt(pkt, FLIGHTS_PKT, id)
 
-    def _send_pkt(self, pkt, header):
+    def _send_pkt(self, pkt, header, id):
 
         payload = ""
         last = pkt[len(pkt) - 1]
@@ -146,9 +146,10 @@ class Serializer(BaseSerializer):
                 # Chequear len de paquete > 0
                 pkt_size = 3 + len(payload[:-1])
                 pkt_header = bytearray(
-                    [header, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
+                    [header, id, (pkt_size >> 8) & 0xFF, pkt_size & 0xFF])
                 pkt = pkt_header + payload[:-1].encode('utf-8')
                 self._middleware.send(pkt, '')
+                logging.info(f"Header: {pkt_header}")
                 payload = ""
 
     def _get_saved_data(self, id, type):

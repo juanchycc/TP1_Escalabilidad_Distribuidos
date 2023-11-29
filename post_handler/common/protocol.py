@@ -87,16 +87,16 @@ class Serializer(BaseSerializer):
             group = self._get_group(flight[1], self._airport_handler_amount)
             output[group].append(flight)
 
-        for i in range(1, self._airport_handler_amount + 1):  # Envia a cada nodo del filter max
+        for i in range(1, self._airport_handler_amount + 1):
             if len(output[i]) > 0:
-                self._send_pkt(output[i], str(
+                self._send_pkt(output[i], self._keys[1] + str(
                     i), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_airport(self, pkt, original_pkt):
         self._send_pkt(pkt, self._keys[1], AIRPORT_PKT, original_pkt, True)
 
     # TODO: Volver a generalizar esto
-    def _send_pkt(self, pkt, key, header, original_pkt, airport):
+    def _send_pkt(self, pkt, key, header, original_pkt, airport=False):
         # logging.info(f"output: {pkt}")
 
         payload = ""
