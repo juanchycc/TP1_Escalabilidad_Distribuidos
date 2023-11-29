@@ -24,15 +24,15 @@ class Middleware(BaseMiddleware):
             exchange=airports_exchange, exchange_type='fanout')
 
         result = channel.queue_declare(
-            queue=queue, durable=True)
+            queue=queue + "_flights_" + id, durable=True)
         queue_name_flights = result.method.queue
         channel.queue_bind(
-            exchange=flights_exchange, queue=queue, routing_key=id)
+            exchange=flights_exchange, queue=queue + "_flights_" + id, routing_key=routing_key+id)
         result = channel.queue_declare(
-            queue=queue, durable=True)
+            queue=queue + "_airports_" + id, durable=True)
         queue_name_airports = result.method.queue
         channel.queue_bind(
-            exchange=airports_exchange, queue=queue, routing_key=routing_key)
+            exchange=airports_exchange, queue=queue + "_airports_" + id, routing_key=routing_key)
         return channel, queue_name_flights, queue_name_airports
 
     def start_recv(self, callback_flights, callback_airports, auto_ack=True):
