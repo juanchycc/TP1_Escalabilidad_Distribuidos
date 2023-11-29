@@ -48,6 +48,7 @@ class AirportHandler:
                 logging.info("Mando los vuelos concatenados")
                 output = []
         if output:
+            logging.info("Mando los vuelos concatenados")
             self._serializer.send_pkt(output)
 
     def _append_coordinates(self, fligth, id):

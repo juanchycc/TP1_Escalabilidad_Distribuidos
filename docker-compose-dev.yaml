@@ -35,6 +35,25 @@ services:
     ports:
       - 12345:12345
 
+  file_writer:
+    container_name: file_writer
+    build:
+      context: ./file_writer
+      dockerfile: Dockerfile
+    image: file_writer:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./file_writer/config.ini:/config.ini
+      - ./file_writer/:/out_files/
+      - ./utils:/utils
   airport_fligths_handler_1:
     container_name: airport_fligths_handler_1
     build:
@@ -53,5 +72,26 @@ services:
       - HANDLER_ID=1
       - HANDLER_AMOUNT=2
     volumes:
+      - ./utils:/utils
+      - ./middleware:/middleware
+
+  flights_filter_distance_1:
+    container_name: flights_filter_distance_1
+    build:
+      context: ./flights_filter_distance
+      dockerfile: Dockerfile
+    image: flights_filter_distance:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=2
+    volumes:
+      - ./flights_filter_distance/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware

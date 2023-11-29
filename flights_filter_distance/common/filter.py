@@ -13,9 +13,9 @@ class FilterFlightsDistance:
     def filter_fligths(self, flights):
         output = []
 
-        logging.debug(f"Flights {flights} ")
+        logging.info(f"Flights {flights} ")
 
-        for flight in flights:
+        for flight in flights.get_payload():
             if flight["totalTravelDistance"] == '':
                 continue
             flight_distance = float(flight["totalTravelDistance"])

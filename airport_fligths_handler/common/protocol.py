@@ -66,7 +66,7 @@ class Serializer(BaseSerializer):
             self._airports_ended[pkt.get_client_id()] = True
             if self._flight_ended[pkt.get_client_id()]:
                 self._airport_finished_callback(pkt.get_client_id())
-                self._send_finish_pkt()
+                # self._send_finish_pkt()
 
     def rec_flights(self, ch, method, properties, body):
         logging.info(f"Llegan vuelos bytes: {bytes}")
@@ -101,7 +101,7 @@ class Serializer(BaseSerializer):
             self._flight_ended[pkt.get_client_id()] = True
             if self._flight_ended[pkt.get_client_id()]:
                 self._airport_finished_callback(pkt.get_client_id())
-                self._send_finish_pkt()
+                # self._send_finish_pkt()
 
     def _persist_data(self, id, pkts, type):
         # logging.info(f'pkts: {pkts}')
@@ -125,7 +125,7 @@ class Serializer(BaseSerializer):
     def _send_finish_pkt(self):
         pkt = self._build_finish_pkt(FLIGHTS_FINISHED_PKT)
         self._middleware.send(pkt, '')
-        self._middleware.shutdown()
+        # self._middleware.shutdown()
 
     def send_pkt(self, pkt):
         self._send_pkt(pkt, FLIGHTS_PKT)
@@ -142,7 +142,7 @@ class Serializer(BaseSerializer):
                     payload += ','
             payload += '\n'
             if len(payload) > MAX_PACKET_SIZE or flight == last:
-                logging.debug(f"Payload: {payload[:-1]}")
+                logging.info(f"Payload: {payload[:-1]}")
                 # Chequear len de paquete > 0
                 pkt_size = 3 + len(payload[:-1])
                 pkt_header = bytearray(

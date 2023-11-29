@@ -181,6 +181,7 @@ flights_filter_distance_text = """  flights_filter_distance_#:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_DISTANCE_ID=#
       - FLIGHTS_FILTER_DISTANCE_AMOUNT=$
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
