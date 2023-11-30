@@ -91,21 +91,16 @@ class Serializer(BaseSerializer):
     def send_pkt_query4(self, pkt, original_pkt):
         self._send_pkt(pkt, self._keys[3], FLIGHTS_PKT, original_pkt, False)
 
-    def send_pkt_query2(self, pkt, original_pkt):
-        return
-        output = {i: [] for i in range(1, self._airport_handler_amount + 1)}
-        for flight in pkt:
-            group = self._get_group(flight[1], self._airport_handler_amount)
-            output[group].append(flight)
-
-        for i in range(1, self._airport_handler_amount + 1):
-            if len(output[i]) > 0:
-                self._send_pkt(output[i], self._keys[1] + str(
-                    i), FLIGHTS_PKT, original_pkt, False)
+    def send_pkt_query2(self, pkt, original_pkt):        
+        # TODO: Generalizar con la de arriba
+        pkt_number = original_pkt.get_pkt_number()
+        key = pkt_number % self._airport_handler_amount
+        if key == 0:
+            key += self._airport_handler_amount
+        self._send_pkt(pkt,self._keys[1] + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_airport(self, pkt, original_pkt):
-        return
-        self._send_pkt(pkt, self._keys[1], AIRPORT_PKT, original_pkt, True)
+        self._send_pkt(pkt, '', AIRPORT_PKT, original_pkt, True)
 
 
     def _send_pkt(self, pkt, key, header, original_pkt, airport = False):

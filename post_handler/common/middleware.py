@@ -12,7 +12,8 @@ class Middleware(BaseMiddleware):
             pika.ConnectionParameters(host='rabbitmq'))
         self._out_channel = self._connect_out_exchange(exchange)
         self._out_exchange = exchange
-        self._airport_exhange = airport_exchange
+        self._airport_channel = self._connect_out_exchange(airport_exchange,'fanout')
+        self._airport_exhange = airport_exchange # TODO: fix later
         # Configure socket to listen to client
         self._client_socket = client_socket
         self._finished = False
@@ -55,5 +56,5 @@ class Middleware(BaseMiddleware):
         channel.close()
 
     def send_airport(self, bytes, routing_key):
-        self._out_channel.basic_publish(
+        self._airport_channel.basic_publish(
             exchange=self._airport_exhange, routing_key=routing_key, body=bytes)

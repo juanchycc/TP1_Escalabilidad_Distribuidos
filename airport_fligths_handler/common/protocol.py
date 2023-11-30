@@ -35,8 +35,8 @@ class Serializer(BaseSerializer):
 
         #logging.info(f"Llegan aeropuertos bytes: {bytes}")
         pkt = pkt_from_bytes(
-            body, airport_fields=self._airport_fields, test=True)
-        logging.info(f'llega el paquete numero: {pkt.get_pkt_number()}')
+            body, airport_fields=self._airport_fields, ah=True)
+        
         if pkt.get_pkt_type() == AIRPORT_PKT:
             if pkt.get_client_id() not in self._airports_received:
                 self._airports_received[pkt.get_client_id()] = {}

@@ -30,6 +30,8 @@ def initialize_config():
             os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["airport_exchange"] = os.getenv(
+            'EXCHANGE', config["DEFAULT"]["AIRPORT_EXCHANGE"])
         config_params["exchange"] = os.getenv(
             'EXCHANGE', config["DEFAULT"]["EXCHANGE"])
         config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])
@@ -67,7 +69,7 @@ def initialize_log(logging_level):
 
 def initialize(config_params, client_socket, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount):
     middleware = Middleware(
-        client_socket, config_params["exchange"], "airports", config_params["batch_size"], config_params["sink_exchange"])  # TODO: hardcodeo exchange ariport
+        client_socket, config_params["exchange"], config_params["airport_exchange"], config_params["batch_size"], config_params["sink_exchange"])  # TODO: hardcodeo exchange ariport
     keys = [config_params["key_1"], config_params["key_2"],
             config_params["key_avg"], config_params["key_4"]]
 
