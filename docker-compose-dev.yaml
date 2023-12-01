@@ -34,7 +34,7 @@ services:
       - ./utils:/utils
       - ./middleware:/middleware
     ports:
-      - 12345:12345
+      - 12349:12349
   
   file_writer:
     container_name: file_writer

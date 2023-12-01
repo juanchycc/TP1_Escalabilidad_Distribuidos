@@ -4,44 +4,72 @@ PACKETS_TO_PERSIST = 100
 
 
 class AirportHandler:
-    def __init__(self, serializer, fligth_fields):
+    def __init__(self, serializer, flight_fields):
         self._serializer = serializer
-        self._fligths = {}
+        self._flights = {}
+        self._last_flights = {}
         self._airports = {}
-        self._fligth_fields = fligth_fields
+        self._last_airports = {}
+        self._flight_fields = flight_fields
 
     def run(self):
         self._serializer.run(
-            self.recv_fligths, self.recv_airports, self.send_remaining_fligths)
+            self.recv_flights, self.recv_airports, self.send_remaining_flights,self.get_last_airports,self.get_last_flights)
 
-    def recv_fligths(self, flights, id):
-
+    def recv_flights(self, pkt):
+        flights = pkt.get_payload()
+        id = pkt.get_client_id()
+        pkt_number = pkt.get_pkt_number()
         logging.debug(f"Flights {flights} ")
-        if id not in self._fligths:
-            self._fligths[id] = []
+        if id not in self._flights:
+            self._flights[id] = []
 
-        # output = []
-        for fligth in flights:
-            # if fligth["startingAirport"] in self._airports and fligth["destinationAirport"] in self._airports:
-            #     output.append(self._append_coordinates(fligth))
-            # else:
-            self._fligths[id].append(fligth)
-        # if len(output) != 0:
-        #     self._serializer.send_pkt(output)
+        if id not in self._last_flights:
+            self._last_flights[id] = []
+        
+        for flight in flights:
+            flight["pkt_number"] = pkt_number            
+            self._flights[id].append(flight)
+            last_flight = []
+            for values in flight.values():
+                last_flight.append(values)
+            self._last_flights[id].append(last_flight)
+        
+        #logging.info(f'flights: {self._last_flights}')
 
-    def recv_airports(self, airports, id):
+    def get_last_flights(self,id):
+        result = self._last_flights[id]
+        self._last_flights[id] = []
+        return result
+
+    def recv_airports(self, pkt):
+        airports = pkt.get_payload()
+        id = pkt.get_client_id()
+        pkt_number = pkt.get_pkt_number()
         logging.debug(f"Airports: {airports}")
 
         if id not in self._airports:
             self._airports[id] = {}
 
+        if id not in self._last_airports:
+            self._last_airports[id] = []
+
         for airport in airports:
             self._airports[id][airport["Airport Code"]] = {
-                "Latitude": airport["Latitude"], "Longitude": airport["Longitude"]}
+                "Latitude": airport["Latitude"], "Longitude": airport["Longitude"],"pkt_number": pkt_number}
+            self._last_airports[id].append([
+                airport["Airport Code"],airport["Latitude"], airport["Longitude"],pkt_number])
+            
+        #logging.info(f'airports: {self._last_airports}') 
+            
+    def get_last_airports(self,id):
+        result = self._last_airports[id]
+        self._last_airports[id] = []
+        return result
 
-    def send_remaining_fligths(self, id):
+    def send_remaining_flights(self, id):
         output = []
-        for flight in self._fligths[id]:
+        for flight in self._flights[id]:
             output.append(self._append_coordinates(flight, id))
             if len(output) >= PACKETS_TO_PERSIST:
                 self._serializer.send_pkt(output, id)
@@ -51,13 +79,13 @@ class AirportHandler:
             logging.info("Mando los vuelos concatenados")
             self._serializer.send_pkt(output, id)
 
-    def _append_coordinates(self, fligth, id):
-        output_fligth = [fligth[field]
-                         for field in self._fligth_fields]
-        starting_airport_coordinates = self._airports[id][fligth["startingAirport"]]
-        destination_airport_coordinates = self._airports[id][fligth["destinationAirport"]]
-        output_fligth += [starting_airport_coordinates["Latitude"],
+    def _append_coordinates(self, flight, id):
+        output_flight = [flight[field]
+                         for field in self._flight_fields]
+        starting_airport_coordinates = self._airports[id][flight["startingAirport"]]
+        destination_airport_coordinates = self._airports[id][flight["destinationAirport"]]
+        output_flight += [starting_airport_coordinates["Latitude"],
                           starting_airport_coordinates["Longitude"]]
-        output_fligth += [destination_airport_coordinates["Latitude"],
+        output_flight += [destination_airport_coordinates["Latitude"],
                           destination_airport_coordinates["Longitude"]]
-        return output_fligth
+        return output_flight

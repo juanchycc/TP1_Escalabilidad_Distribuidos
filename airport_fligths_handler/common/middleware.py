@@ -29,7 +29,7 @@ class Middleware(BaseMiddleware):
         channel.queue_bind(
             exchange=flights_exchange, queue=queue_name_flights, routing_key=routing_key)
         result = channel.queue_declare(
-            queue='', durable=True)
+            queue="sub" + queue_name, durable=True) # Ver si se pasa por parametro esto
         queue_name_airports = result.method.queue
         channel.queue_bind(
             exchange=airports_exchange, queue=queue_name_airports, routing_key='')

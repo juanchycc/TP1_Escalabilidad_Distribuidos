@@ -1,4 +1,5 @@
 import logging
+import time
 
 FLIGHTS_PKT = 0
 HEADERS_FLIGHTS_PKT = 1
@@ -20,6 +21,7 @@ class Client_Protocol:
         self.id = id
 
     def _send_packet(self, batch, packet_type):
+        #time.sleep(1)
 
         batch_str = '\n'.join(str(x) for x in batch)
         packet_len = len(batch_str.encode('utf-8')) + HEADER_SIZE  # HEADER_SIZE = header size
@@ -52,9 +54,9 @@ class Client_Protocol:
 
     def send_finished_airports_pkt(self):
         logging.info("Sending airports flights pkt")
-        padding_length = self.batch_size - HEADER_SIZE 
+        padding_length = self.batch_size - HEADER_SIZE - 1
         self.socket.send_packet(
-            bytearray([AIRPORT_FINISHED_PKT,self.id, 0, HEADER_SIZE] + self.get_pkt_number()) + (b'\x00'*padding_length))
+            bytearray([AIRPORT_FINISHED_PKT,self.id, 0, HEADER_SIZE + 1] + self.get_pkt_number() + [0]) + (b'\x00'*padding_length))
         
     def send_listener_port(self,listener_port):
         logging.info("Sending listener port pkt")

@@ -75,7 +75,7 @@ post_handler_text = """  post_handler:
       - ./utils:/utils
       - ./middleware:/middleware
     ports:
-      - 12345:12345
+      - 12349:12349
 """
 
 flights_filter_plus_3_text = """  flights_filter_plus_3_#:

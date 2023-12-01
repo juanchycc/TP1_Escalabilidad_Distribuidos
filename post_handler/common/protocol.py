@@ -66,8 +66,8 @@ class Serializer(BaseSerializer):
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(
                 'action: bytes_to_pkt | info: rec finished airport pkt')
-            packet = self._build_finish_pkt(AIRPORT_FINISHED_PKT)
-            self._middleware.send(packet, self._keys[1])
+            packet = build_finish_pkt(pkt.get_client_id(),pkt.get_pkt_number_bytes(),0,AIRPORT_FINISHED_PKT)
+            self._middleware.send_airport(packet, '')
 
     #def send_listener_pkt(self, pkt):
     #    self._middleware.send_pkt_to_sink(pkt)

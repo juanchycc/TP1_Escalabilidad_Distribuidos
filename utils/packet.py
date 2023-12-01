@@ -76,6 +76,9 @@ def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, ah=False, avg
     if pkt_type == FLIGHTS_FINISHED_PKT:
         payload = bytes[8]
 
+    if pkt_type == AIRPORT_FINISHED_PKT:
+        payload = bytes[8]
+
     return Packet(pkt_type, client_id, pkt_size, pkt_number, payload)
 
 
@@ -92,5 +95,5 @@ def build_flights_or_airports(payload, fields, delimiter):
     return flight_list
 
 
-def build_finish_pkt(client_id, pkt_number_bytes, amount):
-    return bytearray([FLIGHTS_FINISHED_PKT, client_id, 0, 9] + pkt_number_bytes + [amount])
+def build_finish_pkt(client_id, pkt_number_bytes, amount,type = FLIGHTS_FINISHED_PKT):
+    return bytearray([type, client_id, 0, 9] + pkt_number_bytes + [amount])
