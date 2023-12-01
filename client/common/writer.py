@@ -5,9 +5,11 @@ HEADER_SIZE = 8
 
 
 class Writer():
-    def __init__(self, listener,id):
+    def __init__(self, listener, id, base_path, query_amount):
         self._listener = listener
         self.id = id
+        self.base_path = base_path
+        initialize_outputs(query_amount, base_path, id)
 
     def run(self):
         self._listener.start_recv(self.bytes_to_pkt)
@@ -29,6 +31,12 @@ class Writer():
         self.write_fligths(data, path)
 
     def write_fligths(self, flights, path):
-        with open("./out_file_q" + path + "-" + self.id + ".csv", 'a') as file:
+        with open(self.base_path + path + "-" + self.id + ".csv", 'a') as file:
             for f in flights:
                 file.write(f + '\n')
+
+
+def initialize_outputs(amount, base_path, id):
+    for i in range(1, amount + 1):
+        with open(base_path + str(i) + "-" + id + ".csv", 'w') as file:
+            file.write("")
