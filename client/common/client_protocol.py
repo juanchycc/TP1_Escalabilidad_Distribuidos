@@ -21,7 +21,7 @@ class Client_Protocol:
         self.id = id
 
     def _send_packet(self, batch, packet_type):
-        #time.sleep(1)
+        #time.sleep(0.3)
 
         batch_str = '\n'.join(str(x) for x in batch)
         packet_len = len(batch_str.encode('utf-8')) + HEADER_SIZE  # HEADER_SIZE = header size
@@ -38,9 +38,11 @@ class Client_Protocol:
         self._send_packet(batch, HEADERS_FLIGHTS_PKT)
 
     def send_flights_packet(self, batch):
+        #time.sleep(1)
         self._send_packet(batch, FLIGHTS_PKT)
 
     def send_airports_packet(self, batch):
+        #time.sleep(3)
         self._send_packet(batch, AIRPORT_PKT)
 
     def send_header_airports_packet(self, batch):

@@ -38,7 +38,10 @@ class AirportHandler:
         #logging.info(f'flights: {self._last_flights}')
 
     def get_last_flights(self,id):
-        result = self._last_flights[id]
+        try:
+            result = self._last_flights[id]
+        except:
+            return []
         self._last_flights[id] = []
         return result
 
@@ -60,10 +63,13 @@ class AirportHandler:
             self._last_airports[id].append([
                 airport["Airport Code"],airport["Latitude"], airport["Longitude"],pkt_number])
             
-        #logging.info(f'airports: {self._last_airports}') 
+         
             
     def get_last_airports(self,id):
-        result = self._last_airports[id]
+        try:
+            result = self._last_airports[id]
+        except:
+            return []
         self._last_airports[id] = []
         return result
 

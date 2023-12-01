@@ -19,8 +19,8 @@ class Serializer(BaseSerializer):
         self._flight_ended = {}
         self._flights_received = {}
         self._airports_received = {}
-        self._persist_airport_counter = 0
-        self._persist_flights_counter = 0
+        self._persist_counter = 0
+        
         
 
     def run(self, fligth_callback, airport_callback, airport_finished_callback,get_airports_callback,get_flights_callback):
@@ -29,6 +29,8 @@ class Serializer(BaseSerializer):
         self._airport_finished_callback = airport_finished_callback
         self._get_airports_callback = get_airports_callback
         self._get_flights_callback = get_flights_callback
+        # SEGUIR POR ACA,QUE se recuperen bien
+        # Despues logica de finalizado para los dos y ya deberia estar...
         self._load_state()
         self._middleware.start_recv(self.rec_flights, self.rec_airports,False)
 
@@ -36,24 +38,16 @@ class Serializer(BaseSerializer):
         
         pkt = pkt_from_bytes(
             body, airport_fields=self._airport_fields, ah=True)
-        logging.info(f'Recibi pkt numero: {pkt.get_pkt_number()} | tipo: {pkt.get_pkt_type()}')
+        logging.info(f'Recibi airport numero: {pkt.get_pkt_number()} | del cliente: {pkt.get_client_id()}')
         
         if pkt.get_pkt_type() == AIRPORT_PKT:
-            self._persist_airport_counter,result =  self._handle_flight_or_airport(pkt,self._airports_received,self._airports_ended,self._flight_ended,self._persist_airport_counter,self._airport_callback,self._get_airports_callback,"airports")
-            if result:
-                self._middleware.send_ack(ch, method, True)
-
-            
+            if self._handle_flight_or_airport(pkt,self._airports_received,self._airports_ended,self._flight_ended,self._airport_callback):
+                self._middleware.send_ack(ch, method, True)    
                
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(f"Llego finished airports pkt")
-
-            #Guarda en Disco            
-            for id in self._airports_received.keys():
-                if len(self._get_airports_callback(id)) != 0:
-                    self._persist_data(str(id),self._get_airports_callback(id), "airports")
-               
+            self._call_persist_data()               
             self._middleware.send_ack(ch, method, True)
 
             self._airports_ended[pkt.get_client_id()] = True
@@ -62,7 +56,7 @@ class Serializer(BaseSerializer):
             #self._airport_finished_callback(pkt.get_client_id())
             #self._send_finish_pkt()
 
-    def _handle_flight_or_airport(self,pkt,type_received,type_ended,other_ended,counter,callback,get_callback,type):
+    def _handle_flight_or_airport(self,pkt,type_received,type_ended,other_ended,callback):
         if pkt.get_client_id() not in type_received:
             type_received[pkt.get_client_id()] = {}
             type_ended[pkt.get_client_id()] = False
@@ -75,37 +69,45 @@ class Serializer(BaseSerializer):
             # Duplicado
             return 0,False             
         
-        counter += 1
+        self._persist_counter += 1
         callback(pkt)
         # Guarda en memoria
         type_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()           
-        #Guarda en Disco
-        
-        if counter % WRITE_TO_DISK == 0:
-            logging.info(f'Persiste')
+        #Guarda en Disco        
+        if self._persist_counter % WRITE_TO_DISK == 0:
+            logging.info(f'Persisten datos')
+            self._call_persist_data()
+            return True
 
-            for id in type_received.keys():
-                self._persist_data(str(id),get_callback(id), type)
-            return counter,True
-
-        return counter,False       
+        return False       
 
     def rec_flights(self, ch, method, properties, body):
         #logging.info(f"Llegan vuelos bytes: {bytes}")
         pkt = pkt_from_bytes(body, flight_fields=self._flight_fields)
         logging.info(f'llega el paquete numero: {pkt.get_pkt_number()} | del cliente: {pkt.get_client_id()}')
         if pkt.get_pkt_type() == FLIGHTS_PKT:
-            self._persist_flights_counter,result = self._handle_flight_or_airport(pkt,self._flights_received,self._flight_ended,self._airports_ended,self._persist_flights_counter,self._fligth_callback,self._get_flights_callback,"flights")
-            if result:
+            if self._handle_flight_or_airport(pkt,self._flights_received,self._flight_ended,self._airports_ended,self._fligth_callback):
                 self._middleware.send_ack(ch, method, True)
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
-           logging.info(f"Llego finished flights pkt")
-        
+            logging.info(f"Llego finished flights pkt")           
+            self._call_persist_data()               
+            self._middleware.send_ack(ch, method, True) 
         #    self._flight_ended[pkt.get_client_id()] = True
         #    if self._flight_ended[pkt.get_client_id()]:
         #        self._airport_finished_callback(pkt.get_client_id())
-               # self._send_finish_pkt()
+            self._middleware.resend(body,"query_2_2")
+
+    def _call_persist_data(self):
+        for id in self._airports_received.keys():
+            data_1 = self._get_airports_callback(id)
+            if len(data_1) != 0:
+                self._persist_data(str(id),data_1, "airports")
+
+        for id in self._flights_received.keys():
+            data_2 = self._get_flights_callback(id)
+            if len(data_2) != 0:
+                self._persist_data(str(id),data_2, "flights")
 
     def _persist_data(self, id, pkts, type):
         #logging.info(f'pkts: {pkts}')

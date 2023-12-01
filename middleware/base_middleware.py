@@ -53,12 +53,14 @@ class BaseMiddleware():
             exchange=self._out_exchange, routing_key=routing_key, body=bytes)
 
     def resend(self, bytes, key=None):
-        if key is None:
-            self._in_channel.basic_publish(
+        self._in_channel.basic_publish(
                 exchange=self._in_exchange, routing_key=key, body=bytes)
-        else:
-            self._in_channel.basic_publish(
-                exchange=self._in_exchange, routing_key=str(int(self._in_key) + 1), body=bytes)
+        # if key is None:
+        #     self._in_channel.basic_publish(
+        #         exchange=self._in_exchange, routing_key=key, body=bytes)
+        # else:
+        #     self._in_channel.basic_publish(
+        #         exchange=self._in_exchange, routing_key=str(int(self._in_key) + 1), body=bytes)
 
     def send_ack(self, ch, method, multiple=False):
         self._in_channel.basic_ack(method.delivery_tag, multiple)
