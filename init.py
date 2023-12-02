@@ -67,7 +67,6 @@ post_handler_text = """  post_handler_#:
       - ./middleware:/middleware
     ports:
       - 1235#:1235#
-"""
 
 flights_filter_plus_3_text = """  flights_filter_plus_3_#:
     container_name: flights_filter_#

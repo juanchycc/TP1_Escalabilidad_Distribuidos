@@ -1,4 +1,5 @@
 from utils.constants import *
+import logging
 
 
 class Packet:
@@ -23,9 +24,8 @@ class Packet:
 
     def get_payload(self):
         return self.payload
-
-
-def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, test=False, avg=False) -> Packet:
+      
+def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, ah=False, avg = False) -> Packet:
 
     pkt_type = bytes[PKT_TYPE_POSITION]
     client_id = bytes[CLIENT_ID_POSITION]
@@ -34,7 +34,7 @@ def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, test=False, a
     payload = bytearray(bytes[HEADER_SIZE:]).decode('utf-8-sig')
     pkt_number_bytes = bytes[4:HEADER_SIZE]
     pkt_number = 0
-
+    
     for i, byte in enumerate(pkt_number_bytes):
         pkt_number += byte << (8 * (len(pkt_number_bytes) - 1 - i))
 
@@ -42,23 +42,24 @@ def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, test=False, a
         payload = build_flights_or_airports(payload, flight_fields, ',')
 
     if pkt_type == AIRPORT_PKT:
-        if not test:
+        if not ah:
             payload = build_flights_or_airports(payload, airport_fields, ';')
         else:
             payload = build_flights_or_airports(payload, airport_fields, ',')
 
-        if avg:
-            flights = payload.split('\n')
-            flight_list = []
-            for flight in flights:
-                data = flight.split(',')
-                flight_list.append(data[0])
-            payload = flight_list
-        else:
-            payload = build_flights_or_airports(payload, flight_fields, ',')
+        # if avg:
+        #     flights = payload.split('\n')
+        #     flight_list = []
+        #     for flight in flights:
+        #         data = flight.split(',')
+        #         flight_list.append(data[0])
+        #     payload = flight_list
+        # else:
+        #     payload = build_flights_or_airports(payload,flight_fields,',')
 
-    if pkt_type == AIRPORT_PKT:
-        payload = build_flights_or_airports(payload, airport_fields, ';')
+    
+    #if pkt_type == AIRPORT_PKT:
+    #    payload = build_flights_or_airports(payload,airport_fields,';')
 
     if pkt_type == AVG_PKT:
         avg_pkt = payload.strip().split(',')
@@ -73,6 +74,9 @@ def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, test=False, a
         payload = payload.split(',')
 
     if pkt_type == FLIGHTS_FINISHED_PKT:
+        payload = bytes[8]
+
+    if pkt_type == AIRPORT_FINISHED_PKT:
         payload = bytes[8]
 
     return Packet(pkt_type, client_id, pkt_size, pkt_number, payload)
@@ -91,5 +95,5 @@ def build_flights_or_airports(payload, fields, delimiter):
     return flight_list
 
 
-def build_finish_pkt(client_id, pkt_number_bytes, amount):
-    return bytearray([FLIGHTS_FINISHED_PKT, client_id, 0, 9] + pkt_number_bytes + [amount])
+def build_finish_pkt(client_id, pkt_number_bytes, amount,type = FLIGHTS_FINISHED_PKT):
+    return bytearray([type, client_id, 0, 9] + pkt_number_bytes + [amount])

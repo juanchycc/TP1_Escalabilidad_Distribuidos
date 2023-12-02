@@ -25,6 +25,8 @@ def initialize_config():
             'SERVER_PORT_BASE', config["DEFAULT"]["SERVER_PORT_BASE"])
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["airport_exchange"] = os.getenv(
+            'EXCHANGE', config["DEFAULT"]["AIRPORT_EXCHANGE"])
         config_params["exchange"] = os.getenv(
             'EXCHANGE', config["DEFAULT"]["EXCHANGE"])
         config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])

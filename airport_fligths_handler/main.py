@@ -26,6 +26,8 @@ def initialize_config():
     try:
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["airports_exchange"] = os.getenv(
+            'IN_EXCHANGE', config["DEFAULT"]["AIRPORTS_EXCHANGE"])
         config_params["in_exchange"] = os.getenv(
             'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
         config_params["out_exchange"] = os.getenv(
@@ -69,9 +71,10 @@ def main():
     # read from docker env, default 1
     id = os.environ.get('HANDLER_ID', 1)
     amount = int(os.environ.get('HANDLER_AMOUNT', 1))
+    queue = "air_handler_queue_" + str(id)
 
-    middleware = Middleware(config_params["in_exchange"], "airports", config_params["key_2"],
-                            config_params["out_exchange"], id, id)  # TODO: harcodeo de exchange airport
+    middleware = Middleware(config_params["in_exchange"], config_params["airports_exchange"], config_params["key_2"] + str(id),
+                            config_params["out_exchange"], queue)  # TODO: harcodeo de exchange airport
 
     serializer = Serializer(middleware, fligth_fields, airport_fields)
 
