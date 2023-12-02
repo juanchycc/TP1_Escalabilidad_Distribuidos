@@ -5,7 +5,7 @@ from middleware.base_protocol import BaseSerializer
 
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount,flight_filter_avg_amount):
+    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount, flight_filter_avg_amount):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -27,9 +27,9 @@ class Serializer(BaseSerializer):
 
         pkt = pkt_from_bytes(bytes, self._flight_fields, self._airport_fields)
 
-        logging.debug(
+        logging.info(
             f'Recibo paquete del cliente: {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
-        logging.debug(f'Payload: {pkt.get_payload()}')
+        logging.info(f'Payload: {pkt.get_payload()}')
 
         if pkt.get_pkt_type() == HEADERS_FLIGHTS_PKT:
             self._flight_fields = pkt.get_payload()
@@ -58,10 +58,10 @@ class Serializer(BaseSerializer):
                 logging.debug(f"Sending finished pkt | key: {key}")
                 self._middleware.send(packet, key)
 
-            self._middleware.send(packet, self._keys[1] + "1")  # Al primer flight filter
+            # Al primer flight filter
+            self._middleware.send(packet, self._keys[1] + "1")
             self._middleware.send(packet, "q1_1")  # Al primer flight filter
-            self._middleware.send(packet, "avg1") # Al primer AVG
-
+            self._middleware.send(packet, "avg1")  # Al primer AVG
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(
@@ -69,7 +69,7 @@ class Serializer(BaseSerializer):
             packet = build_finish_pkt(pkt.get_client_id(),pkt.get_pkt_number_bytes(),0,AIRPORT_FINISHED_PKT)
             self._middleware.send_airport(packet, '')
 
-    #def send_listener_pkt(self, pkt):
+    # def send_listener_pkt(self, pkt):
     #    self._middleware.send_pkt_to_sink(pkt)
 
     def send_pkt_query1(self, pkt, original_pkt):
@@ -86,7 +86,7 @@ class Serializer(BaseSerializer):
         key = pkt_number % self._flight_filter_avg_amount
         if key == 0:
             key += self._flight_filter_avg_amount
-        self._send_pkt(pkt,"avg" + str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, "avg" + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query4(self, pkt, original_pkt):
         self._send_pkt(pkt, self._keys[3], FLIGHTS_PKT, original_pkt, False)
@@ -102,8 +102,7 @@ class Serializer(BaseSerializer):
     def send_pkt_airport(self, pkt, original_pkt):
         self._send_pkt(pkt, '', AIRPORT_PKT, original_pkt, True)
 
-
-    def _send_pkt(self, pkt, key, header, original_pkt, airport = False):
+    def _send_pkt(self, pkt, key, header, original_pkt, airport=False):
 
         # logging.info(f"output: {pkt}")
 

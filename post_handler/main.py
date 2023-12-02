@@ -1,12 +1,7 @@
 import os
 import logging
-import signal
-import socket
-import threading
 from configparser import ConfigParser
-from common.filter import FilterFields
-from common.middleware import Middleware
-from common.protocol import Serializer
+from server import Server
 
 
 def initialize_config():
@@ -26,8 +21,8 @@ def initialize_config():
 
     config_params = {}
     try:
-        config_params["port"] = int(
-            os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
+        config_params["port"] = os.getenv(
+            'SERVER_PORT_BASE', config["DEFAULT"]["SERVER_PORT_BASE"])
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["airport_exchange"] = os.getenv(
@@ -67,43 +62,27 @@ def initialize_log(logging_level):
     )
 
 
-def initialize(config_params, client_socket, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount):
-    middleware = Middleware(
-        client_socket, config_params["exchange"], config_params["airport_exchange"], config_params["batch_size"], config_params["sink_exchange"])  # TODO: hardcodeo exchange ariport
-    keys = [config_params["key_1"], config_params["key_2"],
-            config_params["key_avg"], config_params["key_4"]]
-
-    serializer = Serializer(
-        middleware, keys, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount)
-    filter = FilterFields(serializer)
-    # signal.signal(signal.SIGTERM,middleware.shutdown)
-    filter.run()
-
-
 def main():
 
     config_params = initialize_config()
 
     initialize_log(config_params["logging_level"])
 
-    logging.info('action: waiting_client_connection | result: in_progress')
-    listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    listening_socket.bind(("", config_params["port"]))
-    listening_socket.listen()
-    while True:
-        client_socket, addr = listening_socket.accept()
-        logging.info(
-            f'action: accept_connection | result: in_progress | addr: {addr}')
+    id = fligth_filter_amount = os.environ.get('POST_HANDLER_ID', 1)
+    port = int(config_params["port"] + id)
 
-        fligth_filter_amount = int(
-            os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT', 1))
-        airport_handler_amount = int(
-            os.environ.get('AIRPORTS_HANDLER_AMOUNT', 1))
-        flight_filter_avg_amount = int(
-            os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT',1))
-        joiner = threading.Thread(target=initialize, args=(
-            config_params, client_socket, fligth_filter_amount, airport_handler_amount,flight_filter_avg_amount))
-        joiner.start()
+    logging.info('action: waiting_client_connection | result: in_progress')
+
+    fligth_filter_amount = int(
+        os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT', 1))
+    airport_handler_amount = int(
+        os.environ.get('AIRPORTS_HANDLER_AMOUNT', 1))
+    flight_filter_avg_amount = int(
+        os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT', 1))
+
+    server = Server(port)
+    server.run(config_params, fligth_filter_amount,
+               airport_handler_amount, flight_filter_avg_amount)
 
 
 if __name__ == "__main__":

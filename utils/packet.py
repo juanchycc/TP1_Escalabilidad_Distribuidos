@@ -24,7 +24,7 @@ class Packet:
 
     def get_payload(self):
         return self.payload
-
+      
 def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, ah=False, avg = False) -> Packet:
 
     pkt_type = bytes[PKT_TYPE_POSITION]
@@ -65,7 +65,7 @@ def pkt_from_bytes(bytes, flight_fields=None, airport_fields=None, ah=False, avg
         avg_pkt = payload.strip().split(',')
         total = float(avg_pkt[0])
         amount = int(avg_pkt[1])
-        payload = (total,amount)
+        payload = (total, amount)
 
     if pkt_type == HEADERS_AIRPORT_PKT:
         payload = payload.split(';')
