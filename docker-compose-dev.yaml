@@ -73,6 +73,7 @@ services:
       - PYTHONUNBUFFERED=1
       - HANDLER_ID=1
       - HANDLER_AMOUNT=2
+      - FILTER_DISTANCE_AMOUNT=2
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware
@@ -94,6 +95,7 @@ services:
       - PYTHONUNBUFFERED=1
       - HANDLER_ID=2
       - HANDLER_AMOUNT=2
+      - FILTER_DISTANCE_AMOUNT=2
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware

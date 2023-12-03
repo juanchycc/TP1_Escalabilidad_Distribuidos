@@ -27,16 +27,17 @@ def initialize_config():
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["airports_exchange"] = os.getenv(
-            'IN_EXCHANGE', config["DEFAULT"]["AIRPORTS_EXCHANGE"])
+            'AIRPORTS_EXCHANGE', config["DEFAULT"]["AIRPORTS_EXCHANGE"])
         config_params["in_exchange"] = os.getenv(
             'IN_EXCHANGE', config["DEFAULT"]["IN_EXCHANGE"])
         config_params["out_exchange"] = os.getenv(
             'OUT_EXCHANGE', config["DEFAULT"]["OUT_EXCHANGE"])
         config_params["key_2"] = os.getenv('KEY_2', config["DEFAULT"]["KEY_2"])
-        config_params["fligth_fields"] = os.getenv(
-            'FIELDS', config["DEFAULT"]["FLIGTH_FIELDS"])
+        config_params["flight_fields"] = os.getenv(
+            'FLIGHT_FIELDS', config["DEFAULT"]["FLIGHT_FIELDS"])
         config_params["airport_fields"] = os.getenv(
-            'FIELDS', config["DEFAULT"]["AIRPORT_FIELDS"])
+            'AIRPORT_FIELDS', config["DEFAULT"]["AIRPORT_FIELDS"])
+
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -65,20 +66,21 @@ def main():
     config_params = initialize_config()
     initialize_log(config_params["logging_level"])
 
-    fligth_fields = config_params["fligth_fields"].split(',')
+    flight_fields = config_params["flight_fields"].split(',')
     airport_fields = config_params["airport_fields"].split(',')
 
     # read from docker env, default 1
     id = os.environ.get('HANDLER_ID', 1)
     amount = int(os.environ.get('HANDLER_AMOUNT', 1))
     queue = "air_handler_queue_" + str(id)
+    num_filters = int(os.environ.get('FILTER_DISTANCE_AMOUNT',1))
 
     middleware = Middleware(config_params["in_exchange"], config_params["airports_exchange"], config_params["key_2"] + str(id),
                             config_params["out_exchange"], queue)  # TODO: harcodeo de exchange airport
 
-    serializer = Serializer(middleware, fligth_fields, airport_fields)
+    serializer = Serializer(middleware, flight_fields, airport_fields,num_filters,amount,int(id),config_params["key_2"])
 
-    filter = AirportHandler(serializer, fligth_fields)
+    filter = AirportHandler(serializer, flight_fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)
     filter.run()
 

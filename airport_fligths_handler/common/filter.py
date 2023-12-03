@@ -14,7 +14,7 @@ class AirportHandler:
 
     def run(self):
         self._serializer.run(
-            self.recv_flights, self.recv_airports, self.send_remaining_flights,self.get_last_airports,self.get_last_flights)
+            self.recv_flights, self.recv_airports, self.send_remaining_flights,self.get_last_airports,self.get_last_flights,self.load_airports,self.load_flights)
 
     def recv_flights(self, pkt):
         flights = pkt.get_payload()
@@ -36,6 +36,10 @@ class AirportHandler:
             self._last_flights[id].append(last_flight)
         
         #logging.info(f'flights: {self._last_flights}')
+
+    def load_flights(self,id,data):
+        self._flights[id] = data
+        
 
     def get_last_flights(self,id):
         try:
@@ -62,9 +66,12 @@ class AirportHandler:
                 "Latitude": airport["Latitude"], "Longitude": airport["Longitude"],"pkt_number": pkt_number}
             self._last_airports[id].append([
                 airport["Airport Code"],airport["Latitude"], airport["Longitude"],pkt_number])
+        
+        
             
-         
-            
+    def load_airports(self,id,data):
+        self._airports[id] = data
+                        
     def get_last_airports(self,id):
         try:
             result = self._last_airports[id]
@@ -76,14 +83,9 @@ class AirportHandler:
     def send_remaining_flights(self, id):
         output = []
         for flight in self._flights[id]:
-            output.append(self._append_coordinates(flight, id))
-            if len(output) >= PACKETS_TO_PERSIST:
-                self._serializer.send_pkt(output, id)
-                logging.info("Mando los vuelos concatenados")
-                output = []
-        if output:
-            logging.info("Mando los vuelos concatenados")
-            self._serializer.send_pkt(output, id)
+            output.append(self._append_coordinates(flight,id) + [flight['pkt_number']])
+        if len(output) != 0:
+            self._serializer.send_pkt(output,id)
 
     def _append_coordinates(self, flight, id):
         output_flight = [flight[field]
@@ -95,3 +97,9 @@ class AirportHandler:
         output_flight += [destination_airport_coordinates["Latitude"],
                           destination_airport_coordinates["Longitude"]]
         return output_flight
+
+    def flush_client(self,id):
+        self._flights[id] = {}
+        self._last_flights[id] = {}
+        self._airports[id] = {}
+        self._last_airports[id] = {}

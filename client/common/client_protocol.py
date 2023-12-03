@@ -42,7 +42,7 @@ class Client_Protocol:
         self._send_packet(batch, FLIGHTS_PKT)
 
     def send_airports_packet(self, batch):
-        #time.sleep(3)
+        #time.sleep(1)
         self._send_packet(batch, AIRPORT_PKT)
 
     def send_header_airports_packet(self, batch):
