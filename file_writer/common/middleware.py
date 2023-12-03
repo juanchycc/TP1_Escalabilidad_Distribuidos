@@ -32,10 +32,10 @@ class Middleware:
             logging.error(
                 'action: start_recv | result: failed | error: %s' % e)
 
-    def connect_to_client(self,client,port):
+    def connect_to_client(self, client, port):
         client_socket = socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((self._client_ip,port))
+            socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((self._client_ip, port))
 
         if client_socket is None:
             logging.info(
@@ -44,14 +44,14 @@ class Middleware:
 
         self._client_sockets[client] = client_socket
 
-    def send_packet(self, packet,client):
-        
-        client_socket = self._client_sockets.get(client,None)
+    def send_packet(self, packet, client):
+
+        client_socket = self._client_sockets.get(client, None)
 
         if client_socket is None:
             logging.info(
                 f'action: send_packet | result: socket is not connected')
-            return        
+            return
 
         # Enviar mientras queden bytes por enviar
         while len(packet) > 0:
@@ -69,5 +69,5 @@ class Middleware:
         self._in_channel.stop_consuming()
         self._in_channel.close()
         self._connection.close()
-        #self._client_socket.close() -> Cerrar todas las conexiones activas ahora
+        # self._client_socket.close() -> Cerrar todas las conexiones activas ahora
         logging.info('action: shutdown | result: success')

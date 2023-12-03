@@ -11,6 +11,7 @@ class BaseSerializer():
         # logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()}')
         # time.sleep(5)
         if pkt.get_pkt_type() == FLIGHTS_PKT:
+            logging.info(f"Llego flights pkt")
             self._callback(pkt)
             self._middleware.send_ack(ch, method)
 
@@ -29,8 +30,9 @@ class BaseSerializer():
                 packet = build_finish_pkt(
                     pkt.get_client_id(), pkt.get_pkt_number_bytes(), amount_finished + 1)
                 logging.info(
-                    f"Resending finished packet | amount finished : {amount_finished +1}")
-                self._middleware.resend(packet, str(int(self._id) + 1))
+                    f"Resending finished packet to: {str(int(self._id) + 1)} | amount finished : {amount_finished +1}")
+                next_id = str(int(self._id) + 1)
+                self._middleware.resend(packet, str("q1_" + next_id))
 
     def _build_flights_or_airports(self, payload, fields, delimiter):
         flights = payload.split('\n')

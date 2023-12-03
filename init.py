@@ -67,6 +67,7 @@ post_handler_text = """  post_handler_#:
       - ./middleware:/middleware
     ports:
       - 1235#:1235#
+"""
 
 flights_filter_plus_3_text = """  flights_filter_plus_3_#:
     container_name: flights_filter_#
@@ -393,11 +394,11 @@ LOGGING_LEVEL = INFO
 BATCH_SIZE = 8192
 FLIGHTS_FILENAME = flights_$.csv
 AIRPORTS_FILENAME = airports_$.csv
-POST_HANDLERS_AMOUNT = $
+POST_HANDLERS_AMOUNT = #
 BASE_OUTPUT_PATH = ./out_file_q
 QUERY_AMOUNT = 4
 """
-client_config_text = client_config_text.replace('$', str(args.p))
+client_config_text = client_config_text.replace('#', str(args.p))
 
 # Create config.ini Client file
 with open(CONFIG_CLIENT_PATH, 'w') as f:
