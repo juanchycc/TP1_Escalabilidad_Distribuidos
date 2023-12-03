@@ -24,6 +24,8 @@ def initialize_config():
             'SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["port"] = os.getenv(
             'SERVER_PORT_BASE', config["DEFAULT"]["SERVER_PORT_BASE"])
+        config_params["client_port"] = os.getenv(
+            'CLIENT_PORT_BASE', config["DEFAULT"]["CLIENT_PORT_BASE"])
         config_params["listener_port"] = int(
             os.getenv('LISTENER_PORT', config["DEFAULT"]["LISTENER_PORT"]))
         config_params["batch_size"] = int(os.getenv(
@@ -80,7 +82,8 @@ def main():
         '$', str(id))
     post_handlers_amount = config_params['post_handlers_amount']
 
-    socket = Client_Socket(ip, base_port, post_handlers_amount)
+    socket = Client_Socket(ip, base_port, post_handlers_amount,
+                           int(config_params["client_port"] + str(id)))
     listener = Client_Listener(
         ip, config_params["listener_port"] + id, batch_size)
 

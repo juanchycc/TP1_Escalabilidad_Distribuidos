@@ -38,6 +38,8 @@ def initialize_config():
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
         config_params["sink_exchange"] = os.getenv(
             'EXCHANGE', config["DEFAULT"]["SINK_EXCHANGE"])
+        config_params["client_ip"] = os.getenv(
+            'CLIENT_IP', config["DEFAULT"]["CLIENT_IP"])
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -80,7 +82,8 @@ def main():
     flight_filter_avg_amount = int(
         os.environ.get('FLIGHTS_FILTER_AVG_AMOUNT', 1))
 
-    server = Server(port)
+    server = Server(
+        port, config_params["client_ip"])
     server.run(config_params, fligth_filter_amount,
                airport_handler_amount, flight_filter_avg_amount)
 

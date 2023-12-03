@@ -3,9 +3,11 @@ from utils.constants import *
 from utils.packet import *
 from middleware.base_protocol import BaseSerializer
 
+ACK_COUNTER_LIMIT = 10
+
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount, flight_filter_avg_amount):
+    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount, flight_filter_avg_amount, ack_skt):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -16,6 +18,8 @@ class Serializer(BaseSerializer):
         self._flight_filter_amount = flight_filter_amount
         self._airport_handler_amount = airport_handler_amount
         self._flight_filter_avg_amount = flight_filter_avg_amount
+        self.ack_count = 0
+        self._ack_skt = ack_skt
 
     def run(self, fligth_callback, airport_callback):
         self._fligth_callback = fligth_callback
@@ -26,7 +30,7 @@ class Serializer(BaseSerializer):
         logging.debug(f"LLegan bytes: {bytes}")
 
         pkt = pkt_from_bytes(bytes, self._flight_fields, self._airport_fields)
-
+        logging.info(f"LLega: {pkt.get_pkt_type()}")
         logging.info(
             f'Recibo paquete del cliente: {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
         logging.debug(f'Payload: {pkt.get_payload()}')
@@ -74,6 +78,13 @@ class Serializer(BaseSerializer):
                 pkt.get_client_id(), pkt.get_pkt_number_bytes(), 0, AIRPORT_FINISHED_PKT)
             self._middleware.send_airport(packet, '')
 
+        if not pkt.get_pkt_type() == HEADERS_AIRPORT_PKT and not pkt.get_pkt_type() == HEADERS_FLIGHTS_PKT:
+            self.ack_count += 1
+            logging.info(f'contador ack: {self.ack_count}')
+            if self.ack_count == ACK_COUNTER_LIMIT:
+                self._ack_skt.send(b'ACK')
+                self.ack_count = 0
+                logging.info(f'mando ACK al cliente')
     # def send_listener_pkt(self, pkt):
     #    self._middleware.send_pkt_to_sink(pkt)
 

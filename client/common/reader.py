@@ -20,6 +20,8 @@ class Reader:
                 f'action: {action} | result: File not found {filename}')
             return
 
+        self.send_pkt = []
+        self.ack_count = 0
         envio_header = False
         total_read = 0
 
@@ -43,8 +45,7 @@ class Reader:
                             batch)
                     self.header = batch
                     envio_header = True
-                    self.ack_count += 1
-                    self.send_pkt.append(batch)
+
                     batch = []
                     if dsc and not rcn:
                         logging.debug(
@@ -63,12 +64,12 @@ class Reader:
                         dsc, rcn = self.protocol.send_flights_packet(batch)
                         if dsc and rcn:  # me conecte a otro handler, envio headers
                             rcn = self.reconnect(self.protocol.send_header_flights_packet,
-                                                 self.protocol.send_flights_packet, batch)
+                                                 self.protocol.send_flights_packet, batch, action)
                     else:
                         dsc, rcn = self.protocol.send_airports_packet(batch)
                         if dsc and rcn:  # me conecte a otro handler, envio headers
                             rcn = self.reconnect(self.protocol.send_header_airports_packet,
-                                                 self.protocol.send_airports_packet, batch)
+                                                 self.protocol.send_airports_packet, batch, action)
                     if dsc and not rcn:
                         logging.debug(
                             f'action: {action} | result: disconnected')
@@ -76,34 +77,24 @@ class Reader:
 
                     self.ack_count += 1
                     self.send_pkt.append(batch)
-
+                    logging.info(
+                        f'ack counter: {self.ack_count}')
                     if self.ack_count == ACK_COUNTER_LIMIT:
-
+                        logging.info(
+                            f'entro a esperar ack')
                         # hacer un recv esperando el ack, si es timeour reenviar los pkt
                         if not self.protocol.wait_for_ack():
-                            if not self.protocol.reconnect():  # no hubo respuesta y no se pudo reconectar
-                                return
-                            # se reconecto a otro, hay que reenviar paquetes
-                            for b in self.send_pkt:
-                                # TODO: bloque de codigo repetido
-                                if action == "read_flights":
-                                    dsc, rcn = self.protocol.send_flights_packet(
-                                        batch)
-                                    if dsc and rcn:  # me conecte a otro handler, envio headers
-                                        rcn = self.reconnect(self.protocol.send_header_flights_packet,
-                                                             self.protocol.send_flights_packet, batch)
-                                else:
-                                    dsc, rcn = self.protocol.send_airports_packet(
-                                        batch)
-                                    if dsc and rcn:  # me conecte a otro handler, envio headers
-                                        rcn = self.reconnect(self.protocol.send_header_airports_packet,
-                                                             self.protocol.send_airports_packet, batch)
-                                if dsc and not rcn:
-                                    logging.debug(
-                                        f'action: {action} | result: disconnected')
+                            # no hubo respuesta y no se pudo reconectar
+                            if action == "read_flights":
+                                if not self.protocol.reconnect(self.protocol.send_header_flights_packet,
+                                                               self.protocol.send_flights_packet, None, action):
                                     return
-                    self.ack_count = 0
-                    self.send_pkt = []
+                            else:
+                                if not self.protocol.reconnect(self.protocol.send_header_airports_packet,
+                                                               self.protocol.send_airports_packet, None, action):
+                                    return
+                        self.ack_count = 0
+                        self.send_pkt = []
                     total_read = 0
                     batch = []
 
@@ -124,15 +115,35 @@ class Reader:
             self.protocol.send_finished_airports_pkt()
         logging.debug(f'action: {action} | result: done')
 
-    def reconnect(self, header_send, packet_send, batch) -> bool:
+    def reconnect(self, header_send, packet_send, batch, action) -> bool:
         dsc, rcn = header_send(self.header)
         if dsc and rcn:
-            return self.reconnect(batch)
+            return self.reconnect(header_send, packet_send, batch, action)
         elif dsc and not rcn:
             return False
-        dsc, rcn = packet_send(batch)
-        if dsc and rcn:
-            return self.reconnect(batch)
-        elif dsc and not rcn:
-            return False
+        if not batch == None:
+            dsc, rcn = packet_send(batch)
+            if dsc and rcn:
+                return self.reconnect(header_send, packet_send, batch, action)
+            elif dsc and not rcn:
+                return False
+        return self.resend(action)
+
+    def resend(self, action):
+        logging.info(f'Reenviando pkts')
+        for b in self.send_pkt:
+            if action == "read_flights":
+                dsc, rcn = self.protocol.send_flights_packet(b)
+                if dsc and rcn:  # me conecte a otro handler, envio headers
+                    rcn = self.reconnect()
+                else:
+                    dsc, rcn = self.protocol.send_airports_packet(b)
+                    if dsc and rcn:  # me conecte a otro handler, envio headers
+                        rcn = self.reconnect()
+                    if dsc and not rcn:
+                        logging.debug(
+                            f'action: {action} | result: disconnected')
+                        return False
+        self.ack_count = 0
+        self.send_pkt = []
         return True

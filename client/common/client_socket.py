@@ -16,13 +16,15 @@ class Client_Socket:
         self.client_socket = None
         self._client_port = client_port
         self._listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._listen_socket.bind((self.ip, self._client_port))
+        self._listen_socket.bind(("", self._client_port))
+        self._listen_socket.listen()
         self._rec_conn = None
 
     def wait_ack(self) -> bool:
         self._listen_socket.settimeout(ACK_TIMEOUT)
         try:
             data = self._rec_conn.recv(1024)
+            logging.info(f'LEO ACK')
             return True
             # TODO: chequear id del post handle? no hardcodear largo
         except socket.timeout:
@@ -33,9 +35,13 @@ class Client_Socket:
             return False
 
     def start_rec_socket(self):
+        # mando el port al handler
+        self.send_packet(str(self._client_port).encode())
+
         self._listen_socket.settimeout(HANDLE_CONNECTION_TIMEOUT)
         try:
-            conn, addr = self.listen_socket.accept()  # Accept a connection
+            logging.info(f'Espero conection')
+            conn, addr = self._listen_socket.accept()  # Accept a connection
             self._rec_conn = conn
             return True
         except socket.timeout:

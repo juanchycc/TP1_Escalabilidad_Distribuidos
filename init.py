@@ -397,6 +397,7 @@ AIRPORTS_FILENAME = airports_$.csv
 POST_HANDLERS_AMOUNT = #
 BASE_OUTPUT_PATH = ./out_file_q
 QUERY_AMOUNT = 4
+CLIENT_PORT_BASE = 1255
 """
 client_config_text = client_config_text.replace('#', str(args.p))
 
