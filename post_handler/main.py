@@ -2,6 +2,7 @@ import os
 import logging
 from configparser import ConfigParser
 from server import Server
+from utils.health_chequer_handler import health_chequer_handler
 
 
 def initialize_config():
@@ -26,7 +27,7 @@ def initialize_config():
         config_params["logging_level"] = os.getenv(
             'LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["airport_exchange"] = os.getenv(
-            'EXCHANGE', config["DEFAULT"]["AIRPORT_EXCHANGE"])
+            'AIRPORT_EXCHANGE', config["DEFAULT"]["AIRPORT_EXCHANGE"])
         config_params["exchange"] = os.getenv(
             'EXCHANGE', config["DEFAULT"]["EXCHANGE"])
         config_params["key_1"] = os.getenv('KEY_1', config["DEFAULT"]["KEY_1"])
@@ -37,9 +38,11 @@ def initialize_config():
         config_params["batch_size"] = int(os.getenv(
             'BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
         config_params["sink_exchange"] = os.getenv(
-            'EXCHANGE', config["DEFAULT"]["SINK_EXCHANGE"])
+            'SINK_EXCHANGE', config["DEFAULT"]["SINK_EXCHANGE"])
         config_params["client_ip"] = os.getenv(
             'CLIENT_IP', config["DEFAULT"]["CLIENT_IP"])
+        config_params["port_manager"] = int(os.getenv(
+            'PORT_MANAGER', config["DEFAULT"]["PORT_MANAGER"]))
     except KeyError as e:
         raise KeyError(
             "Key was not found. Error: {} .Aborting server".format(e))
@@ -67,6 +70,8 @@ def initialize_log(logging_level):
 def main():
 
     config_params = initialize_config()
+
+    server_thread = health_chequer_handler(config_params["port_manager"])
 
     initialize_log(config_params["logging_level"])
 

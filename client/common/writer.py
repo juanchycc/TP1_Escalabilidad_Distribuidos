@@ -39,13 +39,14 @@ class Writer():
 
         # Chequear duplicado
         if complete_path not in self.last_pkt:
-            self.last_pkt[complete_path] = pkt_number
+            self.last_pkt[complete_path] = {}
+            self.last_pkt[complete_path][pkt_number] = ""
         else:
-            if self.last_pkt[complete_path] >= pkt_number:
+            if pkt_number not in self.last_pkt[complete_path]:
+                self.last_pkt[complete_path][pkt_number] = ""
+            else:
                 logging.info(f"Paquete duplicado: {pkt_number}")
                 return
-            else:
-                self.last_pkt[complete_path] = pkt_number
 
         with open(complete_path + ".csv", 'a') as file:
             for f in flights:

@@ -38,8 +38,8 @@ class Serializer(BaseSerializer):
 
             if pkt.get_pkt_number() in self._pkts_received[pkt.get_client_id()]:
                 # Duplicado
-                return               
-                
+                return
+
             self._persist_counter += 1
             self._callback(pkt.get_payload(), pkt.get_client_id())
 
@@ -50,11 +50,12 @@ class Serializer(BaseSerializer):
                     pkts = self._pkts_received[id]
                     # logging.info(f'pkts: {pkts}')
                     # logging.info(f'data: {data}')
-                    if len(data != 0):
+                    if len(data) != 0:
                         self._persist_data(pkt.get_client_id(), pkts, data)
                 self._middleware.send_ack(ch, method, True)
 
-            self._pkts_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()
+            self._pkts_received[pkt.get_client_id(
+            )][pkt.get_pkt_number()] = pkt.get_pkt_number()
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
             logging.info(f"Llego finished pkt")

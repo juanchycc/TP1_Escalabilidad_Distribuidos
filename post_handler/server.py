@@ -100,7 +100,7 @@ def initialize(config_params, client_socket, fligth_filter_amount, airport_handl
     signal.signal(signal.SIGTERM, lambda s,
                   _f: sigterm_child_handler(s, middleware, client_socket))
     middleware = Middleware(
-        client_socket, config_params["exchange"], "airports", config_params["batch_size"], config_params["sink_exchange"])  # TODO: hardcodeo exchange ariport
+        client_socket, config_params["exchange"], config_params["airport_exchange"], config_params["batch_size"], config_params["sink_exchange"])
     keys = [config_params["key_1"], config_params["key_2"],
             config_params["key_avg"], config_params["key_4"]]
 

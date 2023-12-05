@@ -23,7 +23,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 layers = {"flights_filter_": args.q1,
-          "flights_max_": args.q3, "flights_avg_": args.avg, "flights_mayor_avg_": args.Mavg, "flights_avg_by_journey_": args.q4, "flights_filter_distance_": args.q2, "manager_": args.m, "airport_fligths_handler_": args.a}
+          "flights_max_": args.q3, "flights_avg_": args.avg, "flights_mayor_avg_": args.Mavg, "flights_avg_by_journey_": args.q4, "flights_filter_distance_": args.q2, "manager_": args.m, "airport_fligths_handler_": args.a, "post_handler:": args.p}
 
 initial_text = """version: '3.9'
 services:
