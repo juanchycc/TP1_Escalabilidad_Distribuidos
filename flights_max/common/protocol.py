@@ -37,22 +37,24 @@ class Serializer(BaseSerializer):
 
             if pkt.get_pkt_number() in self._pkts_received[pkt.get_client_id()]:
                 # Duplicado
-                return
-
-                # Sino lo guardo -> Esto en realidad tiene que ir despues de procesarlo
-                self._pkts_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()
+                return               
+                
             
             self._persist_counter += 1
             self._callback(pkt.get_payload(), pkt.get_client_id())
 
             # Guarda en Disco
             if self._persist_counter % WRITE_TO_DISK == 0:
-                data = self._data_callback(pkt.get_client_id())
-                pkts = self._pkts_received[pkt.get_client_id()]
-                # logging.info(f'pkts: {pkts}')
-                # logging.info(f'data: {data}')
-                self._persist_data(pkt.get_client_id(), pkts, data)
+                for id in self._pkts_received.keys():
+                    data = self._data_callback(id)
+                    pkts = self._pkts_received[id]
+                    # logging.info(f'pkts: {pkts}')
+                    # logging.info(f'data: {data}')
+                    if len(data != 0):
+                        self._persist_data(pkt.get_client_id(), pkts, data)
                 self._middleware.send_ack(ch, method, True)
+
+            self._pkts_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
             logging.info(f"Llego finished pkt")

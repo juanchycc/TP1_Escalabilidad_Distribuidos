@@ -41,7 +41,7 @@ class Serializer(BaseSerializer):
         
         pkt = pkt_from_bytes(
             body, airport_fields=self._airport_fields, ah=True)
-        logging.info(f'Recibi airport numero: {pkt.get_pkt_number()} | del cliente: {pkt.get_client_id()}')
+        logging.debug(f'Recibi airport numero: {pkt.get_pkt_number()} | del cliente: {pkt.get_client_id()}')
         
         if pkt.get_pkt_type() == AIRPORT_PKT:
             if self._handle_flight_or_airport(pkt,self._airports_received,self._airports_ended,self._flight_ended,self._airport_callback):
@@ -65,7 +65,7 @@ class Serializer(BaseSerializer):
 
     def rec_flights(self, ch, method, properties, body):
         pkt = pkt_from_bytes(body, flight_fields=self._flight_fields)
-        logging.info(f'llega el paquete numero: {pkt.get_pkt_number()} | del cliente: {pkt.get_client_id()}')
+        logging.debug(f'llega el paquete numero: {pkt.get_pkt_number()} | del cliente: {pkt.get_client_id()}')
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             if self._handle_flight_or_airport(pkt,self._flights_received,self._flight_ended,self._airports_ended,self._fligth_callback):
                 self._middleware.send_ack(ch, method, True)
@@ -198,7 +198,7 @@ class Serializer(BaseSerializer):
                     key += self._num_filters
                 
                 if payload != "":
-                    logging.info(f'Enviando paquete numero: {id_to_send} | cliente: {id}')
+                    logging.debug(f'Enviando paquete numero: {id_to_send} | cliente: {id}')
                     self._middleware.send(packet, str(key))
                     self._save_last_pkt_sent(id,id_to_send)
 

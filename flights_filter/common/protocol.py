@@ -5,7 +5,7 @@ import time
 
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, fields, num_groups, num_filters, outfile, id):
+    def __init__(self, middleware, fields, num_groups, num_filters, outfile, id,key):
         self._middleware = middleware
         self._callback = None
         self._filtered_fields = fields
@@ -14,6 +14,8 @@ class Serializer(BaseSerializer):
         self._outfile = outfile
         self._id = id
         self._not_last = True
+        self._pkts_received = {}
+        self._key = key
 
     def run(self, callback):
         self._callback = callback

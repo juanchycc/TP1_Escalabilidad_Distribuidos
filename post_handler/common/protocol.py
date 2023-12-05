@@ -59,7 +59,7 @@ class Serializer(BaseSerializer):
                 self._middleware.send(packet, key)
 
             self._middleware.send(packet, self._keys[1] + "1")  # Al primer flight filter
-            self._middleware.send(packet, "q1_1")  # Al primer flight filter
+            self._middleware.send(packet, self._keys[0] + "1")  # Al primer flight filter
             self._middleware.send(packet, "avg1") # Al primer AVG
 
 
@@ -78,7 +78,7 @@ class Serializer(BaseSerializer):
         key = pkt_number % self._flight_filter_amount
         if key == 0:
             key += self._flight_filter_amount
-        self._send_pkt(pkt, "q1_" + str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, self._keys[0] + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query_avg(self, pkt, original_pkt):
         # TODO: Generalizar con la de arriba

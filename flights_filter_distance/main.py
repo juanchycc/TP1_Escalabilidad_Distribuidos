@@ -78,7 +78,7 @@ def main():
     num_filters = int(os.environ.get('FLIGHTS_FILTER_DISTANCE_AMOUNT', 1))
 
     serializer = Serializer(
-        middleware, fields, num_filters, config_params["outfile"], str(id))
+        middleware, fields, num_filters, config_params["outfile"], str(id),"")
 
     filter = FilterFlightsDistance(serializer, fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)

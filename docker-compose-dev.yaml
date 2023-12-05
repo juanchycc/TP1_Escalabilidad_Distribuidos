@@ -26,8 +26,8 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
-      - FLIGHTS_FILTER_PLUS_AMOUNT=1
-      - AIRPORTS_HANDLER_AMOUNT=4
+      - FLIGHTS_FILTER_PLUS_AMOUNT=2
+      - AIRPORTS_HANDLER_AMOUNT=2
       - FLIGHTS_FILTER_AVG_AMOUNT=1
     volumes:
       - ./post_handler/config.ini:/config.ini
@@ -35,7 +35,92 @@ services:
       - ./middleware:/middleware
     ports:
       - 12349:12349
-  
+  flights_filter_plus_3_1:
+    container_name: flights_filter_1
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=2 
+      - FLIGHTS_MAX_AMOUNT=2
+      - FLIGHT_FILTER_ID=1
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
+  flights_filter_plus_3_2:
+    container_name: flights_filter_2
+    build:
+      context: ./flights_filter
+      dockerfile: Dockerfile
+    image: flights_filter:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_FILTER_PLUS_AMOUNT=2 
+      - FLIGHTS_MAX_AMOUNT=2
+      - FLIGHT_FILTER_ID=2
+    volumes:
+      - ./flights_filter/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
+  flights_filter_max_1:
+    container_name: flights_max_1
+    build:
+      context: ./flights_max
+      dockerfile: Dockerfile
+    image: flights_max:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_ID=1
+      - FLIGHTS_MAX_AMOUNT=2
+    volumes:
+      - ./flights_max/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
+  flights_filter_max_2:
+    container_name: flights_max_2
+    build:
+      context: ./flights_max
+      dockerfile: Dockerfile
+    image: flights_max:latest
+    entrypoint: python3 ./main.py
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLIGHTS_MAX_ID=2
+      - FLIGHTS_MAX_AMOUNT=2
+    volumes:
+      - ./flights_max/config.ini:/config.ini
+      - ./utils:/utils
+      - ./middleware:/middleware
   file_writer:
     container_name: file_writer
     build:
@@ -72,8 +157,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - HANDLER_ID=1
-      - HANDLER_AMOUNT=4
-      - FILTER_DISTANCE_AMOUNT=3
+      - HANDLER_AMOUNT=2
+      - FILTER_DISTANCE_AMOUNT=2
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware
@@ -94,52 +179,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - HANDLER_ID=2
-      - HANDLER_AMOUNT=4
-      - FILTER_DISTANCE_AMOUNT=3
-    volumes:
-      - ./utils:/utils
-      - ./middleware:/middleware
-
-  airport_fligths_handler_3:
-    container_name: airport_fligths_handler_3
-    build:
-      context: ./airport_fligths_handler
-      dockerfile: Dockerfile
-    image: airport_fligths_handler:latest
-    entrypoint: python3 ./main.py
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    links:
-      - rabbitmq
-    environment:
-      - PYTHONUNBUFFERED=1
-      - HANDLER_ID=3
-      - HANDLER_AMOUNT=4
-      - FILTER_DISTANCE_AMOUNT=3
-    volumes:
-      - ./utils:/utils
-      - ./middleware:/middleware
-
-  airport_fligths_handler_4:
-    container_name: airport_fligths_handler_4
-    build:
-      context: ./airport_fligths_handler
-      dockerfile: Dockerfile
-    image: airport_fligths_handler:latest
-    entrypoint: python3 ./main.py
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    links:
-      - rabbitmq
-    environment:
-      - PYTHONUNBUFFERED=1
-      - HANDLER_ID=4
-      - HANDLER_AMOUNT=4
-      - FILTER_DISTANCE_AMOUNT=3
+      - HANDLER_AMOUNT=2
+      - FILTER_DISTANCE_AMOUNT=2
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware
@@ -160,7 +201,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_DISTANCE_ID=1
-      - FLIGHTS_FILTER_DISTANCE_AMOUNT=3
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=2
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
       - ./utils:/utils
@@ -181,28 +222,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_DISTANCE_ID=2
-      - FLIGHTS_FILTER_DISTANCE_AMOUNT=3
-    volumes:
-      - ./flights_filter_distance/config.ini:/config.ini
-      - ./utils:/utils
-      - ./middleware:/middleware
-  flights_filter_distance_3:
-    container_name: flights_filter_distance_3
-    build:
-      context: ./flights_filter_distance
-      dockerfile: Dockerfile
-    image: flights_filter_distance:latest
-    entrypoint: python3 ./main.py
-    restart: on-failure
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    links:
-      - rabbitmq
-    environment:
-      - PYTHONUNBUFFERED=1
-      - FLIGHTS_FILTER_DISTANCE_ID=3
-      - FLIGHTS_FILTER_DISTANCE_AMOUNT=3
+      - FLIGHTS_FILTER_DISTANCE_AMOUNT=2
     volumes:
       - ./flights_filter_distance/config.ini:/config.ini
       - ./utils:/utils
