@@ -24,6 +24,7 @@ class Client_Socket:
         self._listen_socket.settimeout(ACK_TIMEOUT)
         try:
             data = self._rec_conn.recv(1024)
+            self._listen_socket.settimeout(None)  # Remove the timeout
             logging.info(f'LEO ACK')
             return True
             # TODO: chequear id del post handle? no hardcodear largo

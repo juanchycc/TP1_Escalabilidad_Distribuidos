@@ -20,8 +20,6 @@ class Reader:
                 f'action: {action} | result: File not found {filename}')
             return
 
-        self.send_pkt = []
-        self.ack_count = 0
         envio_header = False
         total_read = 0
 
@@ -77,6 +75,7 @@ class Reader:
 
                     self.ack_count += 1
                     self.send_pkt.append(batch)
+
                     logging.info(
                         f'ack counter: {self.ack_count}')
                     if self.ack_count == ACK_COUNTER_LIMIT:
@@ -95,6 +94,7 @@ class Reader:
                                     return
                         self.ack_count = 0
                         self.send_pkt = []
+
                     total_read = 0
                     batch = []
 
@@ -106,14 +106,28 @@ class Reader:
                     self.protocol.send_flights_packet(batch)
                 else:
                     self.protocol.send_airports_packet(batch)
-            self.ack_count += 1
-            self.send_pkt.append(batch)
+
+                self.send_pkt.append(batch)
+                self.ack_count += 1
+                logging.info(f'ack counter: {self.ack_count}')
 
         if action == "read_flights":
             self.protocol.send_finished_flights_pkt()
         else:
             self.protocol.send_finished_airports_pkt()
-        logging.debug(f'action: {action} | result: done')
+
+        if not self.protocol.wait_for_ack():
+            # no hubo respuesta y no se pudo reconectar
+            if action == "read_flights":
+                if not self.protocol.reconnect(self.protocol.send_header_flights_packet, self.protocol.send_flights_packet, None, action):
+                    return
+            else:
+                if not self.protocol.reconnect(self.protocol.send_header_airports_packet, self.protocol.send_airports_packet, None, action):
+                    return
+
+        self.ack_count = 0
+        self.send_pkt = []
+        logging.info(f'action: {action} | result: done')
 
     def reconnect(self, header_send, packet_send, batch, action) -> bool:
         dsc, rcn = header_send(self.header)
@@ -129,21 +143,22 @@ class Reader:
                 return False
         return self.resend(action)
 
+# TODO:refactorizar codigo feito
     def resend(self, action):
         logging.info(f'Reenviando pkts')
         for b in self.send_pkt:
             if action == "read_flights":
                 dsc, rcn = self.protocol.send_flights_packet(b)
-                if dsc and rcn:  # me conecte a otro handler, envio headers
-                    rcn = self.reconnect()
-                else:
-                    dsc, rcn = self.protocol.send_airports_packet(b)
-                    if dsc and rcn:  # me conecte a otro handler, envio headers
-                        rcn = self.reconnect()
-                    if dsc and not rcn:
-                        logging.debug(
-                            f'action: {action} | result: disconnected')
-                        return False
+            else:
+                dsc, rcn = self.protocol.send_airports_packet(b)
+            if dsc and rcn:  # me conecte a otro handler, envio headers
+                rcn = self.reconnect()
+            if dsc and not rcn:
+                logging.debug(f'action: {action} | result: disconnected')
+                return False
+
         self.ack_count = 0
-        self.send_pkt = []
+        self.send_flights = []
+        self.send_airports = []
+        self.finish_pkt = False
         return True

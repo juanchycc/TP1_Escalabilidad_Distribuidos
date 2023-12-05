@@ -34,11 +34,11 @@ class FilterFields:
                                  for field in self._fields_for_query4])
             query2_output.append([fligth[field]
                                  for field in self._fields_for_query2])
-        
-        self._serializer.send_pkt_query1(query1_output,batch)
-        self._serializer.send_pkt_query_avg(query_avg_output,batch)
-        self._serializer.send_pkt_query4(query4_output,batch)
-        self._serializer.send_pkt_query2(query2_output,batch)
+
+        self._serializer.send_pkt_query1(query1_output, batch)
+        self._serializer.send_pkt_query_avg(query_avg_output, batch)
+        self._serializer.send_pkt_query4(query4_output, batch)
+        self._serializer.send_pkt_query2(query2_output, batch)
 
     def filter_airports(self, batch):
         output = []
@@ -49,4 +49,4 @@ class FilterFields:
             output.append([airport[field]
                           for field in self._fields_for_airports])
 
-        self._serializer.send_pkt_airport(output,batch)
+        self._serializer.send_pkt_airport(output, batch)
