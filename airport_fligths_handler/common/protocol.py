@@ -28,13 +28,12 @@ class Serializer(BaseSerializer):
                
         
 
-    def run(self, fligth_callback, airport_callback, airport_finished_callback,get_airports_callback,get_flights_callback,load_airports_callback,load_flights_callback,flush_callback):
+    def run(self, fligth_callback, airport_callback, airport_finished_callback,get_airports_callback,get_flights_callback,load_airports_callback,load_flights_callback):
         self._fligth_callback = fligth_callback
         self._airport_callback = airport_callback
         self._airport_finished_callback = airport_finished_callback
         self._get_airports_callback = get_airports_callback
         self._get_flights_callback = get_flights_callback
-        self._flush_callback = flush_callback
         self._load_state(load_airports_callback,load_flights_callback)
         self._middleware.start_recv(self.rec_flights, self.rec_airports,False)
 
@@ -60,7 +59,7 @@ class Serializer(BaseSerializer):
             if self._flight_ended[pkt.get_client_id()] and self._id == "1":
                 self._airport_finished_callback(pkt.get_client_id())
                 self._resend_finish_pkt(pkt,0)
-                self._delete_client_data(pkt.get_client_id())
+                #self._delete_client_data(pkt.get_client_id())
 
             self._middleware.send_ack(ch, method, True)
 
@@ -86,7 +85,7 @@ class Serializer(BaseSerializer):
                 else:
                     self._resend_finish_pkt(pkt,amount_finished)
             
-            self._delete_client_data(pkt.get_client_id())
+            #self._delete_client_data(pkt.get_client_id())
             self._middleware.send_ack(ch, method, True)
                     
      
@@ -131,6 +130,7 @@ class Serializer(BaseSerializer):
     
 
     def _call_persist_data(self,end=None):
+        # FIX: Si no quedaban datos de lo que termino, no hay EOF -> entonces si se cae despues de eso, cuando recupera no tiene que termino adecuadamente
         for id in self._airports_received.keys():
             data_1 = self._get_airports_callback(id)
             if len(data_1) != 0:
@@ -190,10 +190,12 @@ class Serializer(BaseSerializer):
                 key = id_to_send % self._num_filters
                 if key == 0:
                     key += self._num_filters
-                logging.info(f'Enviando paquete numero: {id_to_send}')
+                
+                if payload != "":
+                    logging.info(f'Enviando paquete numero: {id_to_send} | cliente: {id}')
+                    self._middleware.send(packet, str(key))
+                    self._save_last_pkt_sent(id,id_to_send)
 
-                self._middleware.send(packet, str(key))
-                self._save_last_pkt_sent(id,id_to_send)
                 id_to_send = flight[len(flight) - 1]
                 payload = ""
                 if i == len(pkt) - 1: i+=1
@@ -201,9 +203,12 @@ class Serializer(BaseSerializer):
             else:
                 last_field = len(flight) - 1
                 for j, field in enumerate(flight):
+                    if j == last_field:
+                        continue
                     payload += str(field)
-                    if j != last_field:
+                    if j != last_field - 1:
                         payload += ','
+                    
                 payload += '\n'
                 i += 1                    
     

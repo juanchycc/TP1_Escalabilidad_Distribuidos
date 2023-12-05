@@ -78,7 +78,7 @@ def main():
     middleware = Middleware(config_params["in_exchange"], config_params["airports_exchange"], config_params["key_2"] + str(id),
                             config_params["out_exchange"], queue)  # TODO: harcodeo de exchange airport
 
-    serializer = Serializer(middleware, flight_fields, airport_fields,num_filters,amount,int(id),config_params["key_2"])
+    serializer = Serializer(middleware, flight_fields, airport_fields,num_filters,amount,str(id),config_params["key_2"])
 
     filter = AirportHandler(serializer, flight_fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)

@@ -13,6 +13,7 @@ class Serializer(BaseSerializer):
         self._num_filters = num_filters
         self._outfile = outfile
         self._id = id
+        self._not_last = True
 
     def run(self, callback):
         self._callback = callback

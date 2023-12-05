@@ -72,13 +72,13 @@ def main():
     fields = config_params["fields"].split(',')
     id = os.environ.get('FLIGHTS_FILTER_DISTANCE_ID', 1)
 
-    middleware = BaseMiddleware(config_params["in_exchange"],'1',
+    middleware = BaseMiddleware(config_params["in_exchange"],str(id),
                                 config_params["out_exchange"], config_params["queue_name"] + str(id))
 
     num_filters = int(os.environ.get('FLIGHTS_FILTER_DISTANCE_AMOUNT', 1))
 
     serializer = Serializer(
-        middleware, fields, num_filters, config_params["outfile"], id)
+        middleware, fields, num_filters, config_params["outfile"], str(id))
 
     filter = FilterFlightsDistance(serializer, fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)

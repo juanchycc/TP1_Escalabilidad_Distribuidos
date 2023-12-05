@@ -8,7 +8,8 @@ class BaseSerializer():
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt = pkt_from_bytes(bytes, self._filtered_fields)
-        # logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()}')
+        logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()} | cliente: {pkt.get_client_id()}')
+        logging.info(f'payload: {pkt.get_payload()}')
         # time.sleep(5)
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             self._callback(pkt)
@@ -22,7 +23,8 @@ class BaseSerializer():
             if amount_finished + 1 == self._num_filters:
                 packet = build_finish_pkt(
                     pkt.get_client_id(), pkt.get_pkt_number_bytes(), 0)
-                self._middleware.send(packet, str(1))
+                if self._not_last:
+                    self._middleware.send(packet, str(1))
                 self._middleware.send(packet, "")  # To file writer
 
             else:
