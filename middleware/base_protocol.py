@@ -9,7 +9,7 @@ class BaseSerializer():
         bytes = body
         pkt = pkt_from_bytes(bytes, self._filtered_fields)
         logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()} | cliente: {pkt.get_client_id()}')
-        logging.info(f'payload: {pkt.get_payload()}')
+        #logging.info(f'payload: {pkt.get_payload()}')
         # time.sleep(5)
         if pkt.get_pkt_type() == FLIGHTS_PKT:
             self._callback(pkt)

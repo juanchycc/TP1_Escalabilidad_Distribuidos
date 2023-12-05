@@ -138,6 +138,9 @@ class Serializer(BaseSerializer):
                 if end is not None and end[0] == id and end[1] == "airports":
                     finished = True
                 self._persist_data(str(id),data_1, "airports",finished)
+            
+            if len(data_1) == 0 and end is not None and end[0] == id and end[1] == "airports":
+                self._persist_data(str(id),[],"airports",True)
 
         for id in self._flights_received.keys():
             data_2 = self._get_flights_callback(id)
@@ -146,6 +149,9 @@ class Serializer(BaseSerializer):
                 if end is not None and end[0] == id and end[1] == "flights":
                     finished = True
                 self._persist_data(str(id),data_2, "flights")
+
+            if len(data_2) == 0 and end is not None and end[0] == id and end[1] == "flights":
+                self._persist_data(str(id),[],"flights",True)
 
     def _persist_data(self, id, pkts, type,finished = False):
         #logging.info(f'pkts: {pkts}')
