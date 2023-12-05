@@ -18,7 +18,7 @@ class Serializer:
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt_type = bytes[0]
-
+        logging.info(f"Llega PKT")
         padding_length = self._batch_size - len(bytes)
         packet = bytearray(bytes) + (b'\x00'*padding_length)
         pkt = pkt_from_bytes(bytes)

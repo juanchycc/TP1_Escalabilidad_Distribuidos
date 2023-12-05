@@ -3,9 +3,11 @@ from utils.constants import *
 from utils.packet import *
 from middleware.base_protocol import BaseSerializer
 
+ACK_COUNTER_LIMIT = 10
+
 
 class Serializer(BaseSerializer):
-    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount,flight_filter_avg_amount):
+    def __init__(self, middleware, keys, flight_filter_amount, airport_handler_amount, flight_filter_avg_amount, ack_skt):
         self._middleware = middleware
         self._callback = None
         self._fligth_callback = None
@@ -16,6 +18,8 @@ class Serializer(BaseSerializer):
         self._flight_filter_amount = flight_filter_amount
         self._airport_handler_amount = airport_handler_amount
         self._flight_filter_avg_amount = flight_filter_avg_amount
+        self.ack_count = 0
+        self._ack_skt = ack_skt
 
     def run(self, fligth_callback, airport_callback):
         self._fligth_callback = fligth_callback
@@ -26,15 +30,18 @@ class Serializer(BaseSerializer):
         logging.debug(f"LLegan bytes: {bytes}")
 
         pkt = pkt_from_bytes(bytes, self._flight_fields, self._airport_fields)
-
-        logging.debug(
+        logging.info(
             f'Recibo paquete del cliente: {pkt.get_client_id()} | numero: {pkt.get_pkt_number()}')
         logging.debug(f'Payload: {pkt.get_payload()}')
 
         if pkt.get_pkt_type() == HEADERS_FLIGHTS_PKT:
+            logging.info(
+                f'Recibo header flight, pkt: {pkt.get_pkt_number()}')
             self._flight_fields = pkt.get_payload()
 
         if pkt.get_pkt_type() == FLIGHTS_PKT:
+            logging.info(
+                f'Recibo flight, pkt: {pkt.get_pkt_number()}')
             self._fligth_callback(pkt)
 
         if pkt.get_pkt_type() == LISTENER_PORT_PKT:
@@ -43,9 +50,13 @@ class Serializer(BaseSerializer):
             self._middleware.send_pkt_to_sink(bytearray(bytes))
 
         if pkt.get_pkt_type() == HEADERS_AIRPORT_PKT:
+            logging.info(
+                f'Recibo header airport, pkt: {pkt.get_pkt_number()}')
             self._airport_fields = pkt.get_payload()
 
         if pkt.get_pkt_type() == AIRPORT_PKT:
+            logging.info(
+                f'Recibo airport, pkt: {pkt.get_pkt_number()}')
             self._airport_callback(pkt)
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
@@ -61,15 +72,22 @@ class Serializer(BaseSerializer):
             self._middleware.send(packet, self._keys[1] + "1")  # Al primer flight filter
             self._middleware.send(packet, self._keys[0] + "1")  # Al primer flight filter
             self._middleware.send(packet, "avg1") # Al primer AVG
-
+            self.send_ack()
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(
                 'action: bytes_to_pkt | info: rec finished airport pkt')
-            packet = build_finish_pkt(pkt.get_client_id(),pkt.get_pkt_number_bytes(),0,AIRPORT_FINISHED_PKT)
+            packet = build_finish_pkt(
+                pkt.get_client_id(), pkt.get_pkt_number_bytes(), 0, AIRPORT_FINISHED_PKT)
             self._middleware.send_airport(packet, '')
-
-    #def send_listener_pkt(self, pkt):
+            self.send_ack()
+        if not pkt.get_pkt_type() == HEADERS_AIRPORT_PKT and not pkt.get_pkt_type() == HEADERS_FLIGHTS_PKT and not pkt.get_pkt_type() == LISTENER_PORT_PKT:
+            self.ack_count += 1
+            logging.info(
+                f'contador ack: {self.ack_count}, pkt: {pkt.get_pkt_number()}, type: {pkt.get_pkt_type()}')
+            if self.ack_count == ACK_COUNTER_LIMIT:
+                self.send_ack()
+    # def send_listener_pkt(self, pkt):
     #    self._middleware.send_pkt_to_sink(pkt)
 
     def send_pkt_query1(self, pkt, original_pkt):
@@ -86,24 +104,24 @@ class Serializer(BaseSerializer):
         key = pkt_number % self._flight_filter_avg_amount
         if key == 0:
             key += self._flight_filter_avg_amount
-        self._send_pkt(pkt,"avg" + str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, "avg" + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query4(self, pkt, original_pkt):
         self._send_pkt(pkt, self._keys[3], FLIGHTS_PKT, original_pkt, False)
 
-    def send_pkt_query2(self, pkt, original_pkt):        
+    def send_pkt_query2(self, pkt, original_pkt):
         # TODO: Generalizar con la de arriba
         pkt_number = original_pkt.get_pkt_number()
         key = pkt_number % self._airport_handler_amount
         if key == 0:
             key += self._airport_handler_amount
-        self._send_pkt(pkt,self._keys[1] + str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, self._keys[1] + str(key),
+                       FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_airport(self, pkt, original_pkt):
         self._send_pkt(pkt, '', AIRPORT_PKT, original_pkt, True)
 
-
-    def _send_pkt(self, pkt, key, header, original_pkt, airport = False):
+    def _send_pkt(self, pkt, key, header, original_pkt, airport=False):
 
         # logging.info(f"output: {pkt}")
 
@@ -127,3 +145,8 @@ class Serializer(BaseSerializer):
             self._middleware.send_airport(pkt, key)
         else:
             self._middleware.send(pkt, key)
+
+    def send_ack(self):
+        self._ack_skt.send(b'ACK')
+        self.ack_count = 0
+        logging.info(f'mando ACK al cliente')

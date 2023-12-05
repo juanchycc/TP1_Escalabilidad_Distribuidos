@@ -30,6 +30,7 @@ class Serializer(BaseSerializer):
         pkt = pkt_from_bytes(body, self._filtered_fields)
 
         if pkt.get_pkt_type() == FLIGHTS_PKT:
+            logging.info(f"Llego flights pkt")
             # Chequear si el paquete no esta duplicado
             if pkt.get_client_id() not in self._pkts_received:
                 self._pkts_received[pkt.get_client_id()] = {}
@@ -39,7 +40,6 @@ class Serializer(BaseSerializer):
                 # Duplicado
                 return               
                 
-            
             self._persist_counter += 1
             self._callback(pkt.get_payload(), pkt.get_client_id())
 

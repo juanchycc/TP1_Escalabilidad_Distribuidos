@@ -1,7 +1,7 @@
 import argparse
-import os
 
 FILENAME = "docker-compose-dev.yaml"
+CONFIG_CLIENT_PATH = "client/config.ini"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-q1", type=int, help="amount of nodes in the first query")
@@ -18,22 +18,12 @@ parser.add_argument(
     "-a", type=int, help="amount of airports handlers")
 parser.add_argument(
     "-ja", type=int, help="amount of join avgs")
+parser.add_argument(
+    "-p", type=int, help="amount of post handlers")
 args = parser.parse_args()
 
 layers = {"flights_filter_": args.q1,
           "flights_max_": args.q3, "flights_avg_": args.avg, "flights_mayor_avg_": args.Mavg, "flights_avg_by_journey_": args.q4, "flights_filter_distance_": args.q2, "manager_": args.m, "airport_fligths_handler_": args.a}
-
-# list of names of output files
-# output_files = ["out_file_q1.csv", "out_file_q2.csv",
-#                "out_file_q3.csv", "out_file_q4.csv"]
-
-# create output files
-# for o in output_files:
-#    file_path = "./client/" + o
-#    if os.path.exists(file_path):
-#        os.remove(file_path)
-#    file = open(file_path, "w")
-#    file.close()
 
 initial_text = """version: '3.9'
 services:
@@ -52,8 +42,8 @@ rabbit_text = """  rabbitmq:
 
 """
 
-post_handler_text = """  post_handler:
-    container_name: post_handler
+post_handler_text = """  post_handler_#:
+    container_name: post_handler_#
     build:
       context: ./post_handler
       dockerfile: Dockerfile
@@ -69,13 +59,14 @@ post_handler_text = """  post_handler:
       - PYTHONUNBUFFERED=1
       - FLIGHTS_FILTER_PLUS_AMOUNT=&
       - AIRPORTS_HANDLER_AMOUNT=$
-      - FLIGHTS_FILTER_AVG_AMOUNT=#
+      - FLIGHTS_FILTER_AVG_AMOUNT=!
+      - POST_HANDLER_ID=#
     volumes:
       - ./post_handler/config.ini:/config.ini
       - ./utils:/utils
       - ./middleware:/middleware
     ports:
-      - 12349:12349
+      - 1235#:1235#
 """
 
 flights_filter_plus_3_text = """  flights_filter_plus_3_#:
@@ -207,7 +198,7 @@ flights_filter_avg = flights_filter_avg.replace('%', str(args.Mavg))
 
 flights_filter_avg_final = ""
 for i in range(1, args.avg + 1):
-  flights_filter_avg_final += flights_filter_avg.replace('#',str(i))
+    flights_filter_avg_final += flights_filter_avg.replace('#', str(i))
 
 
 flights_filter_plus_3_text = flights_filter_plus_3_text.replace(
@@ -257,7 +248,7 @@ flights_join_avg = """  flights_join_avg_#:
 
 flights_join_avg_final = ""
 for i in range(1, args.ja + 1):
-  flights_join_avg_final += flights_join_avg.replace('#',str(i))
+    flights_join_avg_final += flights_join_avg.replace('#', str(i))
 
 
 flights_mayor_avg = """  flights_mayor_avg_#:
@@ -386,8 +377,33 @@ final_text_flights_avg_by_journey = final_text_flights_avg_by_journey.replace(
 
 post_handler_text = post_handler_text.replace('&', str(args.q1))
 post_handler_text = post_handler_text.replace('$', str(args.a))
-post_handler_text = post_handler_text.replace('#', str(args.avg))
+post_handler_text = post_handler_text.replace('!', str(args.avg))
 
+final_post_handler_text = ""
+for i in range(1, args.p + 1):
+    final_post_handler_text = final_post_handler_text + \
+        post_handler_text.replace('#', str(i))
+
+# Create docker-compose file
 with open(FILENAME, 'w') as f:
-    f.write(initial_text + rabbit_text + post_handler_text +
+    f.write(initial_text + rabbit_text + final_post_handler_text +
             final_text_plus_3 + final_text_max + file_writer_text + final_text_avg + flights_join_avg_final + final_text_mayor_avg + final_airport_fligths_handler + final_text_distance + final_text_flights_avg_by_journey + final_manager)
+
+client_config_text = """[DEFAULT]
+SERVER_IP = localhost
+SERVER_PORT_BASE = 1235
+LISTENER_PORT = 12340
+LOGGING_LEVEL = INFO
+BATCH_SIZE = 8192
+FLIGHTS_FILENAME = flights_$.csv
+AIRPORTS_FILENAME = airports_$.csv
+POST_HANDLERS_AMOUNT = #
+BASE_OUTPUT_PATH = ./out_file_q
+QUERY_AMOUNT = 4
+CLIENT_PORT_BASE = 1255
+"""
+client_config_text = client_config_text.replace('#', str(args.p))
+
+# Create config.ini Client file
+with open(CONFIG_CLIENT_PATH, 'w') as f:
+    f.write(client_config_text)

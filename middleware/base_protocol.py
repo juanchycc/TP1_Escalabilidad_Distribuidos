@@ -17,6 +17,7 @@ class BaseSerializer():
             if pkt.get_pkt_number() in self._pkts_received[pkt.get_client_id()]:
                 # Duplicado 
                 return
+
             self._callback(pkt)
             self._middleware.send_ack(ch, method)
             self._pkts_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()
@@ -39,6 +40,7 @@ class BaseSerializer():
                 logging.info(
                     f"Resending finished packet | amount finished : {amount_finished +1}")
                 self._middleware.resend(packet, self._key + str(int(self._id) + 1))
+
 
     def _build_flights_or_airports(self, payload, fields, delimiter):
         flights = payload.split('\n')
