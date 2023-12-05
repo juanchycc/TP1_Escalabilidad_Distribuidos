@@ -68,11 +68,12 @@ class Serializer(BaseSerializer):
             for key in self._keys:
                 logging.debug(f"Sending finished pkt | key: {key}")
                 self._middleware.send(packet, key)
-            # Al primer flight filter
-            self._middleware.send(packet, self._keys[1] + "1")
-            self._middleware.send(packet, "q1_1")  # Al primer flight filter
-            self._middleware.send(packet, "avg1")  # Al primer AVG
+
+            self._middleware.send(packet, self._keys[1] + "1")  # Al primer flight filter
+            self._middleware.send(packet, self._keys[0] + "1")  # Al primer flight filter
+            self._middleware.send(packet, "avg1") # Al primer AVG
             self.send_ack()
+
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
             logging.info(
                 'action: bytes_to_pkt | info: rec finished airport pkt')
@@ -95,7 +96,7 @@ class Serializer(BaseSerializer):
         key = pkt_number % self._flight_filter_amount
         if key == 0:
             key += self._flight_filter_amount
-        self._send_pkt(pkt, "q1_" + str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, self._keys[0] + str(key), FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query_avg(self, pkt, original_pkt):
         # TODO: Generalizar con la de arriba

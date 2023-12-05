@@ -8,12 +8,19 @@ class BaseSerializer():
     def bytes_to_pkt(self, ch, method, properties, body):
         bytes = body
         pkt = pkt_from_bytes(bytes, self._filtered_fields)
-        # logging.info(f'Llego el paquete | numero: {pkt.get_pkt_number()}')
+        logging.debug(f'Llego el paquete | numero: {pkt.get_pkt_number()} | cliente: {pkt.get_client_id()}')
+        #logging.info(f'payload: {pkt.get_payload()}')
         # time.sleep(5)
         if pkt.get_pkt_type() == FLIGHTS_PKT:
-            logging.info(f"Llego flights pkt")
+            if pkt.get_client_id() not in self._pkts_received:
+                self._pkts_received[pkt.get_client_id()] = {}
+            if pkt.get_pkt_number() in self._pkts_received[pkt.get_client_id()]:
+                # Duplicado 
+                return
+
             self._callback(pkt)
             self._middleware.send_ack(ch, method)
+            self._pkts_received[pkt.get_client_id()][pkt.get_pkt_number()] = pkt.get_pkt_number()
 
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
             logging.info("Llego finished pkt")
@@ -23,16 +30,17 @@ class BaseSerializer():
             if amount_finished + 1 == self._num_filters:
                 packet = build_finish_pkt(
                     pkt.get_client_id(), pkt.get_pkt_number_bytes(), 0)
-                self._middleware.send(packet, str(1))
+                if self._not_last:
+                    self._middleware.send(packet, str(1))
                 self._middleware.send(packet, "")  # To file writer
 
             else:
                 packet = build_finish_pkt(
                     pkt.get_client_id(), pkt.get_pkt_number_bytes(), amount_finished + 1)
                 logging.info(
-                    f"Resending finished packet to: {str(int(self._id) + 1)} | amount finished : {amount_finished +1}")
-                next_id = str(int(self._id) + 1)
-                self._middleware.resend(packet, str("q1_" + next_id))
+                    f"Resending finished packet | amount finished : {amount_finished +1}")
+                self._middleware.resend(packet, self._key + str(int(self._id) + 1))
+
 
     def _build_flights_or_airports(self, payload, fields, delimiter):
         flights = payload.split('\n')

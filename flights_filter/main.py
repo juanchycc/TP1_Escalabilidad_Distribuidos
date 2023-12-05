@@ -73,14 +73,15 @@ def main():
     fields = config_params["fields"].split(',')
     id = os.environ.get('FLIGHT_FILTER_ID',1)
     queue = "cola_flight_filter_" + id
-    middleware = BaseMiddleware(config_params["in_exchange"], str("q1_" + id),
+    key = str(config_params["key_1"])
+    middleware = BaseMiddleware(config_params["in_exchange"],key + str(id),
                                 config_params["out_exchange"],queue)
 
     # read from docker env, default 1
     num_groups = int(os.environ.get('FLIGHTS_MAX_AMOUNT', 1))
     num_filters = int(os.environ.get('FLIGHTS_FILTER_PLUS_AMOUNT', 1))
     serializer = Serializer(middleware, fields, num_groups,
-                            num_filters, config_params["outfile"],id)
+                            num_filters, config_params["outfile"],id,key)
 
     filter = FilterFlightsPlusThree(serializer, fields)
     signal.signal(signal.SIGTERM, middleware.shutdown)

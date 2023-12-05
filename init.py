@@ -353,6 +353,7 @@ airport_fligths_handler_text = """  airport_fligths_handler_#:
       - PYTHONUNBUFFERED=1
       - HANDLER_ID=#
       - HANDLER_AMOUNT=$
+      - FILTER_DISTANCE_AMOUNT=&
     volumes:
       - ./utils:/utils
       - ./middleware:/middleware
@@ -360,6 +361,8 @@ airport_fligths_handler_text = """  airport_fligths_handler_#:
 """
 airport_fligths_handler_text = airport_fligths_handler_text.replace(
     '$', str(args.a))
+airport_fligths_handler_text = airport_fligths_handler_text.replace(
+    '&', str(args.q2))
 final_airport_fligths_handler = ""
 for i in range(1, args.a + 1):
     final_airport_fligths_handler = final_airport_fligths_handler + \

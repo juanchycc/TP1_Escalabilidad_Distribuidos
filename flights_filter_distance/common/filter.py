@@ -10,10 +10,11 @@ class FilterFlightsDistance:
     def run(self):
         self._serializer.run(self.filter_fligths)
 
-    def filter_fligths(self, flights, id):
+    def filter_fligths(self, batch):
+        flights = batch.get_payload()
         output = []
 
-        logging.info(f"Flights {flights} ")
+        #logging.info(f"Flights {flights} ")
 
         for flight in flights:
             if flight["totalTravelDistance"] == '':
@@ -31,4 +32,4 @@ class FilterFlightsDistance:
                 output.append(filtered_flight)
         logging.debug(f"Output {output} ")
 
-        self._serializer.send_pkt(output, id)
+        self._serializer.send_pkt(output, batch)

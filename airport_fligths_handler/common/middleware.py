@@ -9,9 +9,11 @@ class Middleware(BaseMiddleware):
 
         self._connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq', heartbeat=36000))
+        self._in_airports_exchange = in_airports_exchange
         self._in_channel, self._in_queue_name_flights, self._in_queue_name_airports = self._connect_in_exchange(
             in_flights_exchange, in_airports_exchange, queue_name, in_key)
         self._in_key = in_key
+        self._in_flights_exchange = in_flights_exchange
         self._out_channel = self._connect_out_exchange(out_exchange)
         self._out_exchange = out_exchange
 
@@ -46,3 +48,7 @@ class Middleware(BaseMiddleware):
         except OSError as e:
             logging.error(
                 'action: start_recv_airports | result: failed | error: %s' % e)
+            
+    def resend(self, bytes, key=None):
+        self._in_channel.basic_publish(
+                exchange=self._in_flights_exchange, routing_key=key, body=bytes)
