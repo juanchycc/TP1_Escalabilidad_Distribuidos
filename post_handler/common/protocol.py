@@ -43,7 +43,7 @@ class Serializer(BaseSerializer):
             logging.info(
                 f'Recibo flight, pkt: {pkt.get_pkt_number()}')
             self._fligth_callback(pkt)
-
+            self.ack_count += 1
         if pkt.get_pkt_type() == LISTENER_PORT_PKT:
             logging.info(
                 'action: bytes_to_pkt | info: rec listener port pkt')
@@ -58,7 +58,7 @@ class Serializer(BaseSerializer):
             logging.info(
                 f'Recibo airport, pkt: {pkt.get_pkt_number()}')
             self._airport_callback(pkt)
-
+            self.ack_count += 1
         if pkt.get_pkt_type() == FLIGHTS_FINISHED_PKT:
             # Mando uno por cada key
             logging.info(
@@ -69,9 +69,11 @@ class Serializer(BaseSerializer):
                 logging.debug(f"Sending finished pkt | key: {key}")
                 self._middleware.send(packet, key)
 
-            self._middleware.send(packet, self._keys[1] + "1")  # Al primer flight filter
-            self._middleware.send(packet, self._keys[0] + "1")  # Al primer flight filter
-            self._middleware.send(packet, "avg1") # Al primer AVG
+            # Al primer flight filter
+            self._middleware.send(packet, self._keys[1] + "1")
+            # Al primer flight filter
+            self._middleware.send(packet, self._keys[0] + "1")
+            self._middleware.send(packet, "avg1")  # Al primer AVG
             self.send_ack()
 
         if pkt.get_pkt_type() == AIRPORT_FINISHED_PKT:
@@ -81,12 +83,11 @@ class Serializer(BaseSerializer):
                 pkt.get_client_id(), pkt.get_pkt_number_bytes(), 0, AIRPORT_FINISHED_PKT)
             self._middleware.send_airport(packet, '')
             self.send_ack()
-        if not pkt.get_pkt_type() == HEADERS_AIRPORT_PKT and not pkt.get_pkt_type() == HEADERS_FLIGHTS_PKT and not pkt.get_pkt_type() == LISTENER_PORT_PKT:
-            self.ack_count += 1
-            logging.info(
-                f'contador ack: {self.ack_count}, pkt: {pkt.get_pkt_number()}, type: {pkt.get_pkt_type()}')
-            if self.ack_count == ACK_COUNTER_LIMIT:
-                self.send_ack()
+
+        logging.info(
+            f'contador ack: {self.ack_count}, pkt: {pkt.get_pkt_number()}, type: {pkt.get_pkt_type()}')
+        if self.ack_count == ACK_COUNTER_LIMIT:
+            self.send_ack()
     # def send_listener_pkt(self, pkt):
     #    self._middleware.send_pkt_to_sink(pkt)
 
@@ -96,7 +97,8 @@ class Serializer(BaseSerializer):
         key = pkt_number % self._flight_filter_amount
         if key == 0:
             key += self._flight_filter_amount
-        self._send_pkt(pkt, self._keys[0] + str(key), FLIGHTS_PKT, original_pkt, False)
+        self._send_pkt(pkt, self._keys[0] + str(key),
+                       FLIGHTS_PKT, original_pkt, False)
 
     def send_pkt_query_avg(self, pkt, original_pkt):
         # TODO: Generalizar con la de arriba

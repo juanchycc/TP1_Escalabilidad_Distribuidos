@@ -37,7 +37,7 @@ class Client_Protocol:
         return self._send_packet(batch, HEADERS_FLIGHTS_PKT)
 
     def send_flights_packet(self, batch) -> (bool, bool):
-        time.sleep(1)
+        # time.sleep(1)
         return self._send_packet(batch, FLIGHTS_PKT)
 
     def send_airports_packet(self, batch) -> (bool, bool):

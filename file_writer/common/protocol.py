@@ -2,7 +2,7 @@ import logging
 from utils.constants import *
 from utils.packet import *
 
-QUERY_AMOUNT = 2
+QUERY_AMOUNT = 3
 
 
 class Serializer:
